@@ -1,0 +1,613 @@
+:root {
+  --color-primary: #1E40AF;
+  --color-primary-soft: #EFF4FF;
+  --color-accent: #D97706;
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-foreground: #0F172A;
+  --color-muted: #64748B;
+  --color-muted-bg: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-destructive: #DC2626;
+  --color-destructive-bg: #FEF2F2;
+  --color-warning: #B45309;
+  --color-warning-bg: #FFFBEB;
+  --color-success: #15803D;
+  --color-success-bg: #F0FDF4;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-full: 999px;
+  --font-ui: "Fira Sans", system-ui, -apple-system, sans-serif;
+  --font-data: "Fira Code", ui-monospace, "SFMono-Regular", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-ui);
+  line-height: 1.45;
+  font-size: 15px;
+}
+
+/* ---------- Cabecera ---------- */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.75rem;
+  background: #0B1330;
+  color: #fff;
+}
+
+.cabecera__titulo h1 {
+  margin: 0 0 .15rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.cabecera__titulo p {
+  margin: 0;
+  color: #9FADD1;
+  font-size: .82rem;
+}
+
+.cabecera__resumen {
+  display: flex;
+  gap: 1.4rem;
+  font-family: var(--font-data);
+}
+
+.cabecera__resumen div {
+  font-size: .72rem;
+  color: #9FADD1;
+  text-align: right;
+}
+
+.cabecera__resumen strong {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: block;
+  line-height: 1.3;
+}
+
+/* ---------- Layout general ---------- */
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 3rem;
+}
+
+/* ---------- Barra de filtros ---------- */
+
+.barra-filtros {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: .75rem;
+  margin-bottom: .85rem;
+}
+
+.barra-filtros__principal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: stretch;
+}
+
+.campo-busqueda {
+  position: relative;
+  flex: 1 1 220px;
+}
+
+.icono-busqueda {
+  position: absolute;
+  left: .6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-muted);
+  pointer-events: none;
+}
+
+#filtro-texto {
+  width: 100%;
+  height: 38px;
+  padding: 0 .7rem 0 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: .88rem;
+  font-family: var(--font-ui);
+  background: var(--color-background);
+}
+
+#filtro-texto:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  background: var(--color-surface);
+}
+
+/* Segmented control (fuente) */
+
+.segmented {
+  display: flex;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  flex: 0 0 auto;
+}
+
+.segmented__opcion {
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  font-weight: 500;
+  padding: 0 .7rem;
+  height: 32px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s ease, color .12s ease;
+}
+
+.segmented__opcion:hover { color: var(--color-foreground); }
+
+.segmented__opcion[aria-pressed="true"] {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .12);
+  font-weight: 600;
+}
+
+.segmented__opcion:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* Pestañas de nivel superior (tipo de dato: licitaciones, adjudicaciones...).
+   Mismo componente que .segmented pero más grande y con margen propio, para
+   que se lea como una pestaña de página y no como un filtro más dentro de
+   la barra. */
+.segmented--tipo {
+  margin-bottom: .85rem;
+  padding: 4px;
+}
+
+.segmented--tipo .segmented__opcion {
+  height: 38px;
+  font-size: .88rem;
+  padding: 0 1rem;
+}
+
+.explicacion-tipo {
+  margin: 0 0 .85rem;
+  padding: .6rem .85rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+/* Selects de categoría y país */
+
+#filtro-categoria, #filtro-pais {
+  height: 38px;
+  padding: 0 1.8rem 0 .7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: .85rem;
+  font-family: var(--font-ui);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  cursor: pointer;
+  flex: 0 0 auto;
+  max-width: 200px;
+}
+
+#filtro-categoria:focus, #filtro-pais:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* Filtros avanzados (plegable) */
+
+.filtros-avanzados { margin-top: .5rem; }
+
+.filtros-avanzados summary {
+  cursor: pointer;
+  font-size: .8rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .25rem 0;
+}
+
+.filtros-avanzados summary::-webkit-details-marker { display: none; }
+
+.filtros-avanzados summary::before {
+  content: "▸";
+  font-size: .7rem;
+  transition: transform .15s ease;
+}
+
+.filtros-avanzados[open] summary::before { transform: rotate(90deg); }
+
+.filtros-avanzados__contenido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  align-items: flex-end;
+  padding-top: .6rem;
+  border-top: 1px solid var(--color-border);
+  margin-top: .4rem;
+}
+
+.filtros-avanzados__contenido label {
+  display: flex;
+  flex-direction: column;
+  font-size: .72rem;
+  color: var(--color-muted);
+  gap: .25rem;
+}
+
+/* El "display:flex" de arriba gana por cascada sobre el display:none del
+   user-agent para [hidden] (el CSS del autor siempre gana al del UA, tenga
+   la especificidad que tenga) — sin esto, ocultar el filtro de presupuesto
+   desde JS (t.hidden = true) no tenía ningún efecto visual real. */
+.filtros-avanzados__contenido label[hidden] {
+  display: none;
+}
+
+.filtros-avanzados__contenido select {
+  height: 34px;
+  padding: 0 .5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: .82rem;
+  font-family: var(--font-ui);
+  background: var(--color-background);
+}
+
+#boton-reset {
+  height: 34px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: 0 .8rem;
+  cursor: pointer;
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+
+#boton-reset:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+/* ---------- Barra de estado ---------- */
+
+.barra-estado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 .6rem;
+  min-height: 24px;
+}
+
+.conteo {
+  color: var(--color-muted);
+  font-size: .8rem;
+  margin: 0;
+}
+
+.barra-estado__acciones {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.enlace-revisar {
+  border: none;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-size: .76rem;
+  font-weight: 600;
+  padding: .3rem .7rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.enlace-revisar:hover { filter: brightness(0.95); }
+
+.enlace-revisar.activo {
+  background: var(--color-warning);
+  color: #fff;
+}
+
+/* ---------- Lista de tarjetas compactas ---------- */
+
+.lista-tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.tarjeta {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-success);
+  border-radius: var(--radius-sm);
+}
+
+.tarjeta[open] { border-left-width: 4px; }
+
+.tarjeta.urgencia-roja { border-left-color: var(--color-destructive); }
+.tarjeta.urgencia-ambar { border-left-color: var(--color-accent); }
+.tarjeta.urgencia-verde { border-left-color: var(--color-success); }
+.tarjeta.urgencia-sin-fecha { border-left-color: var(--color-border); }
+
+.tarjeta.revisar-manual { border-left-style: dashed; }
+
+.tarjeta__resumen-fila {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  padding: .65rem .85rem;
+}
+
+.tarjeta__resumen-fila::-webkit-details-marker { display: none; }
+
+.tarjeta__resumen-fila:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.tarjeta__resumen-fila:hover { background: var(--color-background); }
+
+.tarjeta__chevron {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: .2rem;
+  color: var(--color-muted);
+  transition: transform .15s ease;
+}
+
+.tarjeta[open] .tarjeta__chevron { transform: rotate(90deg); }
+
+/* Tarjeta de tamaño intermedio: dos líneas siempre legibles (título propio
+   + organismo/territorio propios), en vez de una sola línea apretada con
+   todo truncado a la vez. */
+.tarjeta__info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.tarjeta__titulo-compacto {
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tarjeta__meta-compacta {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .78rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tarjeta__meta-compacta span:not(.badge-fuente) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tarjeta__meta-compacta span:nth-child(2) { flex: 0 1 auto; min-width: 0; }
+.tarjeta__meta-compacta span:nth-child(3) { flex: 0 0 auto; }
+.tarjeta__meta-compacta span:nth-child(4) { flex: 0 1 120px; min-width: 0; }
+
+.tarjeta__lado-derecho {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .3rem;
+}
+
+.badge-fuente {
+  flex: 0 0 auto;
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--color-muted);
+  background: var(--color-muted-bg);
+  padding: .15rem .45rem;
+  border-radius: 4px;
+}
+
+.badge-presupuesto {
+  flex: 0 0 auto;
+  font-family: var(--font-data);
+  font-size: .82rem;
+  color: var(--color-foreground);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-empresa {
+  flex: 0 0 auto;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .18rem .5rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.badge-urgencia {
+  flex: 0 0 auto;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .18rem .5rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.urgencia-roja .badge-urgencia { background: var(--color-destructive-bg); color: var(--color-destructive); }
+.urgencia-ambar .badge-urgencia { background: var(--color-warning-bg); color: var(--color-warning); }
+.urgencia-verde .badge-urgencia { background: var(--color-success-bg); color: var(--color-success); }
+.urgencia-sin-fecha .badge-urgencia { background: var(--color-muted-bg); color: var(--color-muted); }
+
+/* Detalle expandido */
+
+.tarjeta__detalle {
+  padding: 0 .8rem .9rem calc(.8rem + 16px + .65rem);
+  border-top: 1px solid var(--color-border);
+  margin-top: 0;
+  padding-top: .7rem;
+}
+
+.tarjeta__meta {
+  font-size: .8rem;
+  color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+  margin-bottom: .5rem;
+}
+
+.tarjeta__meta span strong { color: var(--color-foreground); font-weight: 600; }
+.tarjeta__meta .valor-dato { font-family: var(--font-data); }
+
+.tarjeta__resumen-texto {
+  font-size: .85rem;
+  color: var(--color-foreground);
+  margin: 0 0 .6rem;
+}
+
+.tarjeta__categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-bottom: .65rem;
+}
+
+.etiqueta-categoria {
+  font-size: .72rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  padding: .15rem .5rem;
+  border-radius: 6px;
+}
+
+.etiqueta-revisar {
+  font-size: .72rem;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  padding: .15rem .5rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.tarjeta__enlace {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.tarjeta__enlace:hover { text-decoration: underline; }
+
+.tarjeta__aviso-codigo {
+  font-size: .78rem;
+  color: var(--color-muted);
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-sm);
+  padding: .45rem .6rem;
+  margin: 0 0 .55rem;
+}
+
+.tarjeta__codigo {
+  font-family: var(--font-data);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: .05rem .35rem;
+  border-radius: 4px;
+  color: var(--color-foreground);
+  font-weight: 600;
+  user-select: all;
+}
+
+.sin-resultados {
+  text-align: center;
+  color: var(--color-muted);
+  padding: 3rem 1rem;
+  font-size: .9rem;
+}
+
+.pie {
+  text-align: center;
+  color: var(--color-muted);
+  font-size: .74rem;
+  padding: 1.5rem;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 640px) {
+  .tarjeta__organismo-compacto { display: block; }
+}
+
+@media (max-width: 640px) {
+  .cabecera { padding: .9rem 1rem; }
+  main { padding: .9rem; }
+  .barra-filtros__principal { flex-direction: column; align-items: stretch; }
+  /* En columna, "flex: 1 1 220px" aplicaría el 220px al alto (eje
+     principal pasa a ser vertical), no al ancho -> el icono de la lupa,
+     posicionado en absoluto respecto a este contenedor, quedaba muy por
+     debajo del input. Se fuerza ancho completo y alto natural. */
+  .campo-busqueda { flex: none; width: 100%; }
+  .segmented, #filtro-categoria, #filtro-pais { width: 100%; max-width: none; }
+  .tarjeta__detalle { padding-left: .8rem; }
+
+  /* Los badges de la derecha (fuente, presupuesto, urgencia) compartiendo
+     línea con el título le dejaban un hueco tan estrecho que solo se leían
+     4-5 palabras antes de truncar. En móvil bajan a su propia fila y el
+     título ocupa el ancho completo. */
+  .tarjeta__resumen-fila { flex-wrap: wrap; row-gap: .35rem; padding: .75rem .85rem; }
+  .tarjeta__titulo-compacto { font-size: 1rem; -webkit-line-clamp: 3; }
+  .tarjeta__lado-derecho {
+    flex: 1 0 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+    padding-left: calc(16px + .7rem);
+  }
+}

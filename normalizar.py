@@ -1,0 +1,815 @@
+# -*- coding: utf-8 -*-
+"""
+Unifica los tres formatos heterogéneos (TED, PLACSP, Euskadi) ya clasificados
+en data/clasificado.json en un único esquema, y escribe data/tenders.json,
+el dataset que consume el dashboard.
+
+Esquema final por licitación:
+    id, titulo, organismo, fuente, pais_territorio, fecha_publicacion,
+    fecha_limite, presupuesto_valor (float|null), presupuesto_display (str),
+    cpv (list[str]), categorias (list[str]), revisar_manual (bool),
+    enlace, enlace_directo (bool: False cuando "enlace" es solo un buscador
+    genérico, no la página del anuncio concreto — hoy solo pasa en Euskadi,
+    que no expone URL de detalle por expediente), codigo_expediente
+    (str|None, para poder copiarlo y pegarlo en el buscador cuando
+    enlace_directo es False), resumen, tipo_contrato (str: la descripción
+    oficial en español del primer código CPV de la licitación -p. ej.
+    "Servicios de publicidad y de marketing"-, tal y como la publica la
+    propia fuente; "no publicado" en Euskadi, que no expone CPV. Es solo
+    informativo: NO se usa para decidir qué entra en el radar -eso lo
+    decide únicamente el texto del título, capa 2 de clasificar.py-,
+    porque se comprobó que el CPV real de una licitación de marketing a
+    veces cae en un grupo genérico ajeno, p. ej. 50000000 "Servicios de
+    reparación y mantenimiento", y filtrar por él dejaría fuera casos
+    reales)
+
+Ningún campo se inventa: cuando la fuente no publica un dato (presupuesto,
+fecha límite...), el valor es exactamente el texto "no publicado", nunca un
+0 o una fecha estimada.
+
+Deduplicación: algunas licitaciones sobre el umbral de la UE se publican a
+la vez en TED y en PLACSP. Se deduplican solo cuando título normalizado Y
+organismo normalizado coinciden EXACTAMENTE entre dos fuentes (heurística
+conservadora: prefiere duplicar de más a fusionar mal). Se conserva la
+entrada de TED (más estructurada) y se descarta la de PLACSP equivalente.
+Se aplica igual a "adjudicacion" (bug real detectado en auditoría: el mismo
+contrato sobre el umbral UE también puede aparecer adjudicado tanto en el
+aviso "result" de TED como en el bloque TenderResult del feed general de
+PLACSP — la razón de deduplicar licitaciones aplica exactamente igual aquí,
+y antes de este arreglo nunca se comprobaba). La clave incluye el
+tipo_registro como prefijo para que una licitación y una adjudicación con el
+mismo título+organismo (algo normal: el título no cambia entre el anuncio y
+el resultado) no se pisen entre sí al vivir en pestañas distintas del
+dashboard.
+
+Los "contrato_menor_venciendo" y "convocatoria_ue" NO se deduplican por
+título+organismo a propósito: un mismo organismo puede adjudicar varios
+contratos menores genuinamente distintos con un título casi idéntico (p. ej.
+"Servicio de diseño gráfico" a proveedores distintos en fechas distintas) —
+aplicar aquí la misma heurística fusionaría contratos reales en uno solo,
+que es justo el error que la heurística intenta evitar en el otro sentido.
+Las calls for proposals solo tienen una fuente (SEDIA), así que no hay
+riesgo de duplicado cruzado que evitar.
+
+Ejecutar:
+    python normalizar.py
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import sys
+import time
+import unicodedata
+from datetime import date, timedelta
+from pathlib import Path
+
+from deep_translator import MyMemoryTranslator
+
+import config
+
+CLASIFICADO = Path(__file__).resolve().parent / "data" / "clasificado.json"
+SALIDA = Path(__file__).resolve().parent / "data" / "tenders.json"
+SALIDA_DASHBOARD = Path(__file__).resolve().parent / "dashboard" / "tenders-data.js"
+CPV_NOMBRES = Path(__file__).resolve().parent / "cpv_nombres.json"
+
+NO_PUBLICADO = "no publicado"
+
+# Vocabulario CPV 2008 oficial en español, descargado del codelist CODICE de
+# PLACSP (contrataciondelestado.es/codice/cl/2.04/CPV2008-2.04.gc — 9454
+# códigos con su descripción oficial). Se usa solo para mostrar "tipo de
+# contrato" en la tarjeta -información de contexto, tal y como lo publica
+# la fuente-, nunca para decidir inclusión: ver nota en el docstring de
+# arriba sobre por qué el CPV real no es fiable como filtro.
+_CPV_NOMBRES: dict[str, str] = json.loads(CPV_NOMBRES.read_text(encoding="utf-8")) if CPV_NOMBRES.exists() else {}
+
+
+def _tipo_contrato(cpv_list) -> str:
+    for codigo in cpv_list or []:
+        digitos = "".join(ch for ch in str(codigo) if ch.isdigit())[:8]
+        nombre = _CPV_NOMBRES.get(digitos)
+        if nombre:
+            return nombre
+    return NO_PUBLICADO
+
+# TED da el país del comprador como código ISO 3166-1 alfa-3. Se traduce a
+# nombre en español tanto para que el filtro de país sea legible como para
+# que las tarjetas no muestren "DEU"/"FRA" en vez de "Alemania"/"Francia".
+PAISES_ISO3 = {
+    "AUT": "Austria", "BEL": "Bélgica", "BGR": "Bulgaria", "HRV": "Croacia",
+    "CYP": "Chipre", "CZE": "Chequia", "DNK": "Dinamarca", "EST": "Estonia",
+    "FIN": "Finlandia", "FRA": "Francia", "DEU": "Alemania", "GRC": "Grecia",
+    "HUN": "Hungría", "ISL": "Islandia", "IRL": "Irlanda", "ITA": "Italia",
+    "LVA": "Letonia", "LTU": "Lituania", "LUX": "Luxemburgo", "MLT": "Malta",
+    "NLD": "Países Bajos", "NOR": "Noruega", "POL": "Polonia",
+    "PRT": "Portugal", "ROU": "Rumanía", "SVN": "Eslovenia",
+    "SVK": "Eslovaquia", "ESP": "España", "SWE": "Suecia", "CHE": "Suiza",
+    "GBR": "Reino Unido", "LIE": "Liechtenstein", "SAU": "Arabia Saudí",
+    "CAN": "Canadá", "USA": "Estados Unidos", "AND": "Andorra",
+    "MCO": "Mónaco", "SRB": "Serbia", "MKD": "Macedonia del Norte",
+    "MNE": "Montenegro", "ALB": "Albania", "TUR": "Turquía", "UKR": "Ucrania",
+}
+
+
+def _normalizar_clave(texto: str) -> str:
+    if not texto:
+        return ""
+    sin_acentos = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+    sin_acentos = sin_acentos.lower()
+    return re.sub(r"[^a-z0-9]+", " ", sin_acentos).strip()
+
+
+def _limpiar_fecha(valor: str | None) -> str:
+    """TED/PLACSP devuelven fechas tipo '2026-08-03+02:00'. Nos quedamos con
+    la parte YYYY-MM-DD."""
+    if not valor:
+        return NO_PUBLICADO
+    return valor.split("+")[0].split("T")[0].strip() or NO_PUBLICADO
+
+
+def _id_unico(*partes: str) -> str:
+    base = "|".join(p or "" for p in partes)
+    return hashlib.sha1(base.encode("utf-8")).hexdigest()[:16]
+
+
+def _parsear_presupuesto(valor, moneda: str = "EUR") -> tuple[float | None, str]:
+    """Convierte un valor de presupuesto crudo (puede venir como string,
+    int o float, o faltar). Un valor de exactamente 0 se trata igual que
+    ausente: se comprobó con datos reales de TED que algunos marcos
+    (framework agreements sin lotes valorados) devuelven literalmente la
+    cadena "0" en estimated-value-proc en vez de omitir el campo — un
+    contrato real nunca tiene presupuesto cero, así que mostrarlo como
+    "0 EUR" es engañoso; se muestra como no publicado."""
+    if valor is None or valor == "":
+        return None, NO_PUBLICADO
+    try:
+        numero = float(valor)
+    except (TypeError, ValueError):
+        return None, NO_PUBLICADO
+    if numero == 0:
+        return None, NO_PUBLICADO
+    return numero, f"{numero:,.0f} {moneda}"
+
+
+def _parsear_fecha_iso(valor: str) -> date | None:
+    if not valor or valor == NO_PUBLICADO:
+        return None
+    try:
+        return date.fromisoformat(valor)
+    except ValueError:
+        return None
+
+
+def _adjudicacion_reciente(registro: dict) -> bool:
+    """Para adjudicaciones no hay 'plazo': el contrato ya está cerrado. Se
+    usa la misma ventana de antigüedad que el resto del radar, pero sobre
+    la fecha de adjudicación en vez de la de publicación."""
+    cutoff = date.today() - timedelta(days=config.DIAS_ANTIGUEDAD_MAXIMA)
+    fecha = _parsear_fecha_iso(registro["fecha_publicacion"])
+    return fecha is not None and fecha >= cutoff
+
+
+def _contrato_menor_por_vencer(registro: dict) -> bool:
+    """Vence dentro de la ventana de aviso Y no ha vencido ya (un contrato
+    que ya venció no sirve para una visita comercial "antes de que
+    renueve")."""
+    fin = _parsear_fecha_iso(registro["fecha_fin_estimada"])
+    if fin is None:
+        return False
+    hoy = date.today()
+    limite = hoy + timedelta(days=config.DIAS_AVISO_CONTRATO_MENOR)
+    return hoy <= fin <= limite
+
+
+def _dentro_de_ventana_temporal(registro: dict) -> bool:
+    """Filtro final: 'publicada en los últimos N días O aún en plazo', tal
+    y como pide el encargo. Se recalcula aquí, con las fechas ya limpias y
+    unificadas, porque se detectó con datos reales -y en dos fuentes
+    distintas, Euskadi y PLACSP- que el campo de fecha que exponen como
+    "publicación"/"actualización" no es fiable como señal de vigencia: se
+    toca (vuelve a quedar "reciente") cuando el expediente cambia de
+    estado internamente, aunque el contrato lleve años cerrado y resuelto
+    (se han visto expedientes con "Estado: RES" de 2021-2023 con fecha de
+    actualización de hoy mismo). Por eso un plazo límite conocido y ya
+    vencido descarta la licitación SIEMPRE, gane lo que gane la fecha de
+    publicación; la fecha de publicación solo se usa como señal de
+    vigencia cuando no hay plazo límite publicado con el que contrastar."""
+    hoy = date.today()
+    cutoff = hoy - timedelta(days=config.DIAS_ANTIGUEDAD_MAXIMA)
+    publicacion = _parsear_fecha_iso(registro["fecha_publicacion"])
+    limite = _parsear_fecha_iso(registro["fecha_limite"])
+
+    if limite is not None:
+        return limite >= hoy
+
+    return publicacion is not None and publicacion >= cutoff
+
+
+def _from_ted(registro: dict) -> dict:
+    item = registro["original"]
+
+    nombres = item.get("buyer-name") or {}
+    organismo = None
+    if isinstance(nombres, dict):
+        valores = nombres.get("spa") or nombres.get("eng") or next(iter(nombres.values()), None)
+        if isinstance(valores, list) and valores:
+            organismo = valores[0]
+        elif isinstance(valores, str):
+            organismo = valores
+    organismo = organismo or NO_PUBLICADO
+
+    paises = item.get("buyer-country") or []
+    codigo_pais = paises[0] if paises else None
+    pais = PAISES_ISO3.get(codigo_pais, codigo_pais) if codigo_pais else "UE (sin país especificado)"
+
+    fecha_publicacion = _limpiar_fecha(item.get("publication-date"))
+
+    # "deadline-receipt-tender-date-lot" (eForms/BT-131) es el que de
+    # verdad viene relleno en la mayoría de anuncios reales; "deadline-date-lot"
+    # se pide igualmente por si acaso, como alias de formatos TED2 legados.
+    deadlines = item.get("deadline-receipt-tender-date-lot") or item.get("deadline-date-lot") or []
+    fecha_limite = _limpiar_fecha(deadlines[0]) if deadlines else NO_PUBLICADO
+
+    moneda = item.get("estimated-value-cur-proc") or "EUR"
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("estimated-value-proc"), moneda)
+
+    numero_pub = item.get("publication-number", "")
+    enlace = f"https://ted.europa.eu/es/notice/-/detail/{numero_pub}" if numero_pub else NO_PUBLICADO
+
+    titulo = registro["titulo"]
+    resumen = titulo  # TED search API no devuelve descripción larga con los campos consultados
+
+    return {
+        "id": _id_unico("UE", numero_pub, titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "UE",
+        "pais_territorio": pais,
+        "fecha_publicacion": fecha_publicacion,
+        "fecha_limite": fecha_limite,
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": enlace,
+        "enlace_directo": True,
+        "codigo_expediente": None,
+        "resumen": resumen,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "licitacion",
+        "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+def _from_placsp(registro: dict) -> dict:
+    item = registro["original"]
+
+    organismo = item.get("organismo") or NO_PUBLICADO
+    fecha_publicacion = _limpiar_fecha(item.get("fecha_actualizacion"))
+    fecha_limite = _limpiar_fecha(item.get("fecha_limite"))
+
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("presupuesto"), item.get("moneda") or "EUR")
+
+    titulo = registro["titulo"]
+    resumen = item.get("resumen_feed") or titulo
+
+    return {
+        "id": _id_unico("Estado", item.get("expediente", ""), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Estado",
+        "pais_territorio": "España",
+        "fecha_publicacion": fecha_publicacion,
+        "fecha_limite": fecha_limite,
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("enlace") or NO_PUBLICADO,
+        "enlace_directo": True,
+        "codigo_expediente": item.get("expediente"),
+        "resumen": resumen,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "licitacion",
+        "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+EUSKADI_BUSQUEDA_ANUNCIOS = "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
+
+
+def _from_euskadi(registro: dict) -> dict:
+    item = registro["original"]
+
+    autoridad = item.get("contractingAuthority") or {}
+    organismo = autoridad.get("name") or NO_PUBLICADO
+
+    fecha_publicacion = _limpiar_fecha(item.get("firstPublicationDate") or item.get("lastPublicationDate"))
+    fecha_limite = _limpiar_fecha(item.get("deadlineDate"))
+
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("budgetWithoutVAT"))
+
+    tipo_proc = (item.get("contractProcedureType") or {}).get("name", "")
+    estado_proc = (item.get("contractProcedureStatus") or {}).get("name", "")
+    codigo = item.get("code", "")
+    titulo = registro["titulo"]
+    resumen = f"Expediente {codigo} · {tipo_proc} · Estado: {estado_proc}".strip(" ·")
+
+    # La API de Euskadi no da una URL de detalle por expediente (se
+    # comprobó en vivo: la "Búsqueda de anuncios" del propio portal es un
+    # formulario que solo acepta POST, no hay URL con parámetros que
+    # abra directamente un anuncio). La única excepción real observada en
+    # los datos es el portal propio de Bizkaia (elicitacion.ebizkaia.eus),
+    # que sí añade "numexpediente=" a la URL para su expediente concreto.
+    # En cualquier otro caso se enlaza al buscador público (no al portal
+    # de licitación electrónica, que es para presentar oferta con
+    # certificado, no para consultar) y se deja el código de expediente
+    # bien visible para que se pueda copiar y pegar en "Código del
+    # expediente" del buscador.
+    url_bidding = item.get("webpagElectronicBidding") or ""
+    if "numexpediente=" in url_bidding:
+        enlace = url_bidding
+        enlace_directo = True
+    else:
+        enlace = EUSKADI_BUSQUEDA_ANUNCIOS
+        enlace_directo = False
+
+    return {
+        "id": _id_unico("Euskadi", str(item.get("id", "")), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Euskadi",
+        "pais_territorio": "País Vasco",
+        "fecha_publicacion": fecha_publicacion,
+        "fecha_limite": fecha_limite,
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": enlace,
+        "enlace_directo": enlace_directo,
+        "codigo_expediente": codigo or None,
+        "resumen": resumen,
+        # Euskadi no expone CPV (ver docstring de scrapers/euskadi.py), así
+        # que no hay tipo de contrato oficial que mostrar — no se inventa.
+        "tipo_contrato": NO_PUBLICADO,
+        "tipo_registro": "licitacion",
+        "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Adjudicaciones (Fase 1). Esquema añadido respecto a una licitación:
+# empresa_adjudicataria, fecha_adjudicacion, importe_adjudicado. No hay
+# fecha_limite (el contrato ya está cerrado) ni urgencia de plazo; se
+# reutiliza el campo fecha_publicacion para guardar la fecha de
+# adjudicación, así el orden por defecto y el filtro de ventana temporal no
+# necesitan un camino aparte.
+# ---------------------------------------------------------------------------
+
+def _from_ted_adjudicacion(registro: dict) -> dict:
+    item = registro["original"]
+
+    nombres = item.get("buyer-name") or {}
+    organismo = None
+    if isinstance(nombres, dict):
+        valores = nombres.get("spa") or nombres.get("eng") or next(iter(nombres.values()), None)
+        if isinstance(valores, list) and valores:
+            organismo = valores[0]
+        elif isinstance(valores, str):
+            organismo = valores
+    organismo = organismo or NO_PUBLICADO
+
+    ganador = item.get("winner-name") or {}
+    empresa = None
+    if isinstance(ganador, dict):
+        valores = next(iter(ganador.values()), None)
+        if isinstance(valores, list) and valores:
+            empresa = valores[0]
+        elif isinstance(valores, str):
+            empresa = valores
+    empresa = empresa or NO_PUBLICADO
+
+    paises = item.get("buyer-country") or []
+    codigo_pais = paises[0] if paises else None
+    pais = PAISES_ISO3.get(codigo_pais, codigo_pais) if codigo_pais else "UE (sin país especificado)"
+
+    fecha_adjudicacion = _limpiar_fecha(item.get("publication-date"))
+
+    duraciones = item.get("contract-duration-end-date-lot") or []
+    fecha_fin_estimada = _limpiar_fecha(duraciones[0]) if duraciones else NO_PUBLICADO
+
+    valores_importe = item.get("result-value-lot") or []
+    moneda_importe = (item.get("result-value-cur-lot") or ["EUR"])[0]
+    importe_valor, importe_display = _parsear_presupuesto(valores_importe[0] if valores_importe else None, moneda_importe)
+
+    numero_pub = item.get("publication-number", "")
+    enlace = f"https://ted.europa.eu/es/notice/-/detail/{numero_pub}" if numero_pub else NO_PUBLICADO
+    titulo = registro["titulo"]
+
+    return {
+        "id": _id_unico("UE-adj", numero_pub, titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "UE",
+        "pais_territorio": pais,
+        "fecha_publicacion": fecha_adjudicacion,
+        "fecha_limite": NO_PUBLICADO,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": enlace,
+        "enlace_directo": True,
+        "codigo_expediente": None,
+        "resumen": titulo,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "adjudicacion",
+        "empresa_adjudicataria": empresa,
+        "fecha_adjudicacion": fecha_adjudicacion,
+        "fecha_fin_estimada": fecha_fin_estimada,
+        "importe_adjudicado_valor": importe_valor,
+        "importe_adjudicado_display": importe_display,
+        "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+def _from_placsp_adjudicacion(registro: dict) -> dict:
+    item = registro["original"]
+
+    organismo = item.get("organismo") or NO_PUBLICADO
+    fecha_adjudicacion = _limpiar_fecha(item.get("fecha_adjudicacion"))
+    empresa = item.get("empresa_adjudicataria") or NO_PUBLICADO
+    importe_valor, importe_display = _parsear_presupuesto(item.get("importe_adjudicado"), "EUR")
+
+    titulo = registro["titulo"]
+
+    return {
+        "id": _id_unico("Estado-adj", item.get("expediente", ""), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Estado",
+        "pais_territorio": "España",
+        "fecha_publicacion": fecha_adjudicacion,
+        "fecha_limite": NO_PUBLICADO,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("enlace") or NO_PUBLICADO,
+        "enlace_directo": True,
+        "codigo_expediente": item.get("expediente"),
+        "resumen": titulo,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "adjudicacion",
+        "empresa_adjudicataria": empresa,
+        "fecha_adjudicacion": fecha_adjudicacion,
+        "fecha_fin_estimada": NO_PUBLICADO,
+        "importe_adjudicado_valor": importe_valor,
+        "importe_adjudicado_display": importe_display,
+        "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+def _from_euskadi_adjudicacion(registro: dict) -> dict:
+    item = registro["original"]
+
+    organismo = item.get("organismo_resuelto") or NO_PUBLICADO
+    fecha_adjudicacion = _limpiar_fecha(item.get("awardDate"))
+    fecha_fin_estimada = _limpiar_fecha(item.get("contractEndDate"))
+    empresa = item.get("socialReason") or NO_PUBLICADO
+    importe_valor, importe_display = _parsear_presupuesto(item.get("awardAmount"))
+
+    titulo = registro["titulo"]
+
+    return {
+        "id": _id_unico("Euskadi-adj", str(item.get("id", "")), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Euskadi",
+        "pais_territorio": "País Vasco",
+        "fecha_publicacion": fecha_adjudicacion,
+        "fecha_limite": NO_PUBLICADO,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("mainEntityOfPage") or NO_PUBLICADO,
+        "enlace_directo": bool(item.get("mainEntityOfPage")),
+        "codigo_expediente": str(item.get("id") or "") or None,
+        "resumen": titulo,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "adjudicacion",
+        "empresa_adjudicataria": empresa,
+        "fecha_adjudicacion": fecha_adjudicacion,
+        "fecha_fin_estimada": fecha_fin_estimada,
+        "importe_adjudicado_valor": importe_valor,
+        "importe_adjudicado_display": importe_display,
+        "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Contratos menores por vencer (Fase 2). Igual que una adjudicación
+# (empresa_adjudicataria, fecha_adjudicacion) más fecha_fin_estimada -la
+# razón de ser de esta categoría-. El filtro de ventana ("vence en los
+# próximos config.DIAS_AVISO_CONTRATO_MENOR días") se aplica en main(), no
+# aquí, igual que _dentro_de_ventana_temporal para las licitaciones.
+# ---------------------------------------------------------------------------
+
+# Aproximación documentada: PLACSP da una duración PLANEADA (DAY/MON/ANN),
+# no una fecha fin. MON y ANN se aproximan a 30/365 días — suficiente para
+# decidir "está a punto de vencer", no para precisión de calendario exacta.
+_DIAS_POR_UNIDAD = {"DAY": 1, "MON": 30, "ANN": 365}
+
+
+def _fecha_fin_estimada_placsp(fecha_adjudicacion_iso: str, duracion_valor, duracion_unidad) -> str:
+    fecha = _parsear_fecha_iso(fecha_adjudicacion_iso)
+    if fecha is None or not duracion_valor or duracion_unidad not in _DIAS_POR_UNIDAD:
+        return NO_PUBLICADO
+    try:
+        dias = int(float(duracion_valor)) * _DIAS_POR_UNIDAD[duracion_unidad]
+    except (TypeError, ValueError):
+        return NO_PUBLICADO
+    return (fecha + timedelta(days=dias)).isoformat()
+
+
+def _from_placsp_contrato_menor(registro: dict) -> dict:
+    item = registro["original"]
+
+    organismo = item.get("organismo") or NO_PUBLICADO
+    fecha_adjudicacion = _limpiar_fecha(item.get("fecha_adjudicacion"))
+    fecha_fin_estimada = _fecha_fin_estimada_placsp(fecha_adjudicacion, item.get("duracion_valor"), item.get("duracion_unidad"))
+    empresa = item.get("empresa_adjudicataria") or NO_PUBLICADO
+    importe_valor, importe_display = _parsear_presupuesto(item.get("importe_adjudicado"), "EUR")
+
+    titulo = registro["titulo"]
+
+    return {
+        "id": _id_unico("Estado-menor", item.get("expediente", ""), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Estado",
+        "pais_territorio": "España",
+        "fecha_publicacion": fecha_adjudicacion,
+        "fecha_limite": NO_PUBLICADO,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("enlace") or NO_PUBLICADO,
+        "enlace_directo": True,
+        "codigo_expediente": item.get("expediente"),
+        "resumen": titulo,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "contrato_menor_venciendo",
+        "empresa_adjudicataria": empresa,
+        "fecha_adjudicacion": fecha_adjudicacion,
+        "fecha_fin_estimada": fecha_fin_estimada,
+        "importe_adjudicado_valor": importe_valor,
+        "importe_adjudicado_display": importe_display,
+        "_clave_dedup": "",
+    }
+
+
+def _from_euskadi_contrato_menor(registro: dict) -> dict:
+    item = registro["original"]
+
+    organismo = item.get("organismo_resuelto") or NO_PUBLICADO
+    fecha_adjudicacion = _limpiar_fecha(item.get("awardDate"))
+    fecha_fin_estimada = _limpiar_fecha(item.get("contractEndDate"))
+    empresa = item.get("socialReason") or NO_PUBLICADO
+    importe_valor, importe_display = _parsear_presupuesto(item.get("awardAmount"))
+
+    titulo = registro["titulo"]
+
+    return {
+        "id": _id_unico("Euskadi-menor", str(item.get("id", "")), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Euskadi",
+        "pais_territorio": "País Vasco",
+        "fecha_publicacion": fecha_adjudicacion,
+        "fecha_limite": NO_PUBLICADO,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": registro["cpv"],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("mainEntityOfPage") or NO_PUBLICADO,
+        "enlace_directo": bool(item.get("mainEntityOfPage")),
+        "codigo_expediente": str(item.get("id") or "") or None,
+        "resumen": titulo,
+        "tipo_contrato": _tipo_contrato(registro["cpv"]),
+        "tipo_registro": "contrato_menor_venciendo",
+        "empresa_adjudicataria": empresa,
+        "fecha_adjudicacion": fecha_adjudicacion,
+        "fecha_fin_estimada": fecha_fin_estimada,
+        "importe_adjudicado_valor": importe_valor,
+        "importe_adjudicado_display": importe_display,
+        "_clave_dedup": "",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Calls for proposals UE (Fase 3). Semántica de fecha como una licitación
+# (fecha_limite = fecha límite de solicitud de la convocatoria, con
+# urgencia/countdown igual que las licitaciones abiertas) -por eso
+# reutiliza _dentro_de_ventana_temporal tal cual, sin función de ventana
+# propia-. No hay presupuesto por convocatoria fiable de forma sencilla
+# (budgetOverview es una estructura anidada por año/acción/lote, no un
+# número único) así que se deja "no publicado" en vez de inventar una
+# cifra aproximada.
+# ---------------------------------------------------------------------------
+
+# El EU Funding & Tenders Portal, a diferencia de TED, NO publica el texto
+# de sus convocatorias en español -se comprobó pidiéndolo explícitamente
+# con language=es a la API SEDIA: el título y la descripción vuelven en
+# inglés igualmente, el campo "language" es metadato de indexación, no una
+# traducción real-. Se traduce con MyMemory (gratuito, sin API key) solo
+# para las convocatorias que YA pasaron el filtro de taxonomía (aquí, no
+# en el scraper): son decenas, no las ~560 totales, así que no hace falta
+# ni conviene traducir todo lo que se descarta.
+#
+# MyMemory resultó nada fiable en la práctica: TooManyRequests ya a los
+# pocos segundos de uso seguido, de forma persistente (no un pico
+# puntual -se reintentó minutos después y seguía igual-, probablemente por
+# ser una IP/red compartida). TRADUCCIONES_MANUALES es un caché de
+# traducciones ya hechas a mano (título + resumen) para no depender de
+# ese servicio en cada ejecución; se consulta primero, y solo si el texto
+# no está ahí se intenta la API como último recurso. Si tampoco funciona,
+# se avisa por stderr en vez de mostrar inglés sin decir nada.
+_RUTA_TRADUCCIONES_MANUALES = Path(__file__).resolve().parent / "data" / "traducciones_manuales.json"
+_TRADUCCIONES_MANUALES: dict[str, str] = (
+    json.loads(_RUTA_TRADUCCIONES_MANUALES.read_text(encoding="utf-8"))
+    if _RUTA_TRADUCCIONES_MANUALES.exists() else {}
+)
+_CACHE_TRADUCCION: dict[str, str] = {}
+_SIN_TRADUCIR: list[str] = []
+
+
+def _traducir_en_es(texto: str) -> str:
+    """Nunca debe tumbar el pipeline: si no hay traducción manual y MyMemory
+    falla o satura el límite de peticiones, se reintenta con espera y, si
+    sigue sin ir, se deja el texto en inglés -avisando por stderr, no en
+    silencio- en vez de romper la generación de todo el dataset."""
+    if not texto:
+        return texto
+    if texto in _TRADUCCIONES_MANUALES:
+        return _TRADUCCIONES_MANUALES[texto]
+    if texto in _CACHE_TRADUCCION:
+        return _CACHE_TRADUCCION[texto]
+    traducido = None
+    for intento in range(3):
+        try:
+            traducido = MyMemoryTranslator(source="en-GB", target="es-ES").translate(texto[:490])
+            break
+        except Exception:
+            if intento < 2:
+                time.sleep(3 * (intento + 1))
+    if traducido is None:
+        _SIN_TRADUCIR.append(texto[:80])
+    resultado = traducido or texto
+    _CACHE_TRADUCCION[texto] = resultado
+    time.sleep(0.5)  # ritmo prudente: es un servicio gratuito compartido, no una API propia
+    return resultado
+
+
+def _from_eu_grant(registro: dict) -> dict:
+    item = registro["original"]
+
+    titulo = _traducir_en_es(registro["titulo"]) or "(sin título)"
+    fecha_publicacion = _limpiar_fecha(item.get("startDate"))
+    fecha_limite = _limpiar_fecha(item.get("deadlineDate"))
+    enlace = item.get("url_detalle") or item.get("url") or NO_PUBLICADO
+    identifier = item.get("identifier")
+
+    return {
+        "id": _id_unico("UEsub", identifier or item.get("reference", ""), titulo),
+        "titulo": titulo,
+        "organismo": "Comisión Europea",
+        "fuente": "UE-subvenciones",
+        "pais_territorio": "UE",
+        "fecha_publicacion": fecha_publicacion,
+        "fecha_limite": fecha_limite,
+        "presupuesto_valor": None,
+        "presupuesto_display": NO_PUBLICADO,
+        "cpv": [],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": enlace,
+        "enlace_directo": True,
+        "codigo_expediente": identifier,
+        "resumen": _traducir_en_es((item.get("descripcion") or "")[:450]) or titulo,
+        "tipo_contrato": NO_PUBLICADO,
+        "tipo_registro": "convocatoria_ue",
+        "programa": item.get("typesOfAction") or item.get("frameworkProgramme") or NO_PUBLICADO,
+        "_clave_dedup": "",
+    }
+
+
+CONVERSORES = {
+    ("UE", "licitacion"): _from_ted,
+    ("Estado", "licitacion"): _from_placsp,
+    ("Euskadi", "licitacion"): _from_euskadi,
+    ("UE", "adjudicacion"): _from_ted_adjudicacion,
+    ("Estado", "adjudicacion"): _from_placsp_adjudicacion,
+    ("Euskadi", "adjudicacion"): _from_euskadi_adjudicacion,
+    ("Estado", "contrato_menor_venciendo"): _from_placsp_contrato_menor,
+    ("Euskadi", "contrato_menor_venciendo"): _from_euskadi_contrato_menor,
+    ("UE-subvenciones", "convocatoria_ue"): _from_eu_grant,
+}
+
+
+def main() -> None:
+    if not CLASIFICADO.exists():
+        print("[normalizar] No existe data/clasificado.json. Ejecuta antes clasificar.py.", file=sys.stderr)
+        sys.exit(1)
+
+    registros = json.loads(CLASIFICADO.read_text(encoding="utf-8"))
+
+    normalizados = []
+    for registro in registros:
+        tipo_registro = registro.get("tipo_registro", "licitacion")
+        conversor = CONVERSORES.get((registro["fuente"], tipo_registro))
+        if conversor is None:
+            continue
+        normalizados.append(conversor(registro))
+
+    _FILTROS_VENTANA = {
+        "licitacion": _dentro_de_ventana_temporal,
+        "adjudicacion": _adjudicacion_reciente,
+        "contrato_menor_venciendo": _contrato_menor_por_vencer,
+        "convocatoria_ue": _dentro_de_ventana_temporal,
+    }
+    antes_ventana = len(normalizados)
+    normalizados = [r for r in normalizados if _FILTROS_VENTANA[r["tipo_registro"]](r)]
+    fuera_de_ventana = antes_ventana - len(normalizados)
+
+    # Deduplicación conservadora: mismo título+organismo normalizados,
+    # prioridad TED > Estado > Euskadi (en ese orden, si coinciden entre sí).
+    prioridad = {"UE": 0, "Estado": 1, "Euskadi": 2}
+    normalizados.sort(key=lambda r: prioridad.get(r["fuente"], 9))
+
+    vistos = {}
+    finales = []
+    duplicados = 0
+    for r in normalizados:
+        clave = r["_clave_dedup"]
+        if clave and clave in vistos:
+            duplicados += 1
+            continue
+        vistos[clave] = True
+        del r["_clave_dedup"]
+        finales.append(r)
+
+    # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
+    # del bloque sin plazo (todos los contratos menores, y alguna
+    # licitación abierta sin fecha publicada), el más reciente primero.
+    # Se hace en dos pasadas aprovechando que sort() en Python es estable:
+    # la pasada de "más reciente primero" fija el orden base, y la pasada
+    # de fecha límite solo reordena entre sí a los que SÍ tienen plazo,
+    # dejando intacto el orden relativo de los que no lo tienen.
+    finales.sort(key=lambda r: r["fecha_publicacion"], reverse=True)
+    finales.sort(key=lambda r: (r["fecha_limite"] == NO_PUBLICADO, r["fecha_limite"]))
+
+    SALIDA.parent.mkdir(parents=True, exist_ok=True)
+    SALIDA.write_text(json.dumps(finales, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # El dashboard se abre con doble clic vía file://, y bajo ese esquema
+    # fetch() de un .json es bloqueado por CORS en Chrome/Edge. Por eso los
+    # mismos datos se vuelcan también como script JS con los datos inline,
+    # que index.html carga con <script src="tenders-data.js"> y sí funciona
+    # sin servidor en cualquier navegador.
+    SALIDA_DASHBOARD.parent.mkdir(parents=True, exist_ok=True)
+    contenido_js = "window.TENDERS_DATA = " + json.dumps(finales, ensure_ascii=False, indent=2) + ";\n"
+    SALIDA_DASHBOARD.write_text(contenido_js, encoding="utf-8")
+
+    n_revisar = sum(1 for r in finales if r["revisar_manual"])
+    conteo_tipos = {}
+    for r in finales:
+        conteo_tipos[r["tipo_registro"]] = conteo_tipos.get(r["tipo_registro"], 0) + 1
+    print(f"[normalizar] {fuera_de_ventana} descartadas por estar fuera de ventana (ni publicadas en los últimos {config.DIAS_ANTIGUEDAD_MAXIMA} días ni con plazo confirmado abierto)")
+    print(f"[normalizar] {len(finales)} registros unificados ({duplicados} duplicados eliminados, {n_revisar} para revisar manualmente) — {conteo_tipos}")
+    print(f"[normalizar] -> {SALIDA}")
+    print(f"[normalizar] -> {SALIDA_DASHBOARD} (el dashboard lee este archivo, no el .json)")
+    if _SIN_TRADUCIR:
+        print(
+            f"[normalizar] AVISO: {len(_SIN_TRADUCIR)} textos de 'calls for proposals' se quedaron en "
+            f"inglés (sin traducción manual en data/traducciones_manuales.json y MyMemory no respondió): "
+            + "; ".join(_SIN_TRADUCIR[:5]) + ("..." if len(_SIN_TRADUCIR) > 5 else ""),
+            file=sys.stderr,
+        )
+
+
+if __name__ == "__main__":
+    main()
