@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar de licitaciones — Marketing digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="cabecera">
+  <div class="cabecera__titulo">
+    <h1>Radar de licitaciones públicas</h1>
+    <p>Servicios de agencia de marketing digital y publicidad · UE · Estado · Euskadi</p>
+  </div>
+  <div class="cabecera__resumen" id="resumen-cabecera"></div>
+</header>
+
+<main>
+  <div class="segmented segmented--tipo" id="segmented-tipo" role="radiogroup" aria-label="Tipo de dato"></div>
+  <p class="explicacion-tipo" id="explicacion-tipo"></p>
+
+  <section class="barra-filtros" aria-label="Filtros">
+    <div class="barra-filtros__principal">
+      <div class="campo-busqueda">
+        <svg class="icono-busqueda" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="filtro-texto" placeholder="Buscar por título u organismo…" aria-label="Buscar">
+      </div>
+
+      <div class="segmented" id="segmented-fuente" role="radiogroup" aria-label="Fuente"></div>
+
+      <select id="filtro-categoria" aria-label="Categoría de servicio">
+        <option value="">Todas las categorías</option>
+      </select>
+
+      <select id="filtro-pais" aria-label="País / territorio">
+        <option value="">Todos los países</option>
+      </select>
+    </div>
+
+    <details class="filtros-avanzados">
+      <summary>Más filtros</summary>
+      <div class="filtros-avanzados__contenido">
+        <label id="campo-presupuesto-min">
+          Presupuesto mínimo
+          <select id="filtro-presupuesto-min">
+            <option value="0">Sin mínimo</option>
+            <option value="15000">15.000 €</option>
+            <option value="40000">40.000 €</option>
+            <option value="100000">100.000 €</option>
+            <option value="500000">500.000 €</option>
+          </select>
+        </label>
+        <label id="campo-presupuesto-max">
+          Presupuesto máximo
+          <select id="filtro-presupuesto-max">
+            <option value="">Sin máximo</option>
+            <option value="15000">15.000 €</option>
+            <option value="40000">40.000 €</option>
+            <option value="100000">100.000 €</option>
+            <option value="500000">500.000 €</option>
+          </select>
+        </label>
+        <label>
+          Ordenar por
+          <select id="filtro-orden">
+            <option value="plazo">Fecha límite (ascendente)</option>
+            <option value="presupuesto-desc">Presupuesto (mayor primero)</option>
+            <option value="publicacion-desc">Publicación (más reciente)</option>
+          </select>
+        </label>
+        <button id="boton-reset" type="button">Limpiar filtros</button>
+      </div>
+    </details>
+  </section>
+
+  <div class="barra-estado">
+    <p class="conteo" id="conteo-resultados"></p>
+    <div class="barra-estado__acciones">
+      <button class="enlace-revisar" id="boton-revisar" type="button" hidden></button>
+    </div>
+  </div>
+
+  <section id="contenedor-tarjetas" class="lista-tarjetas"></section>
+
+  <p class="sin-resultados" id="sin-resultados" hidden>No hay licitaciones que coincidan con los filtros seleccionados.</p>
+</main>
+
+<footer class="pie">
+  <p>Datos generados por <code>normalizar.py</code> a partir de TED, PLACSP y el portal de contratación de Euskadi. Ver <code>README.md</code> para actualizar.</p>
+  <p id="fecha-generacion"></p>
+</footer>
+
+<script src="tenders-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

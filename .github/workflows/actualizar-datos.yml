@@ -1,0 +1,79 @@
+name: Actualizar datos del radar
+
+# Corre a diario sin depender de ningún ordenador encendido (ver README,
+# sección "Automatización"). El horario evita en punto/y media a propósito
+# (buena práctica para no coincidir con la avalancha de jobs que arrancan
+# justo a esas horas en todo GitHub).
+on:
+  schedule:
+    - cron: "13 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      # Cada scraper guarda su propio _error.json y no debe tumbar a los
+      # demás (ver README, "Si una fuente cambia de formato") — por eso
+      # continue-on-error aquí: si una fuente falla, clasificar.py sigue
+      # con las que sí trajeron datos.
+      - name: Scraper TED
+        run: python scrapers/ted.py
+        continue-on-error: true
+
+      - name: Scraper PLACSP
+        run: python scrapers/placsp.py
+        continue-on-error: true
+
+      - name: Scraper Euskadi
+        run: python scrapers/euskadi.py
+        continue-on-error: true
+
+      - name: Scraper calls for proposals UE
+        run: python scrapers/eu_grants.py
+        continue-on-error: true
+
+      - name: Clasificar
+        run: python clasificar.py
+
+      - name: Normalizar
+        run: python normalizar.py
+
+      # Si varias fuentes fallan a la vez (p. ej. un corte de red puntual
+      # en el runner), el dataset resultante puede quedar sospechosamente
+      # vacío. Mejor no publicar nada ese día -y que el job aparezca en
+      # rojo para que se note- que pisar los datos buenos de ayer con un
+      # resultado casi vacío.
+      - name: Comprobación de cordura antes de publicar
+        run: |
+          python -c "
+          import json, sys
+          data = json.load(open('data/tenders.json', encoding='utf-8'))
+          if len(data) < 100:
+              print(f'Solo {len(data)} registros, sospechosamente pocos. No se publica.', file=sys.stderr)
+              sys.exit(1)
+          print(f'{len(data)} registros, OK para publicar.')
+          "
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/tenders.json dashboard/tenders-data.js
+          git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
+          git push

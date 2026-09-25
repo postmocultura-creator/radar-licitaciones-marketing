@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+
+# Crudo de los scrapers: se regenera en cada ejecución (local o en CI), no
+# tiene sentido versionarlo (367 MB acumulados localmente a día de hoy).
+data/raw/
+
+# Artefacto intermedio de clasificar.py, se regenera en cada ejecución.
+data/clasificado.json
+
+# Ficheros de depuración sueltos (ver auditoría en README: ya se borró uno).
+data/_tmp_*
