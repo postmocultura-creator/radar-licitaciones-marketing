@@ -11,3 +11,6 @@ data/clasificado.json
 
 # Ficheros de depuración sueltos (ver auditoría en README: ya se borró uno).
 data/_tmp_*
+
+.vercel
+.env*
