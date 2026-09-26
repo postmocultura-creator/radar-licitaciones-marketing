@@ -12,6 +12,14 @@ on:
 permissions:
   contents: write
 
+# Evita que dos ejecuciones de este workflow corran a la vez (p. ej. un
+# lanzamiento manual justo cuando toca el cron) y se pisen entre sí al hacer
+# push casi al mismo tiempo. En cola, no cancelado, porque cada ejecución
+# hace su propio scraping — no tiene sentido tirar el trabajo de una a medias.
+concurrency:
+  group: actualizar-datos
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
@@ -70,10 +78,22 @@ jobs:
           print(f'{len(data)} registros, OK para publicar.')
           "
 
+      # El scraping tarda 15-30 minutos; en ese rato puede haber caído un
+      # commit nuevo en main (código, o un push manual) que deja a este job
+      # por detrás del remoto -pasó de verdad en la primera prueba real, un
+      # push mío mientras corría el workflow hizo que "git push" fallara con
+      # "fetch first"-. Se resuelve con fetch + reset --soft justo antes de
+      # comitear: el commit de este job siempre se basa en el main más
+      # reciente, y como estos dos ficheros son datos regenerados por
+      # completo en cada ejecución (no código con lógica que fusionar), no
+      # hay nada que conservar del estado anterior — "el más nuevo gana" es
+      # exactamente la semántica correcta aquí.
       - name: Publicar cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git reset --soft origin/main
           git add data/tenders.json dashboard/tenders-data.js
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
-          git push
+          git push origin HEAD:main
