@@ -1,0 +1,4 @@
+data/raw/
+data/clasificado.json
+scrapers/
+*.py
