@@ -618,87 +618,6 @@
     "tipo_registro": "licitacion"
   },
   {
-    "id": "33eb546f04b06bd9",
-    "titulo": "Francia – Servicios de consultoría en publicidad – Prestation de communication et de relations presse",
-    "organismo": "SAEML Cyclea",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "fecha_publicacion": "2026-08-26",
-    "fecha_limite": "2026-09-28",
-    "presupuesto_valor": 340000.0,
-    "presupuesto_display": "340,000 EUR",
-    "cpv": [
-      "79341100",
-      "79341000",
-      "79341400",
-      "79341200",
-      "79341100",
-      "79341000",
-      "79341400",
-      "79341200"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/587169-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de consultoría en publicidad – Prestation de communication et de relations presse",
-    "tipo_contrato": "Servicios de consultoría en publicidad",
-    "tipo_registro": "licitacion"
-  },
-  {
-    "id": "f6617073906d5145",
-    "titulo": "Francia – Servicios de cine y vídeo – 26V0571 CAPTATION, ENCODAGE ET DIFFUSION D' EMISSIONS MUNICIPALES",
-    "organismo": "VILLE DE NICE",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "fecha_publicacion": "2026-08-26",
-    "fecha_limite": "2026-09-28",
-    "presupuesto_valor": 61594.0,
-    "presupuesto_display": "61,594 EUR",
-    "cpv": [
-      "92100000",
-      "92100000"
-    ],
-    "categorias": [
-      "Producción de vídeo / contenido audiovisual"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/588132-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de cine y vídeo – 26V0571 CAPTATION, ENCODAGE ET DIFFUSION D' EMISSIONS MUNICIPALES",
-    "tipo_contrato": "Servicios de cine y vídeo",
-    "tipo_registro": "licitacion"
-  },
-  {
-    "id": "dc207baf7e7e46cf",
-    "titulo": "Francia – Servicios de Internet – Prestations de référencement naturel (SEO), d'optimisation pour les moteurs génératifs (GEO) et de netlinking",
-    "organismo": "MALAKOFF HUMANIS AGIRC ARRCO",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "fecha_publicacion": "2026-08-26",
-    "fecha_limite": "2026-09-28",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "72400000",
-      "72400000"
-    ],
-    "categorias": [
-      "SEO / posicionamiento en buscadores"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/589793-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de Internet – Prestations de référencement naturel (SEO), d'optimisation pour les moteurs génératifs (GEO) et de netlinking",
-    "tipo_contrato": "Servicios de Internet",
-    "tipo_registro": "licitacion"
-  },
-  {
     "id": "ea16719af974e0c0",
     "titulo": "Comunicación, cobertura audiovisual, generación de contenidos y difusión de gastromar de Los Alcázares 2026.",
     "organismo": "Junta de Gobierno del Ayuntamiento de Los Alcázares",
@@ -850,33 +769,6 @@
     "codigo_expediente": null,
     "resumen": "Suecia – Servicios de diseño gráfico – Grafisk produktion",
     "tipo_contrato": "Servicios de diseño gráfico",
-    "tipo_registro": "licitacion"
-  },
-  {
-    "id": "b3872295d818112d",
-    "titulo": "Alemania – Servicios de publicidad y de marketing – Kommunikationsleistungen des digitalen MV",
-    "organismo": "Landesamt für innere Verwaltung M-V, Abteilung Beschaffung/Dienstleistungen",
-    "fuente": "UE",
-    "pais_territorio": "Alemania",
-    "fecha_publicacion": "2026-08-26",
-    "fecha_limite": "2026-09-29",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79340000",
-      "79956000",
-      "79340000",
-      "79956000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/588175-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Alemania – Servicios de publicidad y de marketing – Kommunikationsleistungen des digitalen MV",
-    "tipo_contrato": "Servicios de publicidad y de marketing",
     "tipo_registro": "licitacion"
   },
   {
@@ -5969,6 +5861,28 @@
     "tipo_registro": "licitacion"
   },
   {
+    "id": "3984d08c74a64060",
+    "titulo": "La contratación de servicios profesionales para la planificación estratégica y compra de espacios publicitarios en medios para anuncios y campañas de comunicación.",
+    "organismo": "Gobierno Vasco",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-09-24",
+    "fecha_limite": "2026-10-23",
+    "presupuesto_valor": 2925908.0,
+    "presupuesto_display": "2,925,908 EUR",
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es",
+    "enlace_directo": false,
+    "codigo_expediente": "C02/014/2026",
+    "resumen": "Expediente C02/014/2026 · Abierto · Estado: Abierto / Plazo de presentación",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "licitacion"
+  },
+  {
     "id": "8a852ce80f4fee33",
     "titulo": "Francia – Servicios de consultoría en publicidad – MARCHE D'ACCOMPAGNEMENT A LA PROMOTION DES ENERGIES RENOUVELABLES AU SEIN DU TERRITOIRE DE LA CCSUD",
     "organismo": "Communauté de Communes du Sud (976)",
@@ -7209,98 +7123,6 @@
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43108390"
-  },
-  {
-    "id": "9920e4ae13853bd8",
-    "titulo": "Refuerzo de las capacidades de ciberseguridad de la UE conforme a los requisitos legislativos",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-01",
-    "fecha_limite": "2027-01-14",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-    "resumen": "Resultado esperado: debe cubrirse uno o varios de los siguientes puntos: aplicación de directrices, procesos normalizados o manuales -en la UE o en varios Estados miembros- sobre las cuestiones más complejas, apoyando a sectores y partes interesadas concretos afectados por la legislación de ciberseguridad. Desarrollar e implantar herramientas, sensibilizar y fomentar y facilitar la adopción por parte de la industria, con especial atención a las pymes, de las evaluaciones de conformidad de los requisitos esenciales de ciberseg[uridad]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL JU Simple Grants"
-  },
-  {
-    "id": "9ecf2c679edce248",
-    "titulo": "Refuerzo de la Red de Centros Nacionales de Coordinación (NCC)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-01",
-    "fecha_limite": "2027-01-14",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Redes sociales / community management"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-    "resumen": "Resultado esperado: en función de la decisión de cada Centro Nacional de Coordinación (NCC), debe cubrirse uno o varios de los siguientes puntos: red de iniciativas nacionales para acelerar la industria de ciberseguridad y facilitar el acceso al mercado; marcos europeos para crear incubadoras y aceleradoras de ciberseguridad; un observatorio de la comunidad de ciberseguridad que informe futuras intervenciones políticas del ECCC y los NCC; eventos de contacto empresarial para crear vínculos y generar confianza; [apoyo]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL JU Simple Grants"
-  },
-  {
-    "id": "9920e4ae13853bd8",
-    "titulo": "Refuerzo de las capacidades de ciberseguridad de la UE conforme a los requisitos legislativos",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-01",
-    "fecha_limite": "2027-01-14",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-    "resumen": "Resultado esperado: debe cubrirse uno o varios de los siguientes puntos: aplicación de directrices, procesos normalizados o manuales -en la UE o en varios Estados miembros- sobre las cuestiones más complejas, apoyando a sectores y partes interesadas concretos afectados por la legislación de ciberseguridad. Desarrollar e implantar herramientas, sensibilizar y fomentar y facilitar la adopción por parte de la industria, con especial atención a las pymes, de las evaluaciones de conformidad de los requisitos esenciales de ciberseg[uridad]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL JU Simple Grants"
-  },
-  {
-    "id": "9ecf2c679edce248",
-    "titulo": "Refuerzo de la Red de Centros Nacionales de Coordinación (NCC)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-01",
-    "fecha_limite": "2027-01-14",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Redes sociales / community management"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-    "resumen": "Resultado esperado: en función de la decisión de cada Centro Nacional de Coordinación (NCC), debe cubrirse uno o varios de los siguientes puntos: red de iniciativas nacionales para acelerar la industria de ciberseguridad y facilitar el acceso al mercado; marcos europeos para crear incubadoras y aceleradoras de ciberseguridad; un observatorio de la comunidad de ciberseguridad que informe futuras intervenciones políticas del ECCC y los NCC; eventos de contacto empresarial para crear vínculos y generar confianza; [apoyo]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL JU Simple Grants"
   },
   {
     "id": "e7c93e2543e5d0bb",
@@ -8913,6 +8735,35 @@
     "fecha_fin_estimada": "no publicado",
     "importe_adjudicado_valor": 6270000.0,
     "importe_adjudicado_display": "6,270,000 EUR"
+  },
+  {
+    "id": "9e5fbe81132e27f1",
+    "titulo": "Servicio de asesoramiento y comunicación audiovisual para la consejera de Bienestar, Juventud y Reto Demográfico.",
+    "organismo": "Gobierno Vasco",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-09-24",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79416200-5"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso743737/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "M-071-2026-GC26769_00001",
+    "resumen": "Servicio de asesoramiento y comunicación audiovisual para la consejera de Bienestar, Juventud y Reto Demográfico.",
+    "tipo_contrato": "Servicios de consultoría en relaciones públicas",
+    "tipo_registro": "adjudicacion",
+    "empresa_adjudicataria": "AGUIRRE SANSINENEA, MIREN OLATZ",
+    "fecha_adjudicacion": "2026-09-24",
+    "fecha_fin_estimada": "2026-09-24",
+    "importe_adjudicado_valor": 10164.0,
+    "importe_adjudicado_display": "10,164 EUR"
   },
   {
     "id": "b6a896ee7faf29ea",
