@@ -28,15 +28,15 @@
 
   var EXPLICACION_TIPO = {
     recientes:
-      "Licitaciones y calls for proposals publicadas en el último día o dos (según la fecha que da cada fuente, sin hora exacta). Pensada para revisar a diario y no perder de vista lo que acaba de aparecer — en la lista general, algo recién publicado con plazo lejano puede quedar enterrado bajo cosas con plazo más urgente pero publicadas hace semanas.",
+      "Licitaciones y calls for proposals publicados en el último día o dos, según la fecha de publicación que da cada fuente (sin hora exacta).",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la taxonomía. Sirve para ver qué agencias/consultoras están ganando qué tipo de trabajo.",
+      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Permite ver qué empresas y consultoras se están llevando cada tipo de contrato.",
     contrato_menor_venciendo:
-      "Contratos adjudicados a dedo, sin concurso (así es por definición legal un contrato menor), del Estado y Euskadi, que vencen en los próximos 90 días. Al no salir nunca a concurso, la única forma de detectar la oportunidad es ver quién lo tiene ahora y cuándo caduca, para visitar al organismo antes de que lo renueve directamente.",
+      "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:
-      "Subvenciones de la Comisión Europea (Horizon Europe, Digital Europe...) abiertas o próximas a abrir — no son compras públicas. No es para que la agencia se presente como beneficiaria: son convocatorias cuyo proyecto financiado previsiblemente va a necesitar contratar comunicación/difusión, para ofrecerse como proveedora a quien gane la subvención. Título y resumen traducidos automáticamente del inglés (la fuente no los publica en español).",
+      "Convocatorias de subvención de la Comisión Europea (Horizon Europe, Digital Europe...) abiertas o próximas a abrir, filtradas por las que incluyen un componente de comunicación o difusión en su descripción. Título y resumen traducidos automáticamente del inglés (la fuente no los publica en español).",
   };
 
   var estado = {
