@@ -14,6 +14,21 @@
   --color-warning-bg: #FFFBEB;
   --color-success: #15803D;
   --color-success-bg: #F0FDF4;
+
+  /* Identidad por pestaña (solo cabecera de pestaña/banner — nunca dentro de
+     las tarjetas, para no interferir con el código rojo/ámbar/verde/gris de
+     urgencia, que es señal funcional y debe seguir significando lo mismo en
+     las 5 pestañas). "Licitaciones abiertas" no tiene variable propia: usa
+     --color-primary tal cual, porque es la pestaña por defecto. */
+  --color-tab-recientes: #0D9488;
+  --color-tab-recientes-bg: #F0FDFA;
+  --color-tab-adjudicaciones: #7C3AED;
+  --color-tab-adjudicaciones-bg: #F5F3FF;
+  --color-tab-menores: #BE185D;
+  --color-tab-menores-bg: #FDF2F8;
+  --color-tab-calls: #4F46E5;
+  --color-tab-calls-bg: #EEF2FF;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-full: 999px;
@@ -189,6 +204,28 @@ main {
   padding: 0 1rem;
 }
 
+/* Identidad de acento por pestaña: solo aquí (control activo + banner de
+   explicación), nunca dentro de las tarjetas — el rojo/ámbar/verde/gris de
+   urgencia es señal funcional y debe significar lo mismo en las 5 pestañas.
+   "Licitaciones abiertas" no tiene regla propia: usa el azul primario de
+   siempre, por ser la pestaña por defecto. */
+.segmented--tipo .segmented__opcion[data-valor="recientes"][aria-pressed="true"] {
+  background: var(--color-tab-recientes-bg);
+  color: var(--color-tab-recientes);
+}
+.segmented--tipo .segmented__opcion[data-valor="adjudicacion"][aria-pressed="true"] {
+  background: var(--color-tab-adjudicaciones-bg);
+  color: var(--color-tab-adjudicaciones);
+}
+.segmented--tipo .segmented__opcion[data-valor="contrato_menor_venciendo"][aria-pressed="true"] {
+  background: var(--color-tab-menores-bg);
+  color: var(--color-tab-menores);
+}
+.segmented--tipo .segmented__opcion[data-valor="convocatoria_ue"][aria-pressed="true"] {
+  background: var(--color-tab-calls-bg);
+  color: var(--color-tab-calls);
+}
+
 .explicacion-tipo {
   margin: 0 0 .85rem;
   padding: .6rem .85rem;
@@ -198,6 +235,11 @@ main {
   font-size: .82rem;
   line-height: 1.5;
 }
+
+.explicacion-tipo[data-tipo="recientes"] { background: var(--color-tab-recientes-bg); color: var(--color-tab-recientes); }
+.explicacion-tipo[data-tipo="adjudicacion"] { background: var(--color-tab-adjudicaciones-bg); color: var(--color-tab-adjudicaciones); }
+.explicacion-tipo[data-tipo="contrato_menor_venciendo"] { background: var(--color-tab-menores-bg); color: var(--color-tab-menores); }
+.explicacion-tipo[data-tipo="convocatoria_ue"] { background: var(--color-tab-calls-bg); color: var(--color-tab-calls); }
 
 /* Selects de categoría y país */
 
@@ -357,7 +399,19 @@ main {
 .tarjeta.urgencia-verde { border-left-color: var(--color-success); }
 .tarjeta.urgencia-sin-fecha { border-left-color: var(--color-border); }
 
+/* Adjudicaciones no tiene plazo, así que su borde siempre era gris neutro
+   -"sin dato"-, no una señal de urgencia. Al no pisar ningún significado
+   real, es un buen sitio para meter la identidad violeta de la pestaña. */
+.tarjeta.tarjeta--adjudicacion.urgencia-sin-fecha { border-left-color: var(--color-tab-adjudicaciones); }
+
 .tarjeta.revisar-manual { border-left-style: dashed; }
+
+/* "Publicadas recientemente": pocas tarjetas casi siempre, así que se
+   muestran más grandes y ya desplegadas (ver aplicarFiltros() en app.js). */
+.tarjeta--grande .tarjeta__resumen-fila { padding: .9rem 1.1rem; gap: .9rem; }
+.tarjeta--grande .tarjeta__titulo-compacto { font-size: 1.08rem; -webkit-line-clamp: 3; }
+.tarjeta--grande .tarjeta__meta-compacta { font-size: .84rem; }
+.tarjeta--grande .tarjeta__chevron { width: 18px; height: 18px; }
 
 .tarjeta__resumen-fila {
   list-style: none;
