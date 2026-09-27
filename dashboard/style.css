@@ -34,6 +34,15 @@
   --radius-full: 999px;
   --font-ui: "Fira Sans", system-ui, -apple-system, sans-serif;
   --font-data: "Fira Code", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Motion: una sola familia de duración/easing para toda la interfaz, para
+     que ningún micro-detalle (chevron, hover, pestaña) se sienta reinventado
+     por su cuenta. Se quedan tras revertir la paleta/tipografía "editorial" —
+     las microinteracciones sí se mantienen. */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
 }
 
 * { box-sizing: border-box; }
@@ -45,6 +54,14 @@ body {
   font-family: var(--font-ui);
   line-height: 1.45;
   font-size: 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ---------- Cabecera ---------- */
@@ -172,10 +189,14 @@ main {
   border-radius: 5px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background .12s ease, color .12s ease;
+  transition: background var(--motion-base) var(--ease-premium),
+    color var(--motion-base) var(--ease-premium),
+    box-shadow var(--motion-base) var(--ease-premium);
 }
 
 .segmented__opcion:hover { color: var(--color-foreground); }
+
+.segmented__opcion:active { transform: scale(.97); }
 
 .segmented__opcion[aria-pressed="true"] {
   background: var(--color-surface);
@@ -283,7 +304,7 @@ main {
 .filtros-avanzados summary::before {
   content: "▸";
   font-size: .7rem;
-  transition: transform .15s ease;
+  transition: transform var(--motion-base) var(--ease-premium);
 }
 
 .filtros-avanzados[open] summary::before { transform: rotate(90deg); }
@@ -333,9 +354,13 @@ main {
   cursor: pointer;
   font-size: .8rem;
   color: var(--color-muted);
+  transition: border-color var(--motion-fast) var(--ease-premium),
+    color var(--motion-fast) var(--ease-premium),
+    transform var(--motion-fast) var(--ease-premium);
 }
 
 #boton-reset:hover { border-color: var(--color-primary); color: var(--color-primary); }
+#boton-reset:active { transform: scale(.97); }
 
 /* ---------- Barra de estado ---------- */
 
@@ -370,7 +395,13 @@ main {
   cursor: pointer;
 }
 
+.enlace-revisar {
+  transition: filter var(--motion-fast) var(--ease-premium),
+    transform var(--motion-fast) var(--ease-premium);
+}
+
 .enlace-revisar:hover { filter: brightness(0.95); }
+.enlace-revisar:active { transform: scale(.97); }
 
 .enlace-revisar.activo {
   background: var(--color-warning);
@@ -390,6 +421,29 @@ main {
   border: 1px solid var(--color-border);
   border-left: 4px solid var(--color-success);
   border-radius: var(--radius-sm);
+  transition: border-color var(--motion-base) var(--ease-premium);
+}
+
+.tarjeta:hover { border-color: var(--color-muted); }
+
+/* Revelado suave del contenido de <details> — mejora progresiva: en
+   navegadores sin soporte de ::details-content/interpolate-size, la tarjeta
+   se abre igual que hoy (instantáneo), sin ninguna regresión funcional. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (interpolate-size: allow-keywords) {
+    :root { interpolate-size: allow-keywords; }
+
+    .tarjeta::details-content {
+      height: 0;
+      overflow: hidden;
+      transition: height var(--motion-slow) var(--ease-premium),
+        content-visibility var(--motion-slow) allow-discrete;
+    }
+
+    .tarjeta[open]::details-content {
+      height: auto;
+    }
+  }
 }
 
 .tarjeta[open] { border-left-width: 4px; }
@@ -429,6 +483,10 @@ main {
   outline-offset: -2px;
 }
 
+.tarjeta__resumen-fila {
+  transition: background var(--motion-fast) var(--ease-premium);
+}
+
 .tarjeta__resumen-fila:hover { background: var(--color-background); }
 
 .tarjeta__chevron {
@@ -437,7 +495,7 @@ main {
   height: 16px;
   margin-top: .2rem;
   color: var(--color-muted);
-  transition: transform .15s ease;
+  transition: transform var(--motion-base) var(--ease-premium);
 }
 
 .tarjeta[open] .tarjeta__chevron { transform: rotate(90deg); }
@@ -590,13 +648,18 @@ main {
 }
 
 .tarjeta__enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
   font-size: .82rem;
   font-weight: 600;
   color: var(--color-primary);
   text-decoration: none;
 }
 
+.tarjeta__enlace svg { transition: transform var(--motion-base) var(--ease-premium); }
 .tarjeta__enlace:hover { text-decoration: underline; }
+.tarjeta__enlace:hover svg { transform: translateX(2px); }
 
 .tarjeta__aviso-codigo {
   font-size: .78rem;
