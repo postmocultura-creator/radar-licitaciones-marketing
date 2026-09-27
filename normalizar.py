@@ -123,10 +123,22 @@ def _normalizar_clave(texto: str) -> str:
 
 def _limpiar_fecha(valor: str | None) -> str:
     """TED/PLACSP devuelven fechas tipo '2026-08-03+02:00'. Nos quedamos con
-    la parte YYYY-MM-DD."""
+    la parte YYYY-MM-DD.
+
+    Bug real detectado en auditoría: algunos campos de fecha de TED (p. ej.
+    deadline-date-lot, deadline-receipt-tender-date-lot) vienen como
+    '2026-09-30Z' -sin 'T' ni '+', solo la 'Z' de UTC pegada directamente a
+    la fecha- y no los cazaba ninguno de los dos split() de abajo. Con la
+    'Z' colgando, el dashboard no podía parsear la fecha (el guion de
+    "22Z" no es un día válido) y mostraba "sin fecha límite" en vez de
+    calcular los días reales. Verificado contra datos reales: 68 casos en
+    un solo crudo de TED."""
     if not valor:
         return NO_PUBLICADO
-    return valor.split("+")[0].split("T")[0].strip() or NO_PUBLICADO
+    limpio = valor.split("+")[0].split("T")[0].strip()
+    if limpio.endswith("Z"):
+        limpio = limpio[:-1]
+    return limpio or NO_PUBLICADO
 
 
 def _id_unico(*partes: str) -> str:
