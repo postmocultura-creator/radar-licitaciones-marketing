@@ -702,13 +702,27 @@ agencia).
 navegador.
 
 Incluye:
-- pestañas de nivel superior por `tipo_registro` ("Licitaciones abiertas" /
-  "Adjudicaciones" / "Contratos menores por vencer" / "Calls for proposals
-  UE") — cada una
-  reconstruye sus propios controles (fuente/categoría/país) y su propia
-  plantilla de tarjeta, porque cada tipo de dato tiene una semántica de
-  fecha distinta (una licitación cuenta días hasta el cierre, una
-  adjudicación no tiene plazo)
+- pestañas de nivel superior ("Publicadas recientemente" / "Licitaciones
+  abiertas" / "Adjudicaciones" / "Contratos menores por vencer" / "Calls
+  for proposals UE") — cada una reconstruye sus propios controles
+  (fuente/categoría/país) y su propia plantilla de tarjeta, porque cada
+  tipo de dato tiene una semántica de fecha distinta (una licitación
+  cuenta días hasta el cierre, una adjudicación no tiene plazo)
+- **"Publicadas recientemente"** (primera pestaña, a petición del usuario):
+  combina licitaciones + calls for proposals con `fecha_publicacion` de
+  hoy o ayer. No es un `tipo_registro` real — es una vista calculada en
+  `app.js` (`esPublicacionReciente()`) sobre esos dos tipos, porque en la
+  lista general algo recién publicado con plazo lejano puede quedar
+  enterrado bajo cosas con plazo más urgente pero publicadas hace semanas.
+  Limitación real: las fuentes solo dan fecha, no hora, así que "últimas
+  24-48h" se aproxima a "hoy o ayer" (día natural), no a un cálculo por
+  horas. Esta pestaña se sigue mostrando aunque tenga 0 resultados (a
+  diferencia de las demás, que se ocultan en 0) — que desapareciera justo
+  el día que no hay nada nuevo parecería un fallo, no información útil.
+  Sus tarjetas se muestran más grandes y ya desplegadas (`tarjeta--grande`
+  en `style.css`), porque normalmente hay pocas. Aparece primera en la
+  barra, pero la pestaña seleccionada por defecto al abrir sigue siendo
+  "Licitaciones abiertas" (más segura si un día no hay nada reciente).
 - un texto explicativo corto debajo de las pestañas (`EXPLICACION_TIPO` en
   `app.js`), que cambia al cambiar de pestaña: qué es esa categoría de
   datos y de dónde/cómo se ha recogido — para que alguien de la agencia
@@ -733,7 +747,19 @@ Incluye:
   único `tipo_registro` con `presupuesto_valor` poblado; ver auditoría
   más abajo)
 - código de color por urgencia: rojo ≤7 días, ámbar ≤21 días, verde el
-  resto, gris si no hay fecha límite publicada
+  resto, gris si no hay fecha límite publicada — esto es señal funcional y
+  es igual en las 5 pestañas, nunca se usa para decoración
+- identidad de acento por pestaña (a petición del usuario: las 5 pestañas
+  compartiendo el mismo azul se sentía repetitivo). Se aplica solo al
+  control de pestaña activo y al banner de explicación — nunca dentro de
+  las tarjetas, para no interferir con el código de urgencia de arriba:
+  Licitaciones abiertas se queda con el azul primario de siempre (es la
+  pestaña por defecto), Publicadas recientemente en teal, Adjudicaciones
+  en violeta (también en el borde de sus tarjetas, que al no tener plazo
+  antes era gris neutro sin significado — aquí sí se podía usar sin pisar
+  nada), Contratos menores por vencer en granate, Calls for proposals UE
+  en índigo. Paleta elegida con la skill `ui-ux-pro-max` (búsqueda de
+  color por dominio, no a ojo).
 
 Paleta y tipografía (`Fira Sans` para texto, `Fira Code` para cifras/fechas)
 generadas con la skill `ui-ux-pro-max`, pensadas para un panel denso de

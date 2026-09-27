@@ -4,11 +4,18 @@
   var DATOS = (window.TENDERS_DATA || []).slice();
 
   var TIPOS_REGISTRO = [
+    ["recientes", "Publicadas recientemente"],
     ["licitacion", "Licitaciones abiertas"],
     ["adjudicacion", "Adjudicaciones"],
     ["contrato_menor_venciendo", "Contratos menores por vencer"],
     ["convocatoria_ue", "Calls for proposals UE"],
   ];
+
+  // Ventana de "recientes": el dato solo tiene fecha (YYYY-MM-DD), no hora,
+  // así que "últimas 24-48h" se aproxima a nivel de día -publicado hoy o
+  // ayer, un margen de 2 días naturales- en vez de horas exactas, que no se
+  // pueden calcular con lo que publican las fuentes.
+  var DIAS_VENTANA_RECIENTES = 1;
 
   // Solo "licitacion" trae presupuesto_valor poblado: adjudicaciones y
   // contratos menores guardan el importe en importe_adjudicado_valor (otro
@@ -20,6 +27,8 @@
   var TIPOS_CON_PRESUPUESTO = { licitacion: true };
 
   var EXPLICACION_TIPO = {
+    recientes:
+      "Licitaciones y calls for proposals publicadas en el último día o dos (según la fecha que da cada fuente, sin hora exacta). Pensada para revisar a diario y no perder de vista lo que acaba de aparecer — en la lista general, algo recién publicado con plazo lejano puede quedar enterrado bajo cosas con plazo más urgente pero publicadas hace semanas.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
@@ -131,7 +140,17 @@
     return div.innerHTML;
   }
 
+  function esPublicacionReciente(t) {
+    if (t.tipo_registro !== "licitacion" && t.tipo_registro !== "convocatoria_ue") return false;
+    var dias = diasRestantes(t.fecha_publicacion);
+    // diasRestantes da (fecha - hoy); una publicación de hoy o ayer da 0 o -1.
+    return dias !== null && dias <= 0 && dias >= -DIAS_VENTANA_RECIENTES;
+  }
+
   function subconjuntoActivo() {
+    if (estado.tipoRegistro === "recientes") {
+      return DATOS.filter(esPublicacionReciente);
+    }
     return DATOS.filter(function (t) { return t.tipo_registro === estado.tipoRegistro; });
   }
 
@@ -146,13 +165,22 @@
     DATOS.forEach(function (t) {
       conteos[t.tipo_registro] = (conteos[t.tipo_registro] || 0) + 1;
     });
+    // "recientes" es una categoría virtual (ningún registro tiene ese
+    // tipo_registro literal, se calcula combinando otros dos) — sin esto,
+    // conteos["recientes"] siempre sale undefined y el badge de la pestaña
+    // marca (0) aunque sí haya elementos dentro.
+    conteos.recientes = DATOS.filter(esPublicacionReciente).length;
 
     elSegmentedTipo.innerHTML = "";
-    TIPOS_REGISTRO.filter(function (par) { return conteos[par[0]] > 0; }).forEach(function (par) {
+    // "recientes" se muestra siempre, incluso en 0: que desaparezca justo el
+    // día que no hay nada nuevo parecería un fallo, no información útil -es
+    // la pestaña pensada para mirar primero cada día, con o sin resultados.
+    TIPOS_REGISTRO.filter(function (par) { return par[0] === "recientes" || conteos[par[0]] > 0; }).forEach(function (par) {
       var valor = par[0], etiqueta = par[1];
       var boton = document.createElement("button");
       boton.type = "button";
       boton.className = "segmented__opcion";
+      boton.setAttribute("data-valor", valor);
       boton.textContent = etiqueta + " (" + (conteos[valor] || 0) + ")";
       boton.setAttribute("role", "radio");
       boton.setAttribute("aria-pressed", valor === estado.tipoRegistro ? "true" : "false");
@@ -176,6 +204,7 @@
           b.setAttribute("aria-pressed", b === boton ? "true" : "false");
         });
         elExplicacionTipo.textContent = EXPLICACION_TIPO[valor] || "";
+        elExplicacionTipo.setAttribute("data-tipo", valor);
         actualizarVisibilidadPresupuesto();
         construirControles();
         pintarResumenCabecera();
@@ -185,6 +214,7 @@
     });
 
     elExplicacionTipo.textContent = EXPLICACION_TIPO[estado.tipoRegistro] || "";
+    elExplicacionTipo.setAttribute("data-tipo", estado.tipoRegistro);
   }
 
   function construirControles() {
@@ -307,10 +337,11 @@
     // "Calls for proposals UE" tiene la misma semántica de fecha que una
     // licitación (fecha_limite = fecha límite de solicitud), así que
     // comparte el orden por defecto de más abajo (plazo ascendente).
-    // Fuera de esas dos, no hay plazo que ordenar: el orden por defecto es
-    // la fecha más relevante en desc (fecha_publicacion guarda la fecha de
-    // adjudicación en el tipo "adjudicacion").
-    if (estado.tipoRegistro !== "licitacion" && estado.tipoRegistro !== "convocatoria_ue") {
+    // "Publicadas recientemente" mezcla ambos tipos, así que comparte el
+    // mismo criterio. Fuera de esos tres, no hay plazo que ordenar: el
+    // orden por defecto es la fecha más relevante en desc (fecha_publicacion
+    // guarda la fecha de adjudicación en el tipo "adjudicacion").
+    if (estado.tipoRegistro !== "licitacion" && estado.tipoRegistro !== "convocatoria_ue" && estado.tipoRegistro !== "recientes") {
       var xa = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
       var xb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
       return xb.localeCompare(xa);
@@ -333,9 +364,11 @@
     return da - db;
   }
 
-  function plantillaTarjetaLicitacion(t) {
+  function plantillaTarjetaLicitacion(t, grande) {
     var urgencia = infoUrgencia(t.fecha_limite);
     var claseRevisar = t.revisar_manual ? " revisar-manual" : "";
+    var claseGrande = grande ? " tarjeta--grande" : "";
+    var abierta = grande ? " open" : "";
 
     var categoriasHtml = (t.categorias || [])
       .map(function (c) { return '<span class="etiqueta-categoria">' + escaparHtml(c) + "</span>"; })
@@ -362,7 +395,7 @@
     }
 
     return (
-      '<details class="tarjeta ' + urgencia.clase + claseRevisar + '">' +
+      '<details class="tarjeta ' + urgencia.clase + claseRevisar + claseGrande + '"' + abierta + '>' +
         '<summary class="tarjeta__resumen-fila">' +
           CHEVRON_SVG +
           '<div class="tarjeta__info">' +
@@ -420,7 +453,7 @@
     var importe = t.importe_adjudicado_display === NO_PUBLICADO ? "—" : t.importe_adjudicado_display;
 
     return (
-      '<details class="tarjeta urgencia-sin-fecha' + claseRevisar + '">' +
+      '<details class="tarjeta urgencia-sin-fecha tarjeta--adjudicacion' + claseRevisar + '">' +
         '<summary class="tarjeta__resumen-fila">' +
           CHEVRON_SVG +
           '<div class="tarjeta__info">' +
@@ -509,10 +542,10 @@
     );
   }
 
-  function plantillaTarjeta(t) {
+  function plantillaTarjeta(t, grande) {
     if (t.tipo_registro === "adjudicacion") return plantillaTarjetaAdjudicacion(t);
     if (t.tipo_registro === "contrato_menor_venciendo") return plantillaTarjetaContratoMenor(t);
-    return plantillaTarjetaLicitacion(t);
+    return plantillaTarjetaLicitacion(t, grande);
   }
 
   function aplicarFiltros() {
@@ -520,10 +553,16 @@
     var filtrados = subconjunto.filter(pasaFiltros);
     filtrados.sort(comparar);
 
-    var ETIQUETAS_CONTEO = { adjudicacion: "adjudicaciones", contrato_menor_venciendo: "contratos menores", convocatoria_ue: "calls for proposals" };
+    // "Publicadas recientemente" tendrá pocas tarjetas casi siempre (es una
+    // ventana de 1-2 días), así que se muestran más grandes y ya
+    // desplegadas: no compensa el gesto de "colapsar para ver más" cuando
+    // hay 3-4 elementos en vez de cientos.
+    var grande = estado.tipoRegistro === "recientes";
+
+    var ETIQUETAS_CONTEO = { adjudicacion: "adjudicaciones", contrato_menor_venciendo: "contratos menores", convocatoria_ue: "calls for proposals", recientes: "publicadas recientemente" };
     var etiqueta = ETIQUETAS_CONTEO[estado.tipoRegistro] || "licitaciones";
     elConteo.textContent = filtrados.length + " de " + subconjunto.length + " " + etiqueta;
-    elContenedor.innerHTML = filtrados.map(plantillaTarjeta).join("");
+    elContenedor.innerHTML = filtrados.map(function (t) { return plantillaTarjeta(t, grande); }).join("");
     elSinResultados.hidden = filtrados.length > 0;
   }
 
@@ -558,7 +597,8 @@
       return d === null || d >= 0;
     }).length;
 
-    var etiquetaTotal = estado.tipoRegistro === "convocatoria_ue" ? "calls for proposals" : "licitaciones";
+    var ETIQUETAS_TOTAL = { convocatoria_ue: "calls for proposals", recientes: "publicadas recientemente" };
+    var etiquetaTotal = ETIQUETAS_TOTAL[estado.tipoRegistro] || "licitaciones";
     elResumenCabecera.innerHTML =
       '<div><strong>' + subconjunto.length + '</strong>' + etiquetaTotal + '</div>' +
       '<div><strong>' + totalAbiertas + '</strong>en plazo</div>' +
