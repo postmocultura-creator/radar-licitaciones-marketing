@@ -6,6 +6,14 @@ el dataset que consume el dashboard.
 
 Esquema final por licitación:
     id, titulo, organismo, fuente, pais_territorio, fecha_publicacion,
+    fecha_primera_aparicion (str YYYY-MM-DD: fecha en la que este "id" se vio
+    por primera vez en el radar, persistida entre ejecuciones en
+    data/primera_aparicion.json. Puede no coincidir con fecha_publicacion —
+    PLACSP no tiene API en tiempo real, solo un ZIP mensual con ~5 días de
+    retraso estructural respecto al reloj real (ver README), así que un
+    registro del Estado puede llevar varios días "publicado" antes de que
+    esta fecha lo registre. Es el campo que usa el dashboard para
+    "Publicadas recientemente" en vez de fecha_publicacion),
     fecha_limite, presupuesto_valor (float|null), presupuesto_display (str),
     cpv (list[str]), categorias (list[str]), revisar_manual (bool),
     enlace, enlace_directo (bool: False cuando "enlace" es solo un buscador
@@ -73,6 +81,7 @@ import config
 CLASIFICADO = Path(__file__).resolve().parent / "data" / "clasificado.json"
 SALIDA = Path(__file__).resolve().parent / "data" / "tenders.json"
 SALIDA_DASHBOARD = Path(__file__).resolve().parent / "dashboard" / "tenders-data.js"
+PRIMERA_APARICION = Path(__file__).resolve().parent / "data" / "primera_aparicion.json"
 CPV_NOMBRES = Path(__file__).resolve().parent / "cpv_nombres.json"
 
 NO_PUBLICADO = "no publicado"
@@ -783,6 +792,31 @@ def main() -> None:
         vistos[clave] = True
         del r["_clave_dedup"]
         finales.append(r)
+
+    # fecha_primera_aparicion: cuándo vio ESTE radar el registro por primera
+    # vez, clave = "id" (estable entre ejecuciones porque se deriva de datos
+    # de la propia fuente, ver _id_unico). Se persiste en un fichero aparte
+    # que el workflow commitea junto al resto de datos -si no se guardara,
+    # cada ejecución "olvidaría" lo visto el día anterior y todo parecería
+    # nuevo siempre-. Se reconstruye desde cero en cada ejecución a partir
+    # de "finales", así que un id que deja de aparecer (licitación cerrada,
+    # etc.) se poda solo del fichero, sin crecer indefinidamente.
+    hoy_iso = date.today().isoformat()
+    mapa_previo = {}
+    if PRIMERA_APARICION.exists():
+        try:
+            mapa_previo = json.loads(PRIMERA_APARICION.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            mapa_previo = {}
+
+    mapa_nuevo = {}
+    for r in finales:
+        primera = mapa_previo.get(r["id"], hoy_iso)
+        r["fecha_primera_aparicion"] = primera
+        mapa_nuevo[r["id"]] = primera
+
+    PRIMERA_APARICION.parent.mkdir(parents=True, exist_ok=True)
+    PRIMERA_APARICION.write_text(json.dumps(mapa_nuevo, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna

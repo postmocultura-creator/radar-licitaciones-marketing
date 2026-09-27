@@ -12,10 +12,10 @@
   ];
 
   // Ventana de "recientes": el dato solo tiene fecha (YYYY-MM-DD), no hora,
-  // así que "últimas 24-48h" se aproxima a nivel de día -publicado hoy o
-  // ayer, un margen de 2 días naturales- en vez de horas exactas, que no se
-  // pueden calcular con lo que publican las fuentes.
-  var DIAS_VENTANA_RECIENTES = 1;
+  // así que "últimos 3 días" se aproxima a nivel de día -publicado hoy,
+  // ayer o anteayer- en vez de horas exactas, que no se pueden calcular con
+  // lo que publican las fuentes.
+  var DIAS_VENTANA_RECIENTES = 2;
 
   // Solo "licitacion" trae presupuesto_valor poblado: adjudicaciones y
   // contratos menores guardan el importe en importe_adjudicado_valor (otro
@@ -28,7 +28,7 @@
 
   var EXPLICACION_TIPO = {
     recientes:
-      "Licitaciones y calls for proposals publicados en el último día o dos, según la fecha de publicación que da cada fuente (sin hora exacta).",
+      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días. Esta fecha de aparición puede no coincidir con la fecha de publicación oficial que se muestra en cada tarjeta. Ordenadas de la más reciente a la más antigua.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
@@ -40,7 +40,7 @@
   };
 
   var estado = {
-    tipoRegistro: "licitacion",
+    tipoRegistro: "recientes",
     texto: "",
     fuente: "",
     categoria: "",
@@ -142,9 +142,27 @@
 
   function esPublicacionReciente(t) {
     if (t.tipo_registro !== "licitacion" && t.tipo_registro !== "convocatoria_ue") return false;
-    var dias = diasRestantes(t.fecha_publicacion);
-    // diasRestantes da (fecha - hoy); una publicación de hoy o ayer da 0 o -1.
+    // Se usa fecha_primera_aparicion (cuándo lo vio el radar por primera
+    // vez), no fecha_publicacion (la fecha oficial que da la fuente) — con
+    // fecha_publicacion, una licitación del Estado prácticamente nunca
+    // entraba aquí, porque PLACSP no tiene API en tiempo real y su ZIP de
+    // sindicación llega con ~5 días de retraso estructural: para cuando
+    // "aparecía" para nosotros, ya tenía más días que la ventana de esta
+    // pestaña. fecha_primera_aparicion la calcula normalizar.py y persiste
+    // entre ejecuciones, así que no tiene ese problema.
+    var dias = diasRestantes(t.fecha_primera_aparicion);
+    // diasRestantes da (fecha - hoy); hoy, ayer o anteayer dan 0, -1 o -2.
     return dias !== null && dias <= 0 && dias >= -DIAS_VENTANA_RECIENTES;
+  }
+
+  // "Publicadas recientemente" mezcla licitaciones (fuente "Estado" /
+  // "Euskadi" / "UE") con calls for proposals (fuente "UE-subvenciones",
+  // valor distinto porque en el resto del dashboard es una fuente propia).
+  // Para el filtro de fuente de ESTA pestaña las dos fuentes europeas se
+  // agrupan bajo "UE": al usuario le interesa Estado/Euskadi/Europa, no la
+  // distinción técnica entre TED y SEDIA.
+  function grupoFuenteRecientes(fuente) {
+    return fuente === "UE-subvenciones" ? "UE" : fuente;
   }
 
   function subconjuntoActivo() {
@@ -219,13 +237,15 @@
 
   function construirControles() {
     var subconjunto = subconjuntoActivo();
+    var esRecientes = estado.tipoRegistro === "recientes";
     var fuentes = {};
     var categorias = {};
     var totalRevisar = 0;
     var paises = {};
 
     subconjunto.forEach(function (t) {
-      fuentes[t.fuente] = (fuentes[t.fuente] || 0) + 1;
+      var f = esRecientes ? grupoFuenteRecientes(t.fuente) : t.fuente;
+      fuentes[f] = (fuentes[f] || 0) + 1;
       (t.categorias || []).forEach(function (c) {
         categorias[c] = (categorias[c] || 0) + 1;
       });
@@ -233,11 +253,22 @@
       if (t.revisar_manual) totalRevisar++;
     });
 
-    // Segmented control de fuente: "Todas" + una opción por fuente presente
+    // Segmented control de fuente: "Todas" + una opción por fuente. En el
+    // resto de pestañas, solo las fuentes presentes (dinámico). En
+    // "recientes" se fijan siempre las tres — Estado, Euskadi, UE— aunque
+    // alguna esté a 0 ese día, igual que la propia pestaña nunca desaparece
+    // al llegar a 0: es la vista de uso diario y que un filtro desaparezca
+    // parecería un fallo, no información.
     var opcionesFuente = [["", "Todas (" + subconjunto.length + ")"]];
-    Object.keys(fuentes).sort().forEach(function (f) {
-      opcionesFuente.push([f, f + " (" + fuentes[f] + ")"]);
-    });
+    if (esRecientes) {
+      ["Estado", "Euskadi", "UE"].forEach(function (f) {
+        opcionesFuente.push([f, f + " (" + (fuentes[f] || 0) + ")"]);
+      });
+    } else {
+      Object.keys(fuentes).sort().forEach(function (f) {
+        opcionesFuente.push([f, f + " (" + fuentes[f] + ")"]);
+      });
+    }
 
     elSegmentedFuente.innerHTML = "";
     opcionesFuente.forEach(function (par) {
@@ -296,7 +327,10 @@
 
   function pasaFiltros(t) {
     if (estado.soloRevisarManual && !t.revisar_manual) return false;
-    if (estado.fuente && t.fuente !== estado.fuente) return false;
+    if (estado.fuente) {
+      var fuenteComparar = estado.tipoRegistro === "recientes" ? grupoFuenteRecientes(t.fuente) : t.fuente;
+      if (fuenteComparar !== estado.fuente) return false;
+    }
     if (estado.categoria && (t.categorias || []).indexOf(estado.categoria) === -1) return false;
     if (estado.pais && t.pais_territorio !== estado.pais) return false;
 
@@ -334,14 +368,24 @@
       if (db2 === null) return -1;
       return da2 - db2;
     }
+    // "Publicadas recientemente": el criterio de la pestaña es qué ha
+    // aparecido antes EN EL RADAR (fecha_primera_aparicion, no
+    // fecha_publicacion — ver esPublicacionReciente), así que se ordena por
+    // esa misma fecha, descendente, ignorando el selector "Ordenar por"
+    // (igual que "Contratos menores por vencer" arriba ignora el mismo
+    // selector para ordenar por fecha fin).
+    if (estado.tipoRegistro === "recientes") {
+      var ra = a.fecha_primera_aparicion || "";
+      var rb = b.fecha_primera_aparicion || "";
+      return rb.localeCompare(ra);
+    }
     // "Calls for proposals UE" tiene la misma semántica de fecha que una
     // licitación (fecha_limite = fecha límite de solicitud), así que
-    // comparte el orden por defecto de más abajo (plazo ascendente).
-    // "Publicadas recientemente" mezcla ambos tipos, así que comparte el
-    // mismo criterio. Fuera de esos tres, no hay plazo que ordenar: el
-    // orden por defecto es la fecha más relevante en desc (fecha_publicacion
-    // guarda la fecha de adjudicación en el tipo "adjudicacion").
-    if (estado.tipoRegistro !== "licitacion" && estado.tipoRegistro !== "convocatoria_ue" && estado.tipoRegistro !== "recientes") {
+    // comparte el orden por defecto de más abajo (plazo ascendente). Fuera
+    // de esos dos, no hay plazo que ordenar: el orden por defecto es la
+    // fecha más relevante en desc (fecha_publicacion guarda la fecha de
+    // adjudicación en el tipo "adjudicacion").
+    if (estado.tipoRegistro !== "licitacion" && estado.tipoRegistro !== "convocatoria_ue") {
       var xa = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
       var xb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
       return xb.localeCompare(xa);
