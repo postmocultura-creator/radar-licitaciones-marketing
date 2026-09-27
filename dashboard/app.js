@@ -28,7 +28,7 @@
 
   var EXPLICACION_TIPO = {
     recientes:
-      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días. Esta fecha de aparición puede no coincidir con la fecha de publicación oficial que se muestra en cada tarjeta. Ordenadas de la más reciente a la más antigua.",
+      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días, ordenadas de la más reciente a la más antigua.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
