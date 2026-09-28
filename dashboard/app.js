@@ -28,7 +28,7 @@
 
   var EXPLICACION_TIPO = {
     recientes:
-      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días, ordenadas de la más reciente a la más antigua.",
+      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días, ordenadas por fecha de publicación de la más reciente a la más antigua.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
@@ -368,15 +368,15 @@
       if (db2 === null) return -1;
       return da2 - db2;
     }
-    // "Publicadas recientemente": el criterio de la pestaña es qué ha
-    // aparecido antes EN EL RADAR (fecha_primera_aparicion, no
-    // fecha_publicacion — ver esPublicacionReciente), así que se ordena por
-    // esa misma fecha, descendente, ignorando el selector "Ordenar por"
-    // (igual que "Contratos menores por vencer" arriba ignora el mismo
-    // selector para ordenar por fecha fin).
+    // "Publicadas recientemente": entra en la pestaña por fecha_primera_aparicion
+    // (ver esPublicacionReciente), pero se ordena por fecha_publicacion —
+    // la oficial de la fuente, mostrada en cada tarjeta— descendente, para
+    // que arriba quede siempre lo publicado más recientemente. Ignora el
+    // selector "Ordenar por" (igual que "Contratos menores por vencer"
+    // arriba ignora el mismo selector para ordenar por fecha fin).
     if (estado.tipoRegistro === "recientes") {
-      var ra = a.fecha_primera_aparicion || "";
-      var rb = b.fecha_primera_aparicion || "";
+      var ra = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
+      var rb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
       return rb.localeCompare(ra);
     }
     // "Calls for proposals UE" tiene la misma semántica de fecha que una
