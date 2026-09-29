@@ -32,7 +32,14 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Antes 45: se comprobó en la práctica que el scraper de PLACSP, que
+    # normalmente tarda 5-6 minutos, puede tardar 42 -servidor de PLACSP
+    # lento ese día, no un bug nuestro- y con 45 de límite total el job se
+    # cancelaba a media tarea, antes de llegar siquiera a "Publicar cambios":
+    # no se publicaba nada ese día aunque el scraping hubiera ido bien. 90 da
+    # margen de sobra incluso si PLACSP vuelve a ir lento, sin dejar de ser
+    # un límite real por si algo se cuelga de verdad.
+    timeout-minutes: 90
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
