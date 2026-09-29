@@ -4,9 +4,18 @@ name: Actualizar datos del radar
 # sección "Automatización"). El horario evita en punto/y media a propósito
 # (buena práctica para no coincidir con la avalancha de jobs que arrancan
 # justo a esas horas en todo GitHub).
+#
+# 22:47 UTC (no 5:13 UTC como al principio): GitHub retrasa los triggers
+# "schedule" bajo carga, más en repos con poca actividad como este -se
+# comprobó en la práctica: las primeras ejecuciones automáticas llegaron
+# entre 4h30 y 6h25 tarde respecto a la hora objetivo-. El requisito real es
+# tener datos frescos antes de las 9:00 en España (07:00 UTC en horario de
+# verano, 08:00 en invierno), así que el disparo se adelanta a la noche
+# anterior con margen de sobra (~8h) para absorber ese retraso incluso en el
+# peor caso observado.
 on:
   schedule:
-    - cron: "13 5 * * *"
+    - cron: "47 22 * * *"
   workflow_dispatch: {}
 
 permissions:
