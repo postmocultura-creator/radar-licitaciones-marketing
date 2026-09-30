@@ -39,6 +39,17 @@ Salida: data/clasificado.json, con un registro por licitación que añade
 "fuente", "categorias" y "revisar_manual" sin perder los campos originales
 de cada fuente (normalizar.py se encarga de unificar el esquema final).
 
+Fallback por fuente caída: si una fuente no trae crudo nuevo esta pasada
+(scraper caído, API externa con timeout tras agotar sus reintentos...), en
+vez de vaciar esa categoría del dashboard entero ese día, se reutilizan los
+últimos clasificados buenos conocidos de esa fuente+tipo_registro, cacheados
+en data/ultimo_bueno_por_fuente.json (persistido entre ejecuciones, igual
+que data/primera_aparicion.json). No hace falta limitar cuántos días se
+puede reutilizar un fallback: los propios filtros de ventana temporal de
+normalizar.py (fecha_limite vencida, más de N días desde la publicación)
+acaban descartando esos registros por su cuenta según pasan los días, igual
+que descartarían un registro fresco cuyo plazo ya venció.
+
 Ejecutar:
     python clasificar.py
 """
@@ -55,6 +66,7 @@ import config
 
 RAW_DIR = Path(__file__).resolve().parent / "data" / "raw"
 SALIDA = Path(__file__).resolve().parent / "data" / "clasificado.json"
+CACHE_FUENTES = Path(__file__).resolve().parent / "data" / "ultimo_bueno_por_fuente.json"
 
 _CACHE_PATRONES: dict[str, re.Pattern] = {}
 
@@ -333,6 +345,17 @@ def _cargar_resultados(ruta: Path | None) -> list[dict]:
 def main() -> None:
     resultado_final: list[dict] = []
 
+    cache_previo: dict[str, list[dict]] = {}
+    if CACHE_FUENTES.exists():
+        try:
+            cache_previo = json.loads(CACHE_FUENTES.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            cache_previo = {}
+    # Arranca como copia del anterior: las claves que esta pasada no
+    # actualiza (fuente caída) se quedan tal cual para la próxima ejecución,
+    # no se pierden por no haberse usado hoy.
+    cache_nuevo: dict[str, list[dict]] = dict(cache_previo)
+
     # (prefijo del crudo, tipo_registro, función de clasificación). El mismo
     # "fuente" (UE/Estado/Euskadi) puede aparecer en más de un tipo_registro
     # -licitación y adjudicación son crudos y funciones distintos- por eso
@@ -350,9 +373,20 @@ def main() -> None:
     ]
 
     for prefijo, tipo_registro, funcion in fuentes:
+        clave_cache = f"{prefijo}|{tipo_registro}"
         ruta = _ultimo_raw(prefijo)
         if ruta is None:
-            print(f"[clasificar] AVISO: no hay crudo de '{prefijo}' en data/raw/. Se omite esta fuente en esta pasada.", file=sys.stderr)
+            previos = cache_previo.get(clave_cache)
+            if previos:
+                print(
+                    f"[clasificar] AVISO: no hay crudo de '{prefijo}' en data/raw/. "
+                    f"Se reutilizan {len(previos)} clasificados de la última vez que esta fuente sí respondió "
+                    "(normalizar.py descartará los que ya hayan caducado).",
+                    file=sys.stderr,
+                )
+                resultado_final.extend(previos)
+            else:
+                print(f"[clasificar] AVISO: no hay crudo de '{prefijo}' en data/raw/ y tampoco hay un resultado anterior en caché. Se omite esta fuente en esta pasada.", file=sys.stderr)
             continue
         items = _cargar_resultados(ruta)
         clasificados = funcion(items)
@@ -360,9 +394,11 @@ def main() -> None:
             c["tipo_registro"] = tipo_registro
         print(f"[clasificar] {prefijo} ({tipo_registro}): {len(items)} extraídas -> {len(clasificados)} relevantes (de {ruta.name})")
         resultado_final.extend(clasificados)
+        cache_nuevo[clave_cache] = clasificados
 
     SALIDA.parent.mkdir(parents=True, exist_ok=True)
     SALIDA.write_text(json.dumps(resultado_final, ensure_ascii=False, indent=2), encoding="utf-8")
+    CACHE_FUENTES.write_text(json.dumps(cache_nuevo, ensure_ascii=False, indent=2), encoding="utf-8")
     n_revisar = sum(1 for r in resultado_final if r["revisar_manual"])
     print(f"[clasificar] Total: {len(resultado_final)} licitaciones relevantes ({n_revisar} para revisar manualmente) -> {SALIDA}")
 
