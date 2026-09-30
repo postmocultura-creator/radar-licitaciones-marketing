@@ -90,7 +90,7 @@ def _construir_query() -> str:
     return f"({cpv_query}) AND publication-date>={fecha_desde} AND form-type=competition"
 
 
-def _consultar(query: str, campos: list[str], limite_paginas: int) -> list[dict]:
+def _consultar(query: str, campos: list[str], limite_paginas: int, scope: str = "ACTIVE") -> list[dict]:
     resultados: list[dict] = []
     token = None
     pagina = 0
@@ -100,7 +100,9 @@ def _consultar(query: str, campos: list[str], limite_paginas: int) -> list[dict]
             "query": query,
             "fields": campos,
             "limit": 250,
-            "scope": "ACTIVE",
+            # "ALL" para el histórico de adjudicaciones: un aviso de años
+            # anteriores ya no está "activo".
+            "scope": scope,
             "paginationMode": "ITERATION",
         }
         if token:

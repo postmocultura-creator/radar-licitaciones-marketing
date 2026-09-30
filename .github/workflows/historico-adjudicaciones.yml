@@ -1,0 +1,108 @@
+name: Histórico de adjudicaciones
+
+# Construye y mantiene dashboard/historico-data.js (ver
+# scrapers/historico_adjudicaciones.py).
+#
+# - "completo": se lanza a mano una vez. Descarga los ZIP anuales 2021-2025 y
+#   los mensuales del año en curso de PLACSP (licitaciones, plataformas
+#   agregadas y contratos menores: ~12 GB en total) y los avisos de
+#   resultado de TED. Un trabajo por fuente y periodo, en paralelo: cada uno
+#   descarga un ZIP, lo filtra y sube solo lo relevante (pocos MB).
+# - "reciente": cada lunes. Solo el mes en curso y el anterior, que es donde
+#   entran las adjudicaciones nuevas, añadidas sobre lo que ya hay.
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "completo (todo desde 2021) o reciente (mes actual y anterior)"
+        required: true
+        default: reciente
+        type: choice
+        options: [reciente, completo]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: historico-adjudicaciones
+  cancel-in-progress: false
+
+jobs:
+  preparar:
+    runs-on: ubuntu-latest
+    outputs:
+      piezas: ${{ steps.matriz.outputs.piezas }}
+    steps:
+      - id: matriz
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          from datetime import date
+          modo = "${{ github.event.inputs.modo || 'reciente' }}"
+          hoy = date.today()
+          feeds = ["licitaciones", "agregadas", "menores"]
+          mes_anterior = date(hoy.year - (hoy.month == 1), (hoy.month - 2) % 12 + 1, 1)
+          if modo == "completo":
+              periodos = [str(a) for a in range(2021, hoy.year)]
+              periodos += [f"{hoy.year}{m:02d}" for m in range(1, hoy.month + 1)]
+              anios_ted = [str(a) for a in range(2021, hoy.year + 1)]
+          else:
+              periodos = sorted({mes_anterior.strftime("%Y%m"), hoy.strftime("%Y%m")})
+              anios_ted = sorted({str(mes_anterior.year), str(hoy.year)})
+          piezas = [{"feed": f, "periodo": p} for f in feeds for p in periodos]
+          piezas += [{"feed": "ted", "periodo": a} for a in anios_ted]
+          print("piezas=" + json.dumps(piezas))
+          EOF
+
+  pieza:
+    needs: preparar
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      # 4 descargas a la vez como máximo, por respeto al servidor de PLACSP.
+      max-parallel: 4
+      matrix:
+        pieza: ${{ fromJson(needs.preparar.outputs.piezas) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests deep-translator tzdata
+      - name: Procesar ${{ matrix.pieza.feed }} ${{ matrix.pieza.periodo }}
+        run: python scrapers/historico_adjudicaciones.py pieza --feed ${{ matrix.pieza.feed }} --periodo ${{ matrix.pieza.periodo }} --salida parcial.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: parcial-${{ matrix.pieza.feed }}-${{ matrix.pieza.periodo }}
+          path: parcial.json
+          retention-days: 3
+
+  combinar:
+    needs: pieza
+    # Aunque falle alguna pieza (un ZIP que PLACSP no sirve ese día), se
+    # publica lo demás: la siguiente ejecución semanal la recupera.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests deep-translator tzdata
+      - uses: actions/download-artifact@v4
+        with:
+          path: parciales
+      - name: Combinar
+        run: python scrapers/historico_adjudicaciones.py combinar "parciales/*/parcial.json"
+      - name: Publicar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git reset --soft origin/main
+          git add dashboard/historico-data.js
+          git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Histórico de adjudicaciones $(date -u +%Y-%m-%d)"
+          git push origin HEAD:main
