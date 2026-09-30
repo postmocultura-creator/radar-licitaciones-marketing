@@ -229,7 +229,6 @@ CATEGORIAS = {
         "estudios de mercado", "estudio de mercado",
         "investigacion de mercado", "investigacion de mercados",
         "servicios de promocion",
-        "planificacion de medios", "compra de espacios", "plan de medios",
         "campana publicitaria", "campanas publicitarias",
         "difusion de campanas", "creatividad publicitaria",
         "concepto creativo", "campana de comunicacion digital",
@@ -250,6 +249,9 @@ CATEGORIAS = {
         # en "marca [fabricante]" de equipamiento (50% falsos) y "agencia"
         # salió dominada por "agencia de viajes" (8 de 14, nada que ver).
         "comunicacion",
+    ],
+    "Planificación de medios": [
+        "planificacion de medios", "plan de medios", "compra de espacios",
     ],
     "Diseño gráfico / branding": [
         "diseno grafico", "identidad visual", "branding", "imagen corporativa",
