@@ -14,6 +14,9 @@ Esquema final por licitación:
     registro del Estado puede llevar varios días "publicado" antes de que
     esta fecha lo registre. Es el campo que usa el dashboard para
     "Publicadas recientemente" en vez de fecha_publicacion),
+    region_nuts (solo licitaciones de TED: código NUTS del organismo, p. ej.
+    "ES213"; el dashboard lo usa para repartir las españolas entre Estado y
+    Euskadi en "Publicadas recientemente"),
     fecha_limite, presupuesto_valor (float|null), presupuesto_display (str),
     cpv (list[str]), categorias (list[str]), revisar_manual (bool),
     enlace, enlace_directo (bool: False cuando "enlace" es solo un buscador
@@ -37,8 +40,10 @@ fecha límite...), el valor es exactamente el texto "no publicado", nunca un
 
 Deduplicación: algunas licitaciones sobre el umbral de la UE se publican a
 la vez en TED y en PLACSP. Se deduplican solo cuando título normalizado Y
-organismo normalizado coinciden EXACTAMENTE entre dos fuentes (heurística
-conservadora: prefiere duplicar de más a fusionar mal). Se conserva la
+organismo normalizado coinciden entre dos fuentes (título exacto, sin el
+prefijo "País – CPV – " que añade TED; organismo igual o igual salvo un
+sufijo de departamento; heurística conservadora: prefiere duplicar de más a
+fusionar mal). Se conserva la
 entrada de TED (más estructurada) y se descarta la de PLACSP equivalente.
 Se aplica igual a "adjudicacion" (bug real detectado en auditoría: el mismo
 contrato sobre el umbral UE también puede aparecer adjudicado tanto en el
@@ -128,6 +133,25 @@ def _normalizar_clave(texto: str) -> str:
     sin_acentos = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
     sin_acentos = sin_acentos.lower()
     return re.sub(r"[^a-z0-9]+", " ", sin_acentos).strip()
+
+
+def _titulo_ted_sin_prefijo(titulo: str) -> str:
+    """TED antepone "País – descripción CPV – " al título real ("España –
+    Servicios de publicidad – Servicio de difusión..."). Solo para la clave
+    de deduplicación: con el prefijo, ningún título de TED coincidía nunca
+    con su copia en PLACSP/Euskadi y la misma licitación salía dos veces
+    (16 casos reales en los datos del 2026-09-30)."""
+    partes = (titulo or "").split(" – ", 2)
+    return partes[2] if len(partes) == 3 else titulo
+
+
+def _organismos_compatibles(a: str, b: str) -> bool:
+    """Mismo organismo aunque una fuente añada el departamento detrás
+    ("Gobierno Vasco - Bienestar, Juventud..." en TED frente a "Gobierno
+    Vasco" en Euskadi). Solo se usa cuando el título ya coincide exacto."""
+    if a == b:
+        return True
+    return bool(a and b) and (a.startswith(b + " ") or b.startswith(a + " "))
 
 
 def _limpiar_fecha(valor: str | None) -> str:
@@ -262,12 +286,16 @@ def _from_ted(registro: dict) -> dict:
     titulo = registro["titulo"]
     resumen = titulo  # TED search API no devuelve descripción larga con los campos consultados
 
+    regiones = item.get("buyer-country-sub") or []
+    region_nuts = regiones[0] if regiones else None
+
     return {
         "id": _id_unico("UE", numero_pub, titulo),
         "titulo": titulo,
         "organismo": organismo,
         "fuente": "UE",
         "pais_territorio": pais,
+        "region_nuts": region_nuts,
         "fecha_publicacion": fecha_publicacion,
         "fecha_limite": fecha_limite,
         "presupuesto_valor": presupuesto_valor,
@@ -281,7 +309,7 @@ def _from_ted(registro: dict) -> dict:
         "resumen": resumen,
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "licitacion",
-        "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+        "_clave_dedup": "licitacion|" + _normalizar_clave(_titulo_ted_sin_prefijo(titulo)) + "|" + _normalizar_clave(organismo),
     }
 
 
@@ -457,7 +485,7 @@ def _from_ted_adjudicacion(registro: dict) -> dict:
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
         "importe_adjudicado_display": importe_display,
-        "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+        "_clave_dedup": "adjudicacion|" + _normalizar_clave(_titulo_ted_sin_prefijo(titulo)) + "|" + _normalizar_clave(organismo),
     }
 
 
@@ -781,16 +809,23 @@ def main() -> None:
     prioridad = {"UE": 0, "Estado": 1, "Euskadi": 2}
     normalizados.sort(key=lambda r: prioridad.get(r["fuente"], 9))
 
-    vistos = {}
+    # Título exacto + organismo compatible (ver _organismos_compatibles). El
+    # registro que se queda guarda los ids de sus duplicados para heredar
+    # abajo la fecha_primera_aparicion más antigua del grupo.
+    vistos = {}  # "tipo|titulo" -> [(registro superviviente, organismo)]
     finales = []
     duplicados = 0
     for r in normalizados:
-        clave = r["_clave_dedup"]
-        if clave and clave in vistos:
-            duplicados += 1
-            continue
-        vistos[clave] = True
-        del r["_clave_dedup"]
+        clave = r.pop("_clave_dedup")
+        if clave:
+            tipo, titulo_clave, organismo_clave = clave.split("|")
+            grupo = vistos.setdefault(tipo + "|" + titulo_clave, [])
+            superviviente = next((s for s, o in grupo if _organismos_compatibles(o, organismo_clave)), None)
+            if superviviente is not None:
+                duplicados += 1
+                superviviente.setdefault("_ids_equivalentes", []).append(r["id"])
+                continue
+            grupo.append((r, organismo_clave))
         finales.append(r)
 
     # fecha_primera_aparicion: cuándo vio ESTE radar el registro por primera
@@ -809,11 +844,17 @@ def main() -> None:
         except (json.JSONDecodeError, OSError):
             mapa_previo = {}
 
+    # Si el registro absorbió duplicados de otra fuente, hereda la fecha más
+    # antigua del grupo: la misma licitación vista hace 5 días en TED no debe
+    # volver a salir como "nueva" el día que llega por PLACSP (o al revés).
     mapa_nuevo = {}
     for r in finales:
-        primera = mapa_previo.get(r["id"], hoy_iso)
+        ids = [r["id"]] + r.pop("_ids_equivalentes", [])
+        fechas = [mapa_previo[i] for i in ids if i in mapa_previo]
+        primera = min(fechas) if fechas else hoy_iso
         r["fecha_primera_aparicion"] = primera
-        mapa_nuevo[r["id"]] = primera
+        for i in ids:
+            mapa_nuevo[i] = primera
 
     PRIMERA_APARICION.parent.mkdir(parents=True, exist_ok=True)
     PRIMERA_APARICION.write_text(json.dumps(mapa_nuevo, ensure_ascii=False, indent=2), encoding="utf-8")
