@@ -1,2 +1,4 @@
 requests>=2.31
 deep-translator>=1.11
+playwright>=1.47
+tzdata>=2024.1

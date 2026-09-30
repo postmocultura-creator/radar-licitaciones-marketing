@@ -348,7 +348,47 @@ def _from_placsp(registro: dict) -> dict:
     }
 
 
-EUSKADI_BUSQUEDA_ANUNCIOS = "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
+def _from_placsp_web(registro: dict) -> dict:
+    """Aviso temprano del buscador web de PLACSP (scrapers/placsp_web.py).
+    Mismo id que el feed (expediente + título, verificado: cuando el enlace
+    coincide, título y organismo coinciden exactos), así que cuando la
+    licitación llega por el feed se fusionan y se conserva la del feed."""
+    item = registro["original"]
+    titulo = registro["titulo"]
+    organismo = item.get("organismo") or NO_PUBLICADO
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("presupuesto"), item.get("moneda") or "EUR")
+
+    return {
+        "id": _id_unico("Estado", item.get("expediente", ""), titulo),
+        "titulo": titulo,
+        "organismo": organismo,
+        "fuente": "Estado",
+        "pais_territorio": "España",
+        "fecha_publicacion": _limpiar_fecha(item.get("fecha_publicacion")),
+        "fecha_limite": _limpiar_fecha(item.get("fecha_limite")),
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
+        "cpv": [],
+        "categorias": registro["categorias"],
+        "revisar_manual": registro["revisar_manual"],
+        "enlace": item.get("enlace") or NO_PUBLICADO,
+        "enlace_directo": True,
+        "codigo_expediente": item.get("expediente"),
+        "resumen": titulo,
+        # El listado web no da el código CPV, solo la categoría de servicio
+        # ("Servicios de publicidad"), que es lo más parecido que hay.
+        "tipo_contrato": item.get("subtipo") or NO_PUBLICADO,
+        "tipo_registro": "licitacion",
+        # Prioridad más baja al deduplicar: si la misma licitación está en el
+        # feed, en TED o en la API de Euskadi (el buscador incluye también la
+        # plataforma vasca agregada), gana esa versión, más completa y con
+        # la fuente correcta.
+        "_prioridad_dedup": 3,
+        "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
+    }
+
+
+EUSKADI_BUSQUEDA_ANUNCIOS ="https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
 
 
 def _from_euskadi(registro: dict) -> dict:
@@ -769,6 +809,7 @@ def _from_eu_grant(registro: dict) -> dict:
 CONVERSORES = {
     ("UE", "licitacion"): _from_ted,
     ("Estado", "licitacion"): _from_placsp,
+    ("Estado-web", "licitacion"): _from_placsp_web,
     ("Euskadi", "licitacion"): _from_euskadi,
     ("UE", "adjudicacion"): _from_ted_adjudicacion,
     ("Estado", "adjudicacion"): _from_placsp_adjudicacion,
@@ -807,7 +848,7 @@ def main() -> None:
     # Deduplicación conservadora: mismo título+organismo normalizados,
     # prioridad TED > Estado > Euskadi (en ese orden, si coinciden entre sí).
     prioridad = {"UE": 0, "Estado": 1, "Euskadi": 2}
-    normalizados.sort(key=lambda r: prioridad.get(r["fuente"], 9))
+    normalizados.sort(key=lambda r: r.pop("_prioridad_dedup", None) or prioridad.get(r["fuente"], 9))
 
     # Título exacto + organismo compatible (ver _organismos_compatibles). El
     # registro que se queda guarda los ids de sus duplicados para heredar
@@ -815,8 +856,15 @@ def main() -> None:
     vistos = {}  # "tipo|titulo" -> [(registro superviviente, organismo)]
     finales = []
     duplicados = 0
+    ids_vistos = set()
     for r in normalizados:
         clave = r.pop("_clave_dedup")
+        # Mismo id = mismo registro (p. ej. PLACSP por feed y por buscador
+        # web aunque el organismo se escriba distinto): nunca dos veces.
+        if r["id"] in ids_vistos:
+            duplicados += 1
+            continue
+        ids_vistos.add(r["id"])
         if clave:
             tipo, titulo_clave, organismo_clave = clave.split("|")
             grupo = vistos.setdefault(tipo + "|" + titulo_clave, [])

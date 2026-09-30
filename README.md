@@ -633,6 +633,46 @@ verificó en vivo que `publication-date.gt` devuelve expedientes con
 específico del feed ATOM paginado de PLACSP, ya resuelto con el cambio a
 ZIP mensual.
 
+## Desfase de PLACSP: de dónde sale de verdad (septiembre 2026)
+
+Revisado otra vez el 2026-09-30 con los nombres de los ficheros
+incrementales del ZIP (llevan la hora a la que PLACSP generó cada lote):
+el ATOM y el ZIP salen **de los mismos lotes de exportación**, así que
+cambiar de uno a otro ya no gana nada. Ese día el ATOM estaba al día (última
+entrada del 29/09 a las 20:15), no 18-21 días por detrás como cuando se
+escribió la sección anterior.
+
+El retraso lo pone la propia exportación: PLACSP genera un lote hacia las
+20:15 con lo publicado ese día, pero **no todos los días laborables**, y
+luego se pone al día de golpe. En septiembre: lo del 9-11 salió el 14, lo del
+18 el 21, lo del 23-25 el 28. Unos 9 de 21 días laborables llegaron con 1-5
+días de retraso; el resto, el mismo día (el workflow corre a las 00:47 hora
+española, después del lote).
+
+**Solución: `scrapers/placsp_web.py`**, aviso temprano desde el buscador web
+de PLACSP, que lee de la base de datos de la plataforma y muestra lo
+publicado en el mismo día (291 expedientes de servicios publicados el 30/09
+visibles a media tarde, sin lote exportado). Busca día a día (hoy, ayer,
+anteayer) los expedientes de "Servicios" en estado "Publicada" con un
+Chromium sin interfaz (Playwright): ~800 filas, ~40 páginas, un par de
+minutos.
+
+- Cruce con el feed (28-29/09, 544 filas): cuando el enlace permanente
+  (`idEvl`) coincide, título y organismo coinciden exactos, así que el id
+  (expediente + título) es el mismo y `normalizar.py` los fusiona; gana la
+  versión del feed (trae CPV).
+- El buscador incluye además las **plataformas autonómicas agregadas**
+  (Cataluña, Madrid, Andalucía, Galicia, La Rioja, Euskadi...), que no
+  están en `sindicacion_643`: el 28-29/09, 196 de 544 filas solo estaban en
+  la web. Por eso lo leído se acumula en `data/placsp_web_acumulado.json`
+  (commiteado) hasta que vence el plazo: si no, desaparecerían a los 2 días.
+- Al deduplicar tiene la prioridad más baja: si la misma licitación está
+  en el feed, en TED o en la API de Euskadi, gana esa.
+- Los actores de Apify para PLACSP que se revisaron leen el mismo feed
+  (tienen el mismo desfase) y tienen muy poco uso (2-9 usuarios).
+- Es la vía más frágil del radar (aplicación JSF con estado de sesión, sin
+  API). Si falla, guarda su `_error.json` y el radar sigue con el feed.
+
 ## Campo "tipo de contrato" (descripción oficial del CPV)
 
 El usuario, mirando las webs de Euskadi y de la UE, vio que el formulario

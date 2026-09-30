@@ -182,6 +182,21 @@ def clasificar_placsp(items: list[dict]) -> list[dict]:
     return salida
 
 
+def clasificar_placsp_web(items: list[dict]) -> list[dict]:
+    """Aviso temprano desde el buscador web de PLACSP (scrapers/placsp_web.py).
+    El buscador ya filtra por estado "Publicada"; mismo criterio de texto que
+    el feed. "Estado-web" es solo para que normalizar.py use su conversor:
+    el registro final sale con fuente "Estado"."""
+    salida = []
+    for item in items:
+        titulo = item.get("titulo") or ""
+        resultado = clasificar_texto(titulo, [])
+        if not resultado["incluir"]:
+            continue
+        salida.append({"fuente": "Estado-web", "original": item, "titulo": titulo, "cpv": [], **resultado})
+    return salida
+
+
 def clasificar_euskadi(items: list[dict]) -> list[dict]:
     salida = []
     for item in items:
@@ -363,6 +378,7 @@ def main() -> None:
     fuentes = [
         ("ted", "licitacion", clasificar_ted),
         ("placsp", "licitacion", clasificar_placsp),
+        ("placsp_web", "licitacion", clasificar_placsp_web),
         ("euskadi", "licitacion", clasificar_euskadi),
         ("ted_adjudicaciones", "adjudicacion", clasificar_ted_adjudicaciones),
         ("placsp", "adjudicacion", clasificar_placsp_adjudicaciones),

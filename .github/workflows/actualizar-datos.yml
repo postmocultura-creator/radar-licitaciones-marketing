@@ -64,6 +64,15 @@ jobs:
         run: python scrapers/placsp.py
         continue-on-error: true
 
+      # Aviso temprano: lo publicado hoy/ayer en el buscador web de PLACSP,
+      # que no depende de los lotes de exportación del feed (ver
+      # scrapers/placsp_web.py). Necesita un Chromium sin interfaz.
+      - name: Scraper PLACSP web (aviso temprano)
+        run: |
+          python -m playwright install --with-deps chromium
+          python scrapers/placsp_web.py
+        continue-on-error: true
+
       - name: Scraper Euskadi
         run: python scrapers/euskadi.py
         continue-on-error: true
@@ -110,6 +119,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git reset --soft origin/main
-          git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json
+          git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json data/placsp_web_acumulado.json
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
           git push origin HEAD:main
