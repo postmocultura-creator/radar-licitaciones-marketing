@@ -11,6 +11,38 @@
     ["convocatoria_ue", "Calls for proposals UE"],
   ];
 
+  // Lista completa de categorías de la taxonomía (debe reflejar las claves
+  // de config.CATEGORIAS en el proyecto Python — el dashboard es JS estático
+  // sin acceso a ese archivo, así que se mantiene a mano aquí; tocar los dos
+  // sitios si se añade/renombra una categoría). A petición explícita del
+  // usuario, el desplegable de categorías siempre las lista TODAS, aunque
+  // la pestaña activa no tenga ahora mismo ninguna licitación en alguna de
+  // ellas (sale "(0)" en vez de desaparecer la categoría del selector).
+  var CATEGORIAS_CONOCIDAS = [
+    "SEO / posicionamiento en buscadores",
+    "SEM / paid media",
+    "Email marketing y CRM",
+    "Redes sociales / community management",
+    "Producción de vídeo / contenido audiovisual",
+    "Diseño y desarrollo web",
+    "Diseño y desarrollo de apps",
+    "Reputación online / gestión de crisis",
+    "Atención al cliente / soporte",
+    "Publicidad y comunicación (general)",
+    "Planificación de medios",
+    "Diseño gráfico / branding",
+    "Producción de eventos digitales",
+    "Analítica / medición de marketing",
+    "Estrategia de marketing",
+    "Creación de contenidos",
+    "E-commerce",
+    "Marketing de influencers / creators",
+    "Automatización e IA de marketing",
+    "Marketing B2B",
+    "Formación y consultoría de marketing",
+    "Tecnología y MarTech",
+  ];
+
   // Ventana de "recientes": el dato solo tiene fecha (YYYY-MM-DD), no hora,
   // así que "últimos 3 días" se aproxima a nivel de día -publicado hoy,
   // ayer o anteayer- en vez de horas exactas, que no se pueden calcular con
@@ -290,15 +322,19 @@
       elSegmentedFuente.appendChild(boton);
     });
 
-    // Desplegable de categoría, ordenado por volumen (las más frecuentes primero)
-    var categoriasOrdenadas = Object.keys(categorias).sort(function (a, b) {
-      return categorias[b] - categorias[a];
+    // Desplegable de categoría: TODAS las de CATEGORIAS_CONOCIDAS, no solo
+    // las presentes en la pestaña activa (ver comentario junto a esa
+    // constante) — ordenadas por volumen en esta pestaña, y a igualdad
+    // (incluido 0) alfabéticamente, para que el orden no salga arbitrario.
+    var categoriasOrdenadas = CATEGORIAS_CONOCIDAS.slice().sort(function (a, b) {
+      var diferencia = (categorias[b] || 0) - (categorias[a] || 0);
+      return diferencia !== 0 ? diferencia : a.localeCompare(b, "es");
     });
     elCategoria.innerHTML = '<option value="">Todas las categorías (' + subconjunto.length + ")</option>";
     categoriasOrdenadas.forEach(function (c) {
       var opt = document.createElement("option");
       opt.value = c;
-      opt.textContent = c + " (" + categorias[c] + ")";
+      opt.textContent = c + " (" + (categorias[c] || 0) + ")";
       elCategoria.appendChild(opt);
     });
 
