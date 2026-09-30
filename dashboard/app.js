@@ -60,7 +60,7 @@
 
   var EXPLICACION_TIPO = {
     recientes:
-      "Licitaciones y calls for proposals que han aparecido por primera vez en el radar en los últimos tres días, ordenadas por fecha de publicación de la más reciente a la más antigua.",
+      "Licitaciones de organismos públicos españoles (Estado y Euskadi) que han aparecido por primera vez en el radar en los últimos tres días, ordenadas por fecha de publicación de la más reciente a la más antigua. Incluye las publicadas en PLACSP, en el portal de contratación de Euskadi y las de organismos españoles publicadas en TED.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
@@ -172,8 +172,22 @@
     return div.innerHTML;
   }
 
+  // Ámbito de una licitación española para "Publicadas recientemente":
+  // "Estado", "Euskadi" o null si no es de un organismo español. Las de TED
+  // entran también si el organismo es español -hay licitaciones que solo se
+  // publican ahí (Metro Bilbao, Diputación Foral de Gipuzkoa...) y, al
+  // deduplicar, la copia de TED es la que se queda-; se asignan a Euskadi
+  // por la región NUTS del organismo (ES21x = País Vasco).
+  function ambitoReciente(t) {
+    if (t.fuente === "Estado" || t.fuente === "Euskadi") return t.fuente;
+    if (t.fuente === "UE" && t.pais_territorio === "España") {
+      return (t.region_nuts || "").indexOf("ES21") === 0 ? "Euskadi" : "Estado";
+    }
+    return null;
+  }
+
   function esPublicacionReciente(t) {
-    if (t.tipo_registro !== "licitacion" && t.tipo_registro !== "convocatoria_ue") return false;
+    if (t.tipo_registro !== "licitacion" || ambitoReciente(t) === null) return false;
     // Se usa fecha_primera_aparicion (cuándo lo vio el radar por primera
     // vez), no fecha_publicacion (la fecha oficial que da la fuente) — con
     // fecha_publicacion, una licitación del Estado prácticamente nunca
@@ -185,16 +199,6 @@
     var dias = diasRestantes(t.fecha_primera_aparicion);
     // diasRestantes da (fecha - hoy); hoy, ayer o anteayer dan 0, -1 o -2.
     return dias !== null && dias <= 0 && dias >= -DIAS_VENTANA_RECIENTES;
-  }
-
-  // "Publicadas recientemente" mezcla licitaciones (fuente "Estado" /
-  // "Euskadi" / "UE") con calls for proposals (fuente "UE-subvenciones",
-  // valor distinto porque en el resto del dashboard es una fuente propia).
-  // Para el filtro de fuente de ESTA pestaña las dos fuentes europeas se
-  // agrupan bajo "UE": al usuario le interesa Estado/Euskadi/Europa, no la
-  // distinción técnica entre TED y SEDIA.
-  function grupoFuenteRecientes(fuente) {
-    return fuente === "UE-subvenciones" ? "UE" : fuente;
   }
 
   function subconjuntoActivo() {
@@ -276,7 +280,7 @@
     var paises = {};
 
     subconjunto.forEach(function (t) {
-      var f = esRecientes ? grupoFuenteRecientes(t.fuente) : t.fuente;
+      var f = esRecientes ? ambitoReciente(t) : t.fuente;
       fuentes[f] = (fuentes[f] || 0) + 1;
       (t.categorias || []).forEach(function (c) {
         categorias[c] = (categorias[c] || 0) + 1;
@@ -287,13 +291,13 @@
 
     // Segmented control de fuente: "Todas" + una opción por fuente. En el
     // resto de pestañas, solo las fuentes presentes (dinámico). En
-    // "recientes" se fijan siempre las tres — Estado, Euskadi, UE— aunque
-    // alguna esté a 0 ese día, igual que la propia pestaña nunca desaparece
-    // al llegar a 0: es la vista de uso diario y que un filtro desaparezca
-    // parecería un fallo, no información.
+    // "recientes" se fijan siempre Estado y Euskadi aunque alguna esté a 0
+    // ese día, igual que la propia pestaña nunca desaparece al llegar a 0:
+    // es la vista de uso diario y que un filtro desaparezca parecería un
+    // fallo, no información.
     var opcionesFuente = [["", "Todas (" + subconjunto.length + ")"]];
     if (esRecientes) {
-      ["Estado", "Euskadi", "UE"].forEach(function (f) {
+      ["Estado", "Euskadi"].forEach(function (f) {
         opcionesFuente.push([f, f + " (" + (fuentes[f] || 0) + ")"]);
       });
     } else {
@@ -364,7 +368,7 @@
   function pasaFiltros(t) {
     if (estado.soloRevisarManual && !t.revisar_manual) return false;
     if (estado.fuente) {
-      var fuenteComparar = estado.tipoRegistro === "recientes" ? grupoFuenteRecientes(t.fuente) : t.fuente;
+      var fuenteComparar = estado.tipoRegistro === "recientes" ? ambitoReciente(t) : t.fuente;
       if (fuenteComparar !== estado.fuente) return false;
     }
     if (estado.categoria && (t.categorias || []).indexOf(estado.categoria) === -1) return false;

@@ -33,6 +33,11 @@ CAMPOS = [
     "notice-title",
     "buyer-name",
     "buyer-country",
+    # Región NUTS del organismo (p. ej. "ES213" = Bizkaia). Sirve para
+    # asignar a "Euskadi" o "Estado" las licitaciones españolas que solo
+    # salen en TED (Metro Bilbao, Diputación Foral de Gipuzkoa...) en la
+    # pestaña "Publicadas recientemente".
+    "buyer-country-sub",
     "classification-cpv",
     "publication-date",
     "deadline-date-lot",
