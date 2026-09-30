@@ -100,9 +100,22 @@ def _peticion(text_param: str, query: dict | None, display_fields: list[str] | N
         files["displayFields"] = (None, json.dumps(display_fields), "application/json")
         files["sort"] = (None, json.dumps(SORT), "application/json")
 
-    resp = requests.post(SEARCH_URL, params=params, files=files, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
+    # Reintentos: un timeout puntual de la API de SEDIA (pasó de verdad en
+    # producción, "Read timed out" a los 30s) tumbaba toda la extracción -y
+    # con ella, toda la pestaña "Calls for proposals UE" ese día, porque sin
+    # crudo nuevo clasificar.py se limita a omitir la fuente esa pasada-.
+    # Mismo patrón que los reintentos de traducción en normalizar.py.
+    ultimo_error: requests.RequestException | None = None
+    for intento in range(3):
+        try:
+            resp = requests.post(SEARCH_URL, params=params, files=files, timeout=30)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.RequestException as exc:
+            ultimo_error = exc
+            if intento < 2:
+                time.sleep(5 * (intento + 1))
+    raise ultimo_error
 
 
 def extraer_listado() -> list[dict]:
