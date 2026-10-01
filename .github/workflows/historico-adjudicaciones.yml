@@ -1,6 +1,7 @@
 name: Histórico de adjudicaciones
 
-# Construye y mantiene dashboard/historico-data.js (ver
+# Construye y mantiene data/historico_adjudicaciones.json y lo que lee el
+# dashboard: historico-data.js + historico-detalle/ (ver
 # scrapers/historico_adjudicaciones.py).
 #
 # - "completo": se lanza a mano una vez. Descarga los ZIP anuales 2021-2025 y
@@ -59,7 +60,9 @@ jobs:
   pieza:
     needs: preparar
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # Con el prefiltro sobre el texto en bruto, el anual más grande (2,2 GB)
+    # tarda minutos; antes no cabía en 3 horas.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       # 4 descargas a la vez como máximo, por respeto al servidor de PLACSP.
@@ -103,6 +106,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git reset origin/main  # no --soft: revertiría código subido mientras corría
-          git add dashboard/historico-data.js
+          git add data/historico_adjudicaciones.json dashboard/historico-data.js dashboard/historico-detalle
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Histórico de adjudicaciones $(date -u +%Y-%m-%d)"
           git push origin HEAD:main
