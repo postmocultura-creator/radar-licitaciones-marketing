@@ -43,6 +43,36 @@
     "Tecnología y MarTech",
   ];
 
+  // Opciones fijas de los filtros de fuente y país por pestaña: igual que
+  // las categorías, se muestran siempre (con 0 si ese día no hay nada), a
+  // petición del usuario. Fijas POR PESTAÑA, no globales: "Euskadi (0)" en
+  // las calls for proposals de la UE sería ruido, ahí nunca puede haber nada.
+  var FUENTES_POR_TIPO = {
+    recientes: ["Estado", "Euskadi"],
+    licitacion: ["Estado", "Euskadi", "UE"],
+    adjudicacion: ["Estado", "Euskadi", "UE"],
+    contrato_menor_venciendo: ["Estado", "Euskadi"],
+    convocatoria_ue: ["UE-subvenciones"],
+  };
+  // Países que publican en TED: UE-27 + EEE + Suiza y Reino Unido. Debe
+  // coincidir con los nombres de PAISES_ISO3 en normalizar.py. Si aparece
+  // un país que no está aquí (TED trae a veces Canadá, Arabia Saudí...), se
+  // añade igualmente desde los datos.
+  var PAISES_TED = [
+    "Alemania", "Austria", "Bélgica", "Bulgaria", "Chequia", "Chipre", "Croacia", "Dinamarca",
+    "Eslovaquia", "Eslovenia", "España", "Estonia", "Finlandia", "Francia", "Grecia", "Hungría",
+    "Irlanda", "Islandia", "Italia", "Letonia", "Liechtenstein", "Lituania", "Luxemburgo", "Malta",
+    "Noruega", "País Vasco", "Países Bajos", "Polonia", "Portugal", "Reino Unido", "Rumanía",
+    "Suecia", "Suiza",
+  ];
+  var PAISES_POR_TIPO = {
+    recientes: ["España", "País Vasco"],
+    licitacion: PAISES_TED,
+    adjudicacion: PAISES_TED,
+    contrato_menor_venciendo: ["España", "País Vasco"],
+    convocatoria_ue: ["UE"],
+  };
+
   // Ventana de "recientes": el dato solo tiene fecha (YYYY-MM-DD), no hora,
   // así que "últimos 3 días" se aproxima a nivel de día -publicado hoy,
   // ayer o anteayer- en vez de horas exactas, que no se pueden calcular con
@@ -271,6 +301,16 @@
     elExplicacionTipo.setAttribute("data-tipo", estado.tipoRegistro);
   }
 
+  // Opciones fijas de la pestaña + cualquier valor presente en los datos que
+  // no esté en la lista fija (para no esconder nunca un dato real).
+  function conOpcionesFijas(fijas, conteos) {
+    var lista = (fijas || []).slice();
+    Object.keys(conteos).forEach(function (v) {
+      if (v && lista.indexOf(v) === -1) lista.push(v);
+    });
+    return lista;
+  }
+
   function construirControles() {
     var subconjunto = subconjuntoActivo();
     var esRecientes = estado.tipoRegistro === "recientes";
@@ -289,22 +329,13 @@
       if (t.revisar_manual) totalRevisar++;
     });
 
-    // Segmented control de fuente: "Todas" + una opción por fuente. En el
-    // resto de pestañas, solo las fuentes presentes (dinámico). En
-    // "recientes" se fijan siempre Estado y Euskadi aunque alguna esté a 0
-    // ese día, igual que la propia pestaña nunca desaparece al llegar a 0:
-    // es la vista de uso diario y que un filtro desaparezca parecería un
-    // fallo, no información.
+    // Segmented control de fuente: "Todas" + las fuentes fijas de la pestaña
+    // (FUENTES_POR_TIPO), aunque alguna esté a 0 ese día: que un filtro
+    // desaparezca parecería un fallo, no información.
     var opcionesFuente = [["", "Todas (" + subconjunto.length + ")"]];
-    if (esRecientes) {
-      ["Estado", "Euskadi"].forEach(function (f) {
-        opcionesFuente.push([f, f + " (" + (fuentes[f] || 0) + ")"]);
-      });
-    } else {
-      Object.keys(fuentes).sort().forEach(function (f) {
-        opcionesFuente.push([f, f + " (" + fuentes[f] + ")"]);
-      });
-    }
+    conOpcionesFijas(FUENTES_POR_TIPO[estado.tipoRegistro], fuentes).forEach(function (f) {
+      opcionesFuente.push([f, f + " (" + (fuentes[f] || 0) + ")"]);
+    });
 
     elSegmentedFuente.innerHTML = "";
     opcionesFuente.forEach(function (par) {
@@ -342,13 +373,15 @@
       elCategoria.appendChild(opt);
     });
 
-    // Desplegable de país/territorio, alfabético
-    var paisesOrdenados = Object.keys(paises).sort(function (a, b) { return a.localeCompare(b, "es"); });
+    // Desplegable de país/territorio: los fijos de la pestaña
+    // (PAISES_POR_TIPO) aunque estén a 0, alfabético.
+    var paisesOrdenados = conOpcionesFijas(PAISES_POR_TIPO[estado.tipoRegistro], paises)
+      .sort(function (a, b) { return a.localeCompare(b, "es"); });
     elPais.innerHTML = '<option value="">Todos los países (' + subconjunto.length + ")</option>";
     paisesOrdenados.forEach(function (p) {
       var opt = document.createElement("option");
       opt.value = p;
-      opt.textContent = p + " (" + paises[p] + ")";
+      opt.textContent = p + " (" + (paises[p] || 0) + ")";
       elPais.appendChild(opt);
     });
 
