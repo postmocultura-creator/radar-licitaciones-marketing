@@ -271,25 +271,33 @@ def _guardar_error(prefijo: str, exc: Exception) -> None:
 
 
 def main() -> None:
+    # zipfile.BadZipFile: los primeros días de cada mes el ZIP del mes en
+    # curso todavía no existe y PLACSP responde con algo que no es un ZIP
+    # (pasó el 2026-10-01). No es un fallo del scraper: sin crudo nuevo,
+    # clasificar.py sigue con lo acumulado (ver FUENTES_ACUMULATIVAS) y el
+    # buscador web cubre lo publicado esos días. Los dos feeds se intentan
+    # por separado: que falte uno no impide el otro.
+    fallo = False
     try:
         items = extraer()
-    except (requests.RequestException, ET.ParseError) as exc:
+        ruta = guardar_crudo(items, "placsp")
+        print(f"[placsp] {len(items)} licitaciones guardadas en {ruta}")
+    except (requests.RequestException, ET.ParseError, zipfile.BadZipFile) as exc:
         print(f"[placsp] ERROR al consultar el feed de PLACSP: {exc}", file=sys.stderr)
         _guardar_error("placsp", exc)
-        sys.exit(1)
-
-    ruta = guardar_crudo(items, "placsp")
-    print(f"[placsp] {len(items)} licitaciones guardadas en {ruta}")
+        fallo = True
 
     try:
         menores = extraer_contratos_menores()
-    except (requests.RequestException, ET.ParseError, KeyError) as exc:
+    except (requests.RequestException, ET.ParseError, KeyError, zipfile.BadZipFile) as exc:
         print(f"[placsp] ERROR al consultar contratos menores: {exc}", file=sys.stderr)
         _guardar_error("placsp_menores", exc)
-        return
+        sys.exit(1)
 
     ruta_menores = guardar_crudo(menores, "placsp_menores")
     print(f"[placsp] {len(menores)} contratos menores guardados en {ruta_menores}")
+    if fallo:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
