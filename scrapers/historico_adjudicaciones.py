@@ -162,6 +162,20 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
     if not lotes:
         return None
 
+    # Acuerdos marco con varias adjudicatarias: PLACSP repite el importe
+    # TOTAL del acuerdo en cada ganadora (verificado: Ingenio Media e Imaxe
+    # Intermedia, 6,9 M€ cada una del mismo acuerdo de Turismo de Galicia).
+    # Sumado por empresa, eso multiplica el importe real. Se reparte a
+    # partes iguales entre las que comparten lote e importe.
+    grupos: dict[tuple, list[dict]] = {}
+    for l in lotes:
+        if l["importe"]:
+            grupos.setdefault((l["lote"], l["importe"]), []).append(l)
+    for grupo in grupos.values():
+        if len(grupo) > 1:
+            for l in grupo:
+                l["importe"] = round(l["importe"] / len(grupo), 2)
+
     proyecto = cfs.find("cac:ProcurementProject", NS)
     titulo = _texto(proyecto, "cbc:Name") or _texto(entry, "atom:title") or ""
     clasif = clasificar_texto(titulo, [])

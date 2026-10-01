@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico de adjudicaciones — Radar de licitaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="historico.css">
+</head>
+<body>
+<header class="cabecera">
+  <div class="cabecera__titulo">
+    <h1>Histórico de adjudicaciones</h1>
+    <p>Quién gana los contratos de servicios de agencia desde 2021 · Estado · Euskadi</p>
+  </div>
+  <a class="enlace-cabecera" href="index.html">← Volver al radar</a>
+</header>
+
+<main>
+  <p class="explicacion-tipo" data-tipo="adjudicacion">
+    Adjudicaciones de organismos públicos españoles (Estado y Euskadi) desde 2021, incluidos contratos menores, filtradas por categoría de servicio de agencia. Fuentes: PLACSP (perfiles propios y plataformas autonómicas agregadas) y TED para lo que solo se publica allí. Importes sin IVA; en los acuerdos marco con varias empresas adjudicatarias, el importe se reparte a partes iguales entre ellas. Cada lote adjudicado cuenta como una adjudicación. Se actualiza cada semana.
+  </p>
+
+  <section class="barra-filtros" aria-label="Filtros">
+    <div class="barra-filtros__principal">
+      <div class="campo-busqueda">
+        <svg class="icono-busqueda" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="filtro-texto" placeholder="Buscar empresa, NIF u organismo…" aria-label="Buscar empresa, NIF u organismo">
+      </div>
+      <div class="segmented" id="segmented-ambito" role="radiogroup" aria-label="Ámbito"></div>
+      <div class="segmented" id="segmented-menor" role="radiogroup" aria-label="Tipo de adjudicación"></div>
+      <select id="filtro-anio" class="selector" aria-label="Año"></select>
+      <select id="filtro-categoria" aria-label="Categoría de servicio"></select>
+    </div>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Resumen"></section>
+
+  <div class="rejilla">
+    <section class="panel panel--ancho" aria-labelledby="t-evolucion">
+      <div class="panel__cabecera">
+        <h2 id="t-evolucion">Evolución por año</h2>
+        <div class="segmented segmented--mini" id="metrica-evolucion" role="radiogroup" aria-label="Métrica"></div>
+      </div>
+      <div class="columnas" id="grafico-evolucion"></div>
+    </section>
+
+    <section class="panel panel--ancho" aria-labelledby="t-empresas">
+      <div class="panel__cabecera">
+        <h2 id="t-empresas">Empresas que más ganan</h2>
+        <div class="segmented segmented--mini" id="metrica-empresas" role="radiogroup" aria-label="Métrica"></div>
+      </div>
+      <p class="panel__nota" id="nota-concentracion"></p>
+      <ol class="barras" id="grafico-empresas"></ol>
+      <p class="panel__nota">Pulsa una empresa para ver su ficha: a quién vende, qué tipo de contratos gana y el detalle de cada adjudicación.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="t-categorias">
+      <h2 id="t-categorias">Por categoría de servicio</h2>
+      <ol class="barras" id="grafico-categorias"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="t-organismos">
+      <h2 id="t-organismos">Organismos que más adjudican</h2>
+      <ol class="barras" id="grafico-organismos"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="t-procedimientos">
+      <h2 id="t-procedimientos">Por procedimiento</h2>
+      <ol class="barras" id="grafico-procedimientos"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="t-competencia">
+      <h2 id="t-competencia">Competencia: ofertas recibidas por licitación</h2>
+      <ol class="barras" id="grafico-ofertas"></ol>
+      <p class="panel__nota">Solo licitaciones que publican el número de ofertas (los contratos menores no lo publican).</p>
+    </section>
+  </div>
+
+  <p class="sin-resultados" id="sin-datos" hidden>Todavía no hay datos del histórico. Se generan con el workflow "Histórico de adjudicaciones".</p>
+</main>
+
+<dialog class="ficha" id="ficha-empresa" aria-labelledby="ficha-titulo">
+  <div class="ficha__cabecera">
+    <div>
+      <h2 id="ficha-titulo"></h2>
+      <p class="ficha__nif" id="ficha-nif"></p>
+    </div>
+    <button type="button" class="ficha__cerrar" id="ficha-cerrar" aria-label="Cerrar ficha">✕</button>
+  </div>
+  <div class="ficha__cuerpo" id="ficha-cuerpo"></div>
+</dialog>
+
+<footer class="pie">
+  <p>Datos generados por <code>scrapers/historico_adjudicaciones.py</code>. Ver <code>README.md</code>.</p>
+  <p id="fecha-generacion"></p>
+</footer>
+
+<script src="historico-data.js"></script>
+<script src="historico.js"></script>
+</body>
+</html>

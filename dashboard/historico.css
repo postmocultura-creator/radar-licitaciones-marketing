@@ -1,0 +1,293 @@
+/* Vista "Histórico de adjudicaciones". Reutiliza los tokens y componentes
+   de style.css (cabecera, barra de filtros, segmented, explicación). */
+
+:root {
+  --color-barra: var(--color-tab-adjudicaciones);
+  --color-barra-bg: var(--color-tab-adjudicaciones-bg);
+}
+
+.enlace-cabecera {
+  color: #fff;
+  font-size: .85rem;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: var(--radius-sm);
+  padding: .45rem .8rem;
+  transition: background var(--motion-base) var(--ease-premium);
+}
+.enlace-cabecera:hover { background: rgba(255, 255, 255, .1); }
+.enlace-cabecera:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.selector {
+  height: 38px;
+  padding: 0 1.8rem 0 .7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: .85rem;
+  font-family: var(--font-ui);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+.selector:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+/* ---------- KPIs ---------- */
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .6rem;
+  margin-bottom: .85rem;
+}
+
+.kpi {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: .75rem .85rem;
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+
+.kpi__valor {
+  font-family: var(--font-data);
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__etiqueta { font-size: .75rem; color: var(--color-muted); }
+
+/* ---------- Paneles ---------- */
+
+.rejilla {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .85rem;
+}
+
+@media (min-width: 860px) {
+  .rejilla { grid-template-columns: 1fr 1fr; }
+  .panel--ancho { grid-column: 1 / -1; }
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  min-width: 0;
+}
+
+.panel h2 { font-size: .95rem; margin: 0 0 .75rem; }
+
+.panel__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-bottom: .5rem;
+}
+.panel__cabecera h2 { margin: 0; }
+
+.panel__nota { font-size: .78rem; color: var(--color-muted); margin: .25rem 0 .6rem; }
+
+.segmented--mini .segmented__opcion { font-size: .75rem; padding: .25rem .6rem; }
+
+/* ---------- Barras horizontales ---------- */
+
+.barras { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .2rem; }
+
+.barras__fila > .barras__boton,
+.barras__fila:not(:has(.barras__boton)) {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(60px, 1fr) auto;
+  align-items: center;
+  gap: .6rem;
+  padding: .3rem .4rem;
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+}
+
+.barras__boton {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-premium);
+}
+.barras__boton:hover { background: var(--color-barra-bg); }
+.barras__boton:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+.barras__boton:active { transform: scale(.99); }
+
+.barras__nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.barras__pista {
+  height: 8px;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.barras__relleno {
+  display: block;
+  height: 100%;
+  background: var(--color-barra);
+  border-radius: var(--radius-full);
+  transition: width var(--motion-slow) var(--ease-premium);
+}
+
+.barras__valor {
+  font-family: var(--font-data);
+  font-size: .78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.barras__sec { color: var(--color-muted); }
+.barras__vacio { font-size: .82rem; color: var(--color-muted); padding: .4rem; }
+
+/* ---------- Columnas (evolución por año) ---------- */
+
+.columnas {
+  display: flex;
+  align-items: stretch;
+  gap: .6rem;
+  height: 200px;
+}
+
+.columnas__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  min-width: 0;
+}
+
+.columnas__valor {
+  font-family: var(--font-data);
+  font-size: .72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.columnas__pista {
+  flex: 1;
+  width: 100%;
+  max-width: 64px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--color-muted-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.columnas__relleno {
+  display: block;
+  width: 100%;
+  background: var(--color-barra);
+  transition: height var(--motion-slow) var(--ease-premium);
+}
+
+.columnas__etiqueta { font-family: var(--font-data); font-size: .75rem; color: var(--color-muted); }
+
+/* ---------- Ficha de empresa ---------- */
+
+.ficha {
+  width: min(960px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+}
+
+.ficha[open] { display: flex; flex-direction: column; }
+.ficha::backdrop { background: rgba(15, 23, 42, .45); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ficha[open] { animation: ficha-entrada var(--motion-slow) var(--ease-premium); }
+  @keyframes ficha-entrada { from { opacity: 0; transform: translateY(8px) scale(.99); } }
+}
+
+.ficha__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.2rem .8rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ficha__cabecera h2 { margin: 0; font-size: 1.1rem; }
+.ficha__nif { margin: .2rem 0 0; font-family: var(--font-data); font-size: .78rem; color: var(--color-muted); }
+
+.ficha__cerrar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: .9rem;
+}
+.ficha__cerrar:hover { background: var(--color-muted-bg); }
+.ficha__cerrar:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+.ficha__cuerpo { overflow-y: auto; padding: 1rem 1.2rem 1.4rem; }
+
+.ficha__rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ficha__bloque h3 { font-size: .85rem; margin: 0 0 .4rem; }
+.ficha__bloque + .ficha__bloque, .ficha__rejilla + .ficha__bloque { margin-top: 1rem; }
+
+.ficha__lista { list-style: none; margin: 0; padding: 0; font-size: .8rem; }
+.ficha__lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .25rem 0;
+  border-bottom: 1px solid var(--color-muted-bg);
+}
+.ficha__lista li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ficha__cifra { font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--color-muted); }
+
+.ficha__tabla-envoltorio { overflow-x: auto; }
+.ficha__tabla { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.ficha__tabla th { text-align: left; color: var(--color-muted); font-weight: 500; padding: .35rem .4rem; border-bottom: 1px solid var(--color-border); }
+.ficha__tabla td { padding: .4rem; border-bottom: 1px solid var(--color-muted-bg); vertical-align: top; }
+.ficha__tabla .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.ficha__tabla td.num:first-child { text-align: left; }
+.ficha__tabla a { color: var(--color-primary); text-decoration: none; }
+.ficha__tabla a:hover { text-decoration: underline; }
+
+.ficha__etiqueta {
+  font-size: .68rem;
+  padding: .05rem .35rem;
+  border-radius: var(--radius-full);
+  background: var(--color-tab-menores-bg);
+  color: var(--color-tab-menores);
+  margin-left: .25rem;
+}
+
+@media (max-width: 640px) {
+  .barras__fila > .barras__boton,
+  .barras__fila:not(:has(.barras__boton)) { grid-template-columns: minmax(0, 1fr) auto; }
+  .barras__pista { grid-column: 1 / -1; grid-row: 2; }
+  .columnas { gap: .3rem; }
+  .columnas__valor { font-size: .62rem; }
+}
