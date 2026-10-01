@@ -382,8 +382,18 @@ Cómo se construye (`scrapers/historico_adjudicaciones.py` +
   4 en paralelo. Cada uno descarga un ZIP, se queda con la última versión de
   cada expediente, filtra por la taxonomía del radar y sube solo lo
   relevante.
-- **Modo reciente** (cada lunes): mes en curso y anterior, añadidos sobre lo
-  ya publicado.
+- **Mantenimiento: lo hace el pipeline diario**, no una actualización
+  aparte. El paso "Histórico de adjudicaciones" de `actualizar-datos.yml`
+  (`historico_adjudicaciones.py diario`) suma cada día las adjudicaciones
+  nuevas reutilizando los ZIP del mes que `placsp.py` acaba de descargar
+  (`data/raw/zips/`), más lo pequeño: plataformas agregadas del mes, TED del
+  año y un mes de menores de Euskadi en rotación (cada mes de los últimos 6
+  se repasa cada 6 días, porque se publican con retraso). ~1 minuto más
+  Euskadi. El orden de los ficheros es estable (lo nuevo va al final y los
+  diccionarios conservan sus índices) para que el commit diario sea pequeño.
+- El workflow `historico-adjudicaciones.yml` es **solo manual**, para
+  reconstruir o reparar. "completo" cuesta ~550 minutos de Actions: el
+  2026-10-01, lanzarlo tres veces agotó los 2.000 minutos gratuitos del mes.
 - Se guardan **todos los lotes** de cada expediente (un expediente puede
   tener varias adjudicatarias) con NIF, importe sin IVA, ofertas recibidas
   y si la ganadora es pyme. Las empresas se agrupan por NIF: el nombre se

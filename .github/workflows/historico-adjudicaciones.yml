@@ -1,19 +1,21 @@
-name: Histórico de adjudicaciones
+name: Histórico de adjudicaciones (reparación manual)
 
-# Construye y mantiene data/historico_adjudicaciones.json y lo que lee el
-# dashboard: historico-data.js + historico-detalle/ (ver
-# scrapers/historico_adjudicaciones.py).
+# SOLO MANUAL. El histórico se mantiene solo: el pipeline diario
+# (actualizar-datos.yml, paso "Histórico de adjudicaciones") le suma cada día
+# las adjudicaciones nuevas con lo que ya ha descargado. Este workflow queda
+# para reconstruir o reparar (ver scrapers/historico_adjudicaciones.py).
 #
-# - "completo": se lanza a mano una vez. Descarga los ZIP anuales 2021-2025 y
-#   los mensuales del año en curso de PLACSP (licitaciones, plataformas
-#   agregadas y contratos menores: ~12 GB en total) y los avisos de
-#   resultado de TED. Un trabajo por fuente y periodo, en paralelo: cada uno
-#   descarga un ZIP, lo filtra y sube solo lo relevante (pocos MB).
-# - "reciente": cada lunes. Solo el mes en curso y el anterior, que es donde
-#   entran las adjudicaciones nuevas, añadidas sobre lo que ya hay.
+# OJO AL COSTE: "completo" son ~50 trabajos y ~550 minutos de Actions; el
+# 2026-10-01, lanzarlo tres veces agotó los 2.000 minutos gratuitos del mes
+# y paró todos los workflows. Con el repositorio en privado, no lanzarlo sin
+# calcular antes los minutos; para arreglos puntuales, usar "fuentes".
+#
+# - "completo": descarga los ZIP anuales 2021-2025 y los mensuales del año en
+#   curso de PLACSP (licitaciones, plataformas agregadas y contratos menores:
+#   ~12 GB en total), los menores de Euskadi y los avisos de TED. Un trabajo
+#   por fuente y periodo: cada uno filtra y sube solo lo relevante.
+# - "reciente": solo el mes en curso y el anterior (6 meses para Euskadi).
 on:
-  schedule:
-    - cron: "17 3 * * 1"
   workflow_dispatch:
     inputs:
       modo:

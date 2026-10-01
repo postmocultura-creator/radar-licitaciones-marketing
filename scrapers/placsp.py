@@ -55,11 +55,10 @@ la carpeta licitaciones_marketing/):
 
 from __future__ import annotations
 
-import io
 import json
 import sys
 import zipfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -188,15 +187,16 @@ def _parsear_entry(entry) -> dict:
 
 # ---------------------------------------------------------------------------
 # Ambos feeds (licitaciones general y contratos menores) se sirven como ZIP
-# mensual con la misma estructura: un fichero histórico completo (partido en
-# varios .atom) más varios ficheros incrementales con timestamp real en el
-# nombre. Da igual cuál de los dos, ni cuándo se ejecute dentro del mes: el
-# histórico completo va dentro de CADA ZIP mensual, así que un solo mes basta
-# (verificado con datos reales: el ZIP de septiembre trae expedientes con
-# fecha de actualización desde 2021). "Sumar solo el fichero sin sufijo de
-# fecha" fue un bug real de una versión anterior (ver README): ese fichero es
-# una muestra pequeña, no "el acumulado" — hay que iterar TODOS los ficheros
-# del ZIP y deduplicar por expediente.
+# mensual con la misma estructura: varios .atom, la mayoría lotes
+# incrementales con la hora real en el nombre. OJO, corregido el 2026-10-01:
+# el ZIP mensual NO es el histórico completo, trae los expedientes
+# ACTUALIZADOS ese mes (el de septiembre de 2026, ~41.000 expedientes, el 85%
+# de sus adjudicaciones de 2026). Por eso clasificar.py acumula el resultado
+# entre ejecuciones (FUENTES_ACUMULATIVAS) y el histórico de adjudicaciones
+# se construyó con los ZIP anuales. "Sumar solo el fichero sin sufijo de
+# fecha" fue un bug real de una versión anterior (ver README): hay que
+# iterar TODOS los ficheros del ZIP y quedarse con la última versión de cada
+# expediente.
 # ---------------------------------------------------------------------------
 FEED_GENERAL_ZIP = (
     "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_643/"
@@ -208,38 +208,77 @@ FEED_MENORES_ZIP = (
 )
 
 
-def _extraer_zip_mensual(url_template: str) -> list[dict]:
-    anio_mes = datetime.now(timezone.utc).strftime("%Y%m")
-    url = url_template.format(anio_mes=anio_mes)
-    # timeout alto: el ZIP de licitaciones generales ronda los 180 MB.
-    resp = requests.get(url, timeout=300, headers={"User-Agent": "licitaciones-marketing-radar/1.0"})
-    resp.raise_for_status()
+# Los ZIP descargados se quedan en disco (data/raw/ no se versiona) para que
+# el histórico de adjudicaciones los reutilice en la misma ejecución sin
+# volver a bajarlos (scrapers/historico_adjudicaciones.py, modo "diario").
+DIR_ZIPS = Path(__file__).resolve().parent.parent / "data" / "raw" / "zips"
+# Los primeros días del mes se lee también el ZIP del mes anterior: el cron
+# corre a las 22:47 UTC pero GitHub lo retrasa horas, así que la ejecución
+# del último día del mes cae ya en el mes siguiente y, leyendo solo el "mes
+# en curso", el último lote del mes (el del día 30/31 a las 20:15) no se
+# leía nunca. Además esos días el ZIP del mes nuevo puede no existir aún.
+DIAS_LEER_MES_ANTERIOR = 3
 
-    resultados = []
-    vistos = set()
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as z:
-        for nombre in z.namelist():
-            with z.open(nombre) as f:
-                try:
-                    root = ET.fromstring(f.read())
-                except ET.ParseError:
-                    continue
-            for entry in root.findall("atom:entry", NS):
-                item = _parsear_entry(entry)
-                clave = item["expediente"] or item["enlace"]
-                if clave in vistos:
-                    continue
-                vistos.add(clave)
-                resultados.append(item)
-    return resultados
+
+def _meses_a_leer() -> list[str]:
+    hoy = datetime.now(timezone.utc).date()
+    meses = [hoy.strftime("%Y%m")]
+    if hoy.day <= DIAS_LEER_MES_ANTERIOR:
+        anterior = hoy.replace(day=1) - timedelta(days=1)
+        meses.insert(0, anterior.strftime("%Y%m"))
+    return meses
+
+
+def _descargar_zip(url: str, destino: Path) -> None:
+    # En streaming a disco: el ZIP de licitaciones ronda los 300 MB.
+    with requests.get(url, stream=True, timeout=300,
+                      headers={"User-Agent": "licitaciones-marketing-radar/1.0"}) as resp:
+        resp.raise_for_status()
+        with destino.open("wb") as f:
+            for trozo in resp.iter_content(chunk_size=1 << 20):
+                f.write(trozo)
+
+
+def _extraer_zip_mensual(url_template: str, nombre: str) -> list[dict]:
+    DIR_ZIPS.mkdir(parents=True, exist_ok=True)
+    # Versión más reciente de cada expediente (aparece una vez por cada
+    # cambio de estado). Antes se guardaba la primera que salía en el ZIP.
+    mejores: dict[str, dict] = {}
+    ultimo_error: Exception | None = None
+    leidos = 0
+    for anio_mes in _meses_a_leer():
+        destino = DIR_ZIPS / f"{nombre}_{anio_mes}.zip"
+        try:
+            _descargar_zip(url_template.format(anio_mes=anio_mes), destino)
+            with zipfile.ZipFile(destino) as z:
+                for fichero in z.namelist():
+                    try:
+                        root = ET.fromstring(z.read(fichero))
+                    except ET.ParseError:
+                        continue
+                    for entry in root.findall("atom:entry", NS):
+                        item = _parsear_entry(entry)
+                        clave = item["expediente"] or item["enlace"]
+                        previo = mejores.get(clave)
+                        if previo is None or (item["fecha_actualizacion"] or "") >= (previo["fecha_actualizacion"] or ""):
+                            mejores[clave] = item
+            leidos += 1
+        except (requests.RequestException, zipfile.BadZipFile) as exc:
+            # El del mes en curso puede no existir todavía los primeros días.
+            print(f"[placsp] AVISO: {nombre} {anio_mes} no disponible ({exc})", file=sys.stderr)
+            destino.unlink(missing_ok=True)
+            ultimo_error = exc
+    if not leidos:
+        raise ultimo_error
+    return list(mejores.values())
 
 
 def extraer() -> list[dict]:
-    return _extraer_zip_mensual(FEED_GENERAL_ZIP)
+    return _extraer_zip_mensual(FEED_GENERAL_ZIP, "licitaciones")
 
 
 def extraer_contratos_menores() -> list[dict]:
-    return _extraer_zip_mensual(FEED_MENORES_ZIP)
+    return _extraer_zip_mensual(FEED_MENORES_ZIP, "menores")
 
 
 def guardar_crudo(items: list[dict], prefijo: str = "placsp") -> Path:

@@ -489,10 +489,25 @@ CATEGORIAS = list(config.CATEGORIAS)  # orden fijo = bit de la máscara
 CABECERA_JS = "window.HISTORICO = "
 
 
-def _compactar(registros: list[dict]) -> dict:
+def _clave_empresa(nif: str | None, nombre: str) -> str:
+    # Agrupa por NIF (el nombre se escribe de varias formas: "S.L.", "SL",
+    # "SOCIEDAD LIMITADA"...); sin NIF, por nombre normalizado.
+    return nif or "~" + " ".join(nombre.upper().split())
+
+
+def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
+    """dic_previo: diccionarios de lo ya publicado. Se parte de ellos para que
+    cada empresa/organismo conserve su índice (ver combinar_registros)."""
     dic = {"empresa": [], "organismo": [], "tipo": [], "procedimiento": []}
     indices: dict[str, dict] = {k: {} for k in dic}
     nombres_empresa: dict[str, dict[str, int]] = {}
+    if dic_previo:
+        for tabla in dic:
+            for valor in dic_previo.get(tabla, []):
+                clave = _clave_empresa(valor[0], valor[1]) if tabla == "empresa" else valor
+                if clave not in indices[tabla]:
+                    indices[tabla][clave] = len(dic[tabla])
+                    dic[tabla].append(list(valor) if tabla == "empresa" else valor)
 
     def idx(tabla: str, clave, valor=None) -> int:
         if clave not in indices[tabla]:
@@ -512,9 +527,7 @@ def _compactar(registros: list[dict]) -> dict:
             1 if r["fuente"] == "TED" else 0, r["actualizado"][:10], r["presupuesto"],
         ])
         for l in r["lotes"]:
-            # Agrupa por NIF (el nombre se escribe de varias formas: "S.L.",
-            # "SL", "SOCIEDAD LIMITADA"...); sin NIF, por nombre normalizado.
-            clave = l["nif"] or "~" + " ".join(l["empresa"].upper().split())
+            clave = _clave_empresa(l["nif"], l["empresa"])
             nombres_empresa.setdefault(clave, {}).setdefault(l["empresa"], 0)
             nombres_empresa[clave][l["empresa"]] += 1
             lotes.append([len(exp) - 1, idx("empresa", clave, [l["nif"], ""]), l["fecha"],
@@ -522,7 +535,8 @@ def _compactar(registros: list[dict]) -> dict:
                           None if l["pyme"] is None else int(l["pyme"])])
     # Nombre mostrado de cada empresa: la grafía más frecuente.
     for clave, i in indices["empresa"].items():
-        dic["empresa"][i][1] = max(nombres_empresa[clave].items(), key=lambda kv: kv[1])[0]
+        if clave in nombres_empresa:  # las heredadas sin lotes ahora conservan su nombre
+            dic["empresa"][i][1] = max(nombres_empresa[clave].items(), key=lambda kv: kv[1])[0]
     return {"v": 1, "actualizado": date.today().isoformat(), "categorias": CATEGORIAS,
             "prefijo_enlace": PREFIJO_DEEPLINK, "dic": dic, "exp": exp, "lotes": lotes}
 
@@ -548,10 +562,12 @@ def _expandir(c: dict) -> list[dict]:
     return registros
 
 
-def _leer_publicado() -> list[dict]:
+def _leer_publicado() -> tuple[list[dict], dict | None]:
+    """Registros ya publicados y sus diccionarios (para conservar índices)."""
     if not SALIDA.exists():
-        return []
-    return _expandir(json.loads(SALIDA.read_text(encoding="utf-8")))
+        return [], None
+    compacto = json.loads(SALIDA.read_text(encoding="utf-8"))
+    return _expandir(compacto), compacto["dic"]
 
 
 def _publicar(c: dict) -> None:
@@ -592,68 +608,120 @@ def _publicar(c: dict) -> None:
 
 
 def combinar(rutas: list[str]) -> None:
+    nuevos = [r for ruta in rutas for r in json.loads(Path(ruta).read_text(encoding="utf-8"))]
+    combinar_registros(nuevos)
+
+
+def combinar_registros(nuevos: list[dict]) -> None:
+    """Suma registros nuevos a lo ya publicado y lo vuelve a publicar.
+
+    El orden es estable a propósito: lo publicado conserva su posición (un
+    expediente actualizado se sustituye en su sitio) y lo nuevo va al final.
+    Los ficheros guardan índices (expediente, empresa, organismo); si cada
+    día se reordenara todo, cambiarían enteros y git tendría que guardar
+    ~60 MB nuevos por ejecución en vez de las pocas líneas añadidas."""
     from normalizar import _normalizar_clave, _organismos_compatibles, es_empresa_espanola
-
-    registros: dict[str, dict] = {}
-    ted: list[dict] = []
-    # La actualización semanal añade sobre lo que ya hay. Lo de TED ya
-    # publicado vuelve a pasar por el filtro de abajo: puede que PLACSP lo
-    # haya publicado después.
-    for r in _leer_publicado():
-        if r["fuente"] == "TED":
-            ted.append(r)
-        else:
-            registros[r["id"]] = r
-    for ruta in rutas:
-        for r in json.loads(Path(ruta).read_text(encoding="utf-8")):
-            if r["fuente"] == "TED":
-                ted.append(r)
-                continue
-            previo = registros.get(r["id"])
-            if previo is None or r["actualizado"] >= previo["actualizado"]:
-                registros[r["id"]] = r
-
-    # TED: solo lo que no está ya en PLACSP (título exacto + organismo compatible).
-    indice: dict[str, list[str]] = {}
-    for r in registros.values():
-        if r["fuente"] != "TED":
-            indice.setdefault(_clave_titulo(r), []).append(_normalizar_clave(r["organismo"]))
-    ids_solo_ted = set()
-    for r in ted:
-        orgs = indice.get(_clave_titulo(r), [])
-        if any(_organismos_compatibles(o, _normalizar_clave(r["organismo"])) for o in orgs):
-            continue
-        registros[r["id"]] = r
-        ids_solo_ted.add(r["id"])
-    solo_ted = len(ids_solo_ted)
 
     # Solo lotes ganados por empresas españolas (vascas incluidas): la
     # agencia quiere ver a sus competidores, no a una empresa extranjera.
     # Misma regla que el radar diario (normalizar.es_empresa_espanola). Se
-    # aplica también a lo ya publicado, así una actualización la impone
-    # sobre datos generados antes de existir la regla.
+    # aplica SOLO a lo que entra nuevo: lo publicado ya la pasó, y al
+    # guardarlo se pierde el país del adjudicatario que da TED, así que
+    # volver a aplicarla descartaba cada día alguna empresa española con un
+    # identificador poco habitual (comprobado: 17 expedientes en una pasada).
     lotes_extranjeros = 0
-    for r in registros.values():
+    for r in nuevos:
         antes = len(r["lotes"])
         r["lotes"] = [l for l in r["lotes"]
                       if es_empresa_espanola(l["nif"], [l["pais"]] if l.get("pais") else None, comprador_espanol=True)]
         lotes_extranjeros += antes - len(r["lotes"])
-    print(f"[historico] {lotes_extranjeros} lotes descartados por ser de empresas no españolas")
+    nuevos = [r for r in nuevos if r["lotes"]]
+    print(f"[historico] {lotes_extranjeros} lotes nuevos descartados por ser de empresas no españolas")
+
+    publicados, dic_previo = _leer_publicado()
+    registros: dict[str, dict] = {r["id"]: r for r in publicados}
+    for r in nuevos:
+        previo = registros.get(r["id"])
+        if previo is None or r["actualizado"] >= previo["actualizado"]:
+            registros[r["id"]] = r
+
+    # TED: solo lo que no está ya en PLACSP (título exacto + organismo
+    # compatible). Se revisa también lo de TED ya publicado: puede que PLACSP
+    # lo haya publicado después.
+    indice: dict[str, list[str]] = {}
+    for r in registros.values():
+        if r["fuente"] != "TED":
+            indice.setdefault(_clave_titulo(r), []).append(_normalizar_clave(r["organismo"]))
+    solo_ted = 0
+    for r in [r for r in registros.values() if r["fuente"] == "TED"]:
+        orgs = indice.get(_clave_titulo(r), [])
+        if any(_organismos_compatibles(o, _normalizar_clave(r["organismo"])) for o in orgs):
+            del registros[r["id"]]
+        else:
+            solo_ted += 1
 
     finales = [r for r in registros.values()
                if any((l["fecha"] or "") >= f"{ANIO_INICIO}-01-01" for l in r["lotes"])]
-    finales.sort(key=lambda r: max(l["fecha"] or "" for l in r["lotes"]), reverse=True)
 
-    _publicar(_compactar(finales))
+    _publicar(_compactar(finales, dic_previo))
     n_lotes = sum(len(r["lotes"]) for r in finales)
     print(f"[historico] {len(finales)} expedientes, {n_lotes} lotes adjudicados ({solo_ted} solo en TED) -> "
           f"{SALIDA} ({SALIDA.stat().st_size / 1e6:.1f} MB), {SALIDA_DASHBOARD.name} "
           f"({SALIDA_DASHBOARD.stat().st_size / 1e6:.1f} MB) + {FRAGMENTOS} fragmentos de detalle")
 
 
+MESES_ROTACION_EUSKADI = 6
+
+
+def diario() -> None:
+    """Alimenta el histórico desde el pipeline diario, sin descargar nada que
+    este no haya bajado ya (salvo lo pequeño):
+
+    - PLACSP licitaciones y contratos menores: los ZIP que scrapers/placsp.py
+      acaba de dejar en data/raw/zips/ (mes en curso, y el anterior los
+      primeros días del mes).
+    - Plataformas agregadas: ZIP mensual propio, ~10 MB.
+    - TED: avisos de resultado españoles del año en curso (2-3 peticiones).
+    - Contratos menores de Euskadi: se publican con meses de retraso y la API
+      se consulta por fecha de adjudicación, así que cada día se repasa UNO
+      de los últimos 6 meses, en rotación (~4 min). Cada mes se revisa cada 6
+      días.
+
+    Cada fuente va por separado: si una falla, las demás se suman igual."""
+    import placsp  # noqa: E402
+
+    hoy = date.today()
+    nuevos: list[dict] = []
+
+    def sumar(nombre: str, funcion) -> None:
+        try:
+            registros = funcion()
+        except Exception as exc:  # una fuente caída no debe tumbar las demás
+            print(f"[historico] AVISO: {nombre} no disponible hoy ({exc})", file=sys.stderr)
+            return
+        print(f"[historico] {nombre}: {len(registros)} expedientes con adjudicación")
+        nuevos.extend(registros)
+
+    for ruta in sorted(placsp.DIR_ZIPS.glob("*.zip")):
+        es_menor = ruta.name.startswith("menores")
+        sumar(f"PLACSP {ruta.stem}", lambda: list(procesar_zip(ruta, es_menor).values()))
+    for mes in placsp._meses_a_leer():
+        sumar(f"agregadas {mes}", lambda: pieza_placsp("agregadas", mes))
+    sumar(f"TED {hoy.year}", lambda: pieza_ted(str(hoy.year)))
+    indice_mes = hoy.year * 12 + hoy.month - 1 - hoy.toordinal() % MESES_ROTACION_EUSKADI
+    mes_euskadi = f"{indice_mes // 12}{indice_mes % 12 + 1:02d}"
+    sumar(f"menores de Euskadi {mes_euskadi}", lambda: pieza_euskadi_menores(mes_euskadi))
+
+    if not nuevos and not SALIDA.exists():
+        print("[historico] Sin datos nuevos y sin histórico previo: no se publica nada.", file=sys.stderr)
+        return
+    combinar_registros(nuevos)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="accion", required=True)
+    sub.add_parser("diario")
     p = sub.add_parser("pieza")
     p.add_argument("--feed", choices=[*FEEDS, "ted", "euskadi_menores"], required=True)
     p.add_argument("--periodo", required=True, help="AAAA (anual) o AAAAMM (mensual; TED solo AAAA)")
@@ -663,6 +731,9 @@ def main() -> None:
     c.add_argument("parciales", nargs="+")
     args = parser.parse_args()
 
+    if args.accion == "diario":
+        diario()
+        return
     if args.accion == "combinar":
         rutas = [r for patron in args.parciales for r in glob.glob(patron)]
         combinar(rutas)
