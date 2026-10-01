@@ -1,19 +1,5 @@
 [
   {
-    "expediente": "SAISS",
-    "titulo": "Diseñar, desarrollar, implantar y validar un MVP del Servicio de Atención Inteligente de Fomento de San Sebastián (SAISS)",
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=2D60qYVmWM7N3k3tjedSGw%3D%3D",
-    "tipo": "Servicios",
-    "subtipo": "",
-    "estado": "Publicada",
-    "organismo": "Sociedad Fomento de San Sebastián, S.A.-Presidente",
-    "perfil_url": null,
-    "fecha_publicacion": "2026-09-29",
-    "fecha_limite": "2026-10-01",
-    "presupuesto": "70000.00",
-    "moneda": "EUR"
-  },
-  {
     "expediente": "015_P2600039",
     "titulo": "L’objecte del contracte és el servei de gestió integral dels apartaments tutelats i servei d’àpats en companyia per a gent gran a l’equipament Pau Casals, amb mesures de contractació pública sostenible.",
     "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=dKEjNUg1a%2BJ70UvEyYJSGw%3D%3D",
@@ -4060,20 +4046,6 @@
     "moneda": "EUR"
   },
   {
-    "expediente": "AJT/47842/2026",
-    "titulo": "AS-40/2026 Servei de distribució del material comunicacional i publicitari del Gabinet d’Alcaldia de l’Ajuntament de l’Hospitalet de Llobregat",
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=qBb13TZlqzczjChw4z%2FXvw%3D%3D",
-    "tipo": "Servicios",
-    "subtipo": "",
-    "estado": "Publicada",
-    "organismo": "Ajuntament de l'Hospitalet de Llobregat",
-    "perfil_url": "https://contractaciopublica.cat/perfil/18437529",
-    "fecha_publicacion": "2026-09-30",
-    "fecha_limite": "2026-10-01",
-    "presupuesto": "59979.99",
-    "moneda": "EUR"
-  },
-  {
     "expediente": "OSE00007/2026",
     "titulo": "Prestació del servei postal de la Universitat Oberta de Catalunya, que inclou la recollida, admissió, classificació, transport, distribució, lliurament, seguiment, devolucions i facturació d'enviaments postals.",
     "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=B6Rh3vboMoPkY6rls5tG9A%3D%3D",
@@ -4099,20 +4071,6 @@
     "fecha_publicacion": "2026-09-30",
     "fecha_limite": "2026-10-12",
     "presupuesto": "45198.72",
-    "moneda": "EUR"
-  },
-  {
-    "expediente": "2026/63",
-    "titulo": "Servei de transcripció, recepció, lectura i informe dels electrocardiogrames realitzats al personal de la Universitat de Barcelona (en endavant UB), d’acord amb les indicacions del plec de prescripcions tècniques (en endavant PPT).\nLa prestació del servei es composa de:\n• Transcripció dels electrocardiogrames (en endavant ECG), que inclou la posada a disposició de 3 equips captador-transmissor fixes amb els seus corresponents cables per a la realització dels ECG.\n• Recepció dels electrocardiogrames, que inclou la posada a disposició d’una plataforma informàtica per poder gestionar i enviar telemàticament les lectures dels ECG que es realitzin a la Unitat del Servei Mèdic de la UB.\n• Lectura i informe dels electrocardiogrames, que inclou la interpretació telemàtica de l’ECG i l’emissió d’un informe per part d’un metge especialista en cardiologia en un termini màxim de 24 hores quan es tracta d’un cas ordinari o en un termini màxim de 15 minuts quan es tracta d’un cas d’urgència.\n• Impartició de la formació necessària pels maneig dels equips d’ECG\n• Servei d’assistència i suport tècnic dels equips ECG i de la plataforma de transmissió telemàtica.",
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=k%2FlW9T2hyzOGCFcHcNGIlQ%3D%3D",
-    "tipo": "Servicios",
-    "subtipo": "",
-    "estado": "Publicada",
-    "organismo": "Universitat de Barcelona",
-    "perfil_url": "https://contractaciopublica.cat/perfil/UB",
-    "fecha_publicacion": "2026-09-30",
-    "fecha_limite": "2026-10-01",
-    "presupuesto": "23040.00",
     "moneda": "EUR"
   },
   {
@@ -5639,20 +5597,6 @@
     "fecha_publicacion": "2026-09-30",
     "fecha_limite": "2026-10-15",
     "presupuesto": "37834.94",
-    "moneda": "EUR"
-  },
-  {
-    "expediente": "2021/2026",
-    "titulo": "La prestación del servicio de actividades extraescolares académicas dirigidas al alumnado de Fresno de Torote, en las modalidades de Refuerzo Específico, Refuerzo General e Inglés lúdico-educativo con ejecución en el CEIP y en el IES del Municipio.",
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=WRsO3h1tbjFQFSeKCRun4Q%3D%3D",
-    "tipo": "Servicios",
-    "subtipo": "Servicios de educación y formación profesional",
-    "estado": "Publicada",
-    "organismo": "Alcaldía del Ayuntamiento de Fresno de Torote",
-    "perfil_url": "https://contrataciondelestado.es/wps/poc?uri=deeplink:perfilContratante&idBp=DeEWEQZZWQ%2BXQV0WE7lYPw%3D%3D",
-    "fecha_publicacion": "2026-09-30",
-    "fecha_limite": "2026-10-01",
-    "presupuesto": "85181.82",
     "moneda": "EUR"
   },
   {

@@ -237,54 +237,6 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-09-27"
   },
   {
-    "id": "ce9a1a3801743274",
-    "titulo": "Apoyo a la Difusión y Explotación (D&E) del Programa Europa Digital",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-04-21",
-    "fecha_limite": "2026-10-01",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-SUPPORT-10-DISSEMINATION",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-2026-SUPPORT-10-DISSEMINATION",
-    "resumen": "Resultado esperado: optimización del marco operativo de difusión y explotación (D&E) del Programa Europa Digital, teniendo en cuenta los elementos mencionados en el «ámbito», con enfoques metodológicos y prácticos sólidos. Identificación de distintos tipos de adoptantes y creación de una taxonomía que articule sus respectivos intereses y necesidades. Apoyo a los proyectos en la preparación y ejecución de actividades de difusión y explotación, incluida la valorización y adopción de los res[ultados]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL Coordination and Support Actions",
-    "fecha_primera_aparicion": "2026-09-27"
-  },
-  {
-    "id": "10a942257885ff1a",
-    "titulo": "Marco de apoyo a la investigación sobre conocimiento situacional de la integridad de la información",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-04-21",
-    "fecha_limite": "2026-10-01",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-BESTUSE-RSF-10-AWARENESS",
-    "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-2026-BESTUSE-RSF-10-AWARENESS",
-    "resumen": "Resultado esperado: a nivel general, el proyecto debe lograr un impacto fuerte, visible y reconocido al escalar, facilitar y acelerar los esfuerzos de investigación y análisis centrados en el entorno informativo y la integridad de la información. Los principales resultados del proyecto financiado serán: las soluciones técnicas creadas o apoyadas; los conocimientos generados por los proyectos de investigación y monitorización apoyados; la prueba de concepto y las lecciones apren[didas]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "DIGITAL Grants for Financial Support",
-    "fecha_primera_aparicion": "2026-09-27"
-  },
-  {
     "id": "9573c6463eb6abea",
     "titulo": "Rumanía – Servicios de estudios de mercado – servicii de consultanță pentru studii de piață și materiale de informare pentru organizarea unor campanii eficiente de informare, conștientizare și educare a cetățenilor eficiente cu privire la calitatea aerului, în cadrul proiectului “Îmbunătățirea sistemului de evaluare și monitorizare a calității aerului la nivel național”, Cod MySMIS2021 323103 (Etapa II, finanțare prin PDD",
     "organismo": "Ministerul Mediului, Apelor si Padurilor",
@@ -3793,7 +3745,7 @@ window.TENDERS_DATA = [
     "id": "9f6f1c65b91267a2",
     "titulo": "Prestacion de servicios de diseño, creatividad e imagen corporativa que permitan atender las necesidades de comunicacion institucional, comercial y operativa de Metropolitano de Tenerife, S.A",
     "organismo": "Consejo de Administración de Metropolitano de Tenerife, S.A.",
-    "fuente": "Estado",
+    "fuente": "Euskadi",
     "pais_territorio": "España",
     "fecha_publicacion": "2026-09-30",
     "fecha_limite": "2026-10-15",
@@ -4099,11 +4051,11 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-10-01"
   },
   {
-    "id": "f6e7e7bdcd95626e",
+    "id": "acb67a656fee1d47",
     "titulo": "servicios de gestión y dinamización de las redes sociales del Área de Derechos Humanos, Convivencia, Cooperación e Interculturalidad",
-    "organismo": "Ayuntamiento de Bilbao-Concejal Delegado de Contratación",
+    "organismo": "Ayuntamiento de Bilbao",
     "fuente": "Euskadi",
-    "pais_territorio": "España",
+    "pais_territorio": "País Vasco",
     "fecha_publicacion": "2026-09-30",
     "fecha_limite": "2026-10-16",
     "presupuesto_valor": 10289.26,
@@ -4113,10 +4065,10 @@ window.TENDERS_DATA = [
       "Redes sociales / community management"
     ],
     "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=yuT3c7L8Km%2Bqb7rCcv76BA%3D%3D",
-    "enlace_directo": true,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es",
+    "enlace_directo": false,
     "codigo_expediente": "2026-058367",
-    "resumen": "servicios de gestión y dinamización de las redes sociales del Área de Derechos Humanos, Convivencia, Cooperación e Interculturalidad",
+    "resumen": "Expediente 2026-058367 · Abierto · Estado: Abierto / Plazo de presentación",
     "tipo_contrato": "no publicado",
     "tipo_registro": "licitacion",
     "fecha_primera_aparicion": "2026-10-01"
@@ -4125,7 +4077,7 @@ window.TENDERS_DATA = [
     "id": "f71bbd47cbf49f2a",
     "titulo": "Servicio de agencia de publicidad para la creación y difusión de campañas de publicidad institucional y promocional del Cabildo Insular de La Gomera para el año 2026",
     "organismo": "Presidencia del Cabildo Insular de La Gomera",
-    "fuente": "Estado",
+    "fuente": "Euskadi",
     "pais_territorio": "España",
     "fecha_publicacion": "2026-09-30",
     "fecha_limite": "2026-10-16",
@@ -5635,6 +5587,36 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-09-27"
   },
   {
+    "id": "4623f352d03ba28c",
+    "titulo": "Francia – Servicios de publicidad y de marketing – Prestations de conseil, conception de stratégie de communication, achat d’espace, gestion et suivi de campagnes médias en ligne",
+    "organismo": "COMITE DU TOURISME DES ILES DE GUADELOUPE (CTIG)",
+    "fuente": "UE",
+    "pais_territorio": "Francia",
+    "region_nuts": "FRY10",
+    "fecha_publicacion": "2026-09-25",
+    "fecha_limite": "2026-10-23",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79340000",
+      "79341200",
+      "79340000",
+      "79341200",
+      "79341400"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/663166-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Francia – Servicios de publicidad y de marketing – Prestations de conseil, conception de stratégie de communication, achat d’espace, gestion et suivi de campagnes médias en ligne",
+    "tipo_contrato": "Servicios de publicidad y de marketing",
+    "tipo_registro": "licitacion",
+    "fecha_primera_aparicion": "2026-09-27"
+  },
+  {
     "id": "dfaba87087519764",
     "titulo": "España – Servicios de campañas de publicidad – La contratación de servicios profesionales para la planificación estratégica y compra de espacios publicitarios en medios para anuncios y campañas de comunicación.",
     "organismo": "Gobierno Vasco - Bienestar, Juventud y Reto Demográfico",
@@ -5857,36 +5839,6 @@ window.TENDERS_DATA = [
     "codigo_expediente": null,
     "resumen": "Croacia – Servicios de desarrollo de aplicaciones servidor en Internet o intranet – Agroekološko zoniranje",
     "tipo_contrato": "Servicios de desarrollo de aplicaciones servidor en Internet o intranet",
-    "tipo_registro": "licitacion",
-    "fecha_primera_aparicion": "2026-09-27"
-  },
-  {
-    "id": "4623f352d03ba28c",
-    "titulo": "Francia – Servicios de publicidad y de marketing – Prestations de conseil, conception de stratégie de communication, achat d’espace, gestion et suivi de campagnes médias en ligne",
-    "organismo": "COMITE DU TOURISME DES ILES DE GUADELOUPE (CTIG)",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "region_nuts": "FRY10",
-    "fecha_publicacion": "2026-09-25",
-    "fecha_limite": "2026-10-23-04:00",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79340000",
-      "79341200",
-      "79340000",
-      "79341200",
-      "79341400"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/663166-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de publicidad y de marketing – Prestations de conseil, conception de stratégie de communication, achat d’espace, gestion et suivi de campagnes médias en ligne",
-    "tipo_contrato": "Servicios de publicidad y de marketing",
     "tipo_registro": "licitacion",
     "fecha_primera_aparicion": "2026-09-27"
   },
@@ -7830,6 +7782,30 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-09-27"
   },
   {
+    "id": "4e4cc9d4c8f944ba",
+    "titulo": "Colaboración Europea para una Economía Azul climáticamente neutra, sostenible y productiva",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2026-09-14",
+    "fecha_limite": "2026-11-16",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Creación de contenidos"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL6-2022-GOVERNANCE-01-02",
+    "enlace_directo": true,
+    "codigo_expediente": "HORIZON-CL6-2022-GOVERNANCE-01-02",
+    "resumen": "Resultado esperado: se espera que la colaboración contribuya a todos los siguientes resultados esperados: en línea con los objetivos del Pacto Verde Europeo y las prioridades de Europa Digital, la propuesta seleccionada contribuirá a la sostenibilidad y resiliencia de la economía azul apoyando el establecimiento de modelos de gobernanza innovadores. También contribuirá a reforzar las interfaces ciencia-política de la UE e internacionales en asuntos mar[inos]",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "43108390",
+    "fecha_primera_aparicion": "2026-10-01"
+  },
+  {
     "id": "9d16ace1e063a6e2",
     "titulo": "Países Bajos – Servicios de publicidad y de marketing – Campagnes & Communicatie Verkeersveiligheid",
     "organismo": "Vervoerregio Amsterdam",
@@ -7909,6 +7885,30 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "CREA Lump Sum Grants",
+    "fecha_primera_aparicion": "2026-10-01"
+  },
+  {
+    "id": "57a4c542a06f4d8c",
+    "titulo": "Evaluación de los impulsores directos e indirectos de la disminución de la biodiversidad de los invertebrados",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2026-10-13",
+    "fecha_limite": "2027-01-14",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NATURE-2027-02-01",
+    "enlace_directo": true,
+    "codigo_expediente": "HORIZON-NATURE-2027-02-01",
+    "resumen": "Resultado esperado: Se espera que las propuestas contribuyan a todos los siguientes resultados esperados: las partes interesadas que participan en las actividades de conservación y restauración de la biodiversidad tienen una mejor comprensión de cómo funcionan los impulsores directos e indirectos [1] de la disminución de la biodiversidad, teniendo en cuenta las escalas y dinámicas espaciales y temporales, y sus interacciones; la implementación a diferentes escalas espaciales y temporales de las políticas de biodiversidad de la UE y el GEPMA",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "HORIZON  Research and Innovation Actions",
     "fecha_primera_aparicion": "2026-10-01"
   },
   {
@@ -8130,6 +8130,30 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-09-30"
   },
   {
+    "id": "50c3fe0a16590006",
+    "titulo": "Prevención y gestión de enfermedades crónicas no transmisibles en niños y jóvenes (GACD)",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2026-10-29",
+    "fecha_limite": "2027-02-17",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Reputación online / gestión de crisis"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-01-DISEASE-10",
+    "enlace_directo": true,
+    "codigo_expediente": "HORIZON-HLTH-2027-01-DISEASE-10",
+    "resumen": "Resultado esperado: este topic pretende apoyar actividades que habiliten o contribuyan a uno o varios de los impactos esperados del destino «Abordar las enfermedades y reducir su carga». Con ese fin, las propuestas de este topic deben orientarse a ofrecer resultados dirigidos a, adaptados a y que contribuyan a algunos de los siguientes resultados esperados: investigadores, profesionales sanitarios y proveedores de países de renta baja y media [se benefician de...]",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "HORIZON  Research and Innovation Actions",
+    "fecha_primera_aparicion": "2026-09-27"
+  },
+  {
     "id": "3afd23d200489084",
     "titulo": "Co-desarrollo europeo",
     "organismo": "Comisión Europea",
@@ -8271,30 +8295,6 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
-    "fecha_primera_aparicion": "2026-09-27"
-  },
-  {
-    "id": "50c3fe0a16590006",
-    "titulo": "Prevención y gestión de enfermedades crónicas no transmisibles en niños y jóvenes (GACD)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2027-02-10",
-    "fecha_limite": "2027-04-13",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Reputación online / gestión de crisis"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-01-DISEASE-10",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-HLTH-2027-01-DISEASE-10",
-    "resumen": "Resultado esperado: este topic pretende apoyar actividades que habiliten o contribuyan a uno o varios de los impactos esperados del destino «Abordar las enfermedades y reducir su carga». Con ese fin, las propuestas de este topic deben orientarse a ofrecer resultados dirigidos a, adaptados a y que contribuyan a algunos de los siguientes resultados esperados: investigadores, profesionales sanitarios y proveedores de países de renta baja y media [se benefician de...]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON  Research and Innovation Actions",
     "fecha_primera_aparicion": "2026-09-27"
   },
   {
@@ -13796,6 +13796,36 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "licitacion",
     "fecha_primera_aparicion": "2026-09-27"
+  },
+  {
+    "id": "4a5008076f96282d",
+    "titulo": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+    "organismo": "Compañía del Tranvía de San Sebastián, S.A.U.",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-09-16",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "72413000-8"
+    ],
+    "categorias": [
+      "Diseño y desarrollo web"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso723866/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "15$26763_00001",
+    "resumen": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+    "tipo_contrato": "Servicios de diseño de sitios web WWW",
+    "tipo_registro": "adjudicacion",
+    "empresa_adjudicataria": "CBT, COMUNICACIÓN MULTIMEDIA, S.L.",
+    "fecha_adjudicacion": "2026-09-16",
+    "fecha_fin_estimada": "2028-09-30",
+    "importe_adjudicado_valor": 74778.0,
+    "importe_adjudicado_display": "74,778 EUR",
+    "fecha_primera_aparicion": "2026-10-01"
   },
   {
     "id": "d384390ddf34d87d",
@@ -21461,6 +21491,36 @@ window.TENDERS_DATA = [
     "importe_adjudicado_valor": 2338.5,
     "importe_adjudicado_display": "2,338 EUR",
     "fecha_primera_aparicion": "2026-09-27"
+  },
+  {
+    "id": "ec3b227735cb9e09",
+    "titulo": "Coordinación y actualización del sitio web del IAE\r\n",
+    "organismo": "Gobierno Vasco",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-07-10",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "72500000-0"
+    ],
+    "categorias": [
+      "Diseño y desarrollo web"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso744482/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "046P20261238_00001",
+    "resumen": "Coordinación y actualización del sitio web del IAE\r\n",
+    "tipo_contrato": "Servicios informáticos",
+    "tipo_registro": "contrato_menor_venciendo",
+    "empresa_adjudicataria": "K6 GESTION CULTURAL, S.L.",
+    "fecha_adjudicacion": "2026-07-10",
+    "fecha_fin_estimada": "2026-11-10",
+    "importe_adjudicado_valor": 18029.0,
+    "importe_adjudicado_display": "18,029 EUR",
+    "fecha_primera_aparicion": "2026-10-01"
   },
   {
     "id": "0e3ebccc60c8f0a6",

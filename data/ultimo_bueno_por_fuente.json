@@ -47540,6 +47540,350 @@
     {
       "fuente": "Euskadi",
       "original": {
+        "id": 1384153,
+        "code": "2026-058367",
+        "object": "servicios de gestión y dinamización de las redes sociales del Área de Derechos Humanos, Convivencia, Cooperación e Interculturalidad",
+        "firstPublicationDate": "2026-09-30",
+        "lastPublicationDate": "2026-09-30",
+        "entity": {
+          "id": 25073,
+          "name": "Área de Igualdad",
+          "org": {
+            "id": 25074,
+            "name": "Concejal Delegado de Contratación",
+            "_links": {
+              "self": {
+                "name": "Concejal Delegado de Contratación",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/25074"
+              }
+            }
+          },
+          "_links": {
+            "self": {
+              "name": "Área de Igualdad",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/25073"
+            }
+          }
+        },
+        "contractingAuthority": {
+          "id": 24446,
+          "identificationNumber": "P4802400D",
+          "name": "Ayuntamiento de Bilbao",
+          "scope": "BIZKAIA",
+          "address": "Plaza Ernesto Erkoreka nº1, 48007 Bilbao",
+          "webPage": "https://www.bilbao.eus",
+          "publicationDate": "2023-06-28",
+          "mainActivity": "Servicios públicos generales",
+          "codNUTS": "ES213",
+          "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/poder_adjudicador/poder24446/es_doc/index.html",
+          "_links": {
+            "self": {
+              "name": "Ayuntamiento de Bilbao",
+              "href": "https://api.euskadi.eus/procurements/contracting-authorities/24446"
+            }
+          }
+        },
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 3,
+          "name": "Abierto / Plazo de presentación",
+          "_links": {
+            "self": {
+              "name": "Abierto / Plazo de presentación",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/3"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 1,
+          "name": "Abierto",
+          "_links": {
+            "self": {
+              "name": "Abierto",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
+            }
+          }
+        },
+        "deadlineDate": "2026-10-16",
+        "budgetWithoutVAT": 10289.26,
+        "webpagElectronicBidding": "https://www.contratacion.euskadi.eus/KPELicitacion",
+        "financedEuropeanFunds": false,
+        "recoveryPlan": false,
+        "minorContract": false,
+        "subjectAppeal": false,
+        "sara": false,
+        "openingDates": [
+          "1_16/10/2026",
+          "2_20/10/2026",
+          "3_29/09/2029"
+        ],
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso744253/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "servicios de gestión y dinamización de las redes sociales del Área de Derechos Humanos, Convivencia, Cooperación e Interculturalidad",
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384153"
+          },
+          "contracts": {
+            "href": "https://api.euskadi.eus/procurements/contracts/contracting-notices/1384153"
+          }
+        }
+      },
+      "titulo": "servicios de gestión y dinamización de las redes sociales del Área de Derechos Humanos, Convivencia, Cooperación e Interculturalidad",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Redes sociales / community management"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "licitacion"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
+        "id": 1384140,
+        "code": "15/26",
+        "object": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+        "firstPublicationDate": "2026-06-26",
+        "lastPublicationDate": "2026-09-30",
+        "entity": {
+          "id": 763,
+          "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
+          "org": {
+            "id": 912230,
+            "name": "Director",
+            "_links": {
+              "self": {
+                "name": "Director",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912230"
+              }
+            }
+          },
+          "_links": {
+            "self": {
+              "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/763"
+            }
+          }
+        },
+        "contractingAuthority": {
+          "id": 314,
+          "identificationNumber": "A20003737",
+          "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
+          "scope": "GIPUZKOA",
+          "address": "Fernando Sasiain 7, 20015 Donostia/San Sebastián (Gipuzkoa)",
+          "webPage": "http://www.dbus.eus",
+          "publicationDate": "2019-10-03",
+          "mainActivity": "Otra actividad",
+          "alternativeActivity": "Transportes",
+          "codNUTS": "ES212",
+          "CPV": [
+            {
+              "name": "Servicios de transporte por carretera"
+            }
+          ],
+          "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/poder_adjudicador/poder314/es_doc/es_arch_poder314.html",
+          "_links": {
+            "self": {
+              "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
+              "href": "https://api.euskadi.eus/procurements/contracting-authorities/314"
+            },
+            "contractingAuthorities": [
+              {
+                "name": "Ayuntamiento de Donostia/San Sebastián",
+                "href": "https://api.euskadi.eus/procurements/contracting-authorities/16941"
+              }
+            ]
+          }
+        },
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 8,
+          "name": "Formalizado / En ejecución",
+          "_links": {
+            "self": {
+              "name": "Formalizado / En ejecución",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/8"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 1,
+          "name": "Abierto",
+          "_links": {
+            "self": {
+              "name": "Abierto",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
+            }
+          }
+        },
+        "deadlineDate": "2026-07-13",
+        "budgetWithoutVAT": 80500,
+        "webpagElectronicBidding": "https://www.contratacion.euskadi.eus/KPELicitacion",
+        "financedEuropeanFunds": false,
+        "recoveryPlan": false,
+        "minorContract": false,
+        "subjectAppeal": false,
+        "sara": false,
+        "numberBidders": 1,
+        "numberBiddersPyme": 1,
+        "electronicTenders": 1,
+        "openingDates": [
+          "1_14/07/2026",
+          "2_16/07/2026",
+          "2_21/07/2026",
+          "3_06/08/2026",
+          "3_21/07/2026"
+        ],
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso723866/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384140"
+          },
+          "contracts": {
+            "href": "https://api.euskadi.eus/procurements/contracts/contracting-notices/1384140"
+          }
+        }
+      },
+      "titulo": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Diseño y desarrollo web"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "licitacion"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
+        "id": 1384041,
+        "code": "2026KOZB0013",
+        "object": "Servicio de comunicación",
+        "firstPublicationDate": "2026-07-28",
+        "lastPublicationDate": "2026-09-30",
+        "entity": {
+          "id": 357,
+          "name": "Ayuntamiento de Bergara",
+          "org": {
+            "id": 911229,
+            "name": "Alcalde",
+            "_links": {
+              "self": {
+                "name": "Alcalde",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/911229"
+              }
+            }
+          },
+          "_links": {
+            "self": {
+              "name": "Ayuntamiento de Bergara",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/357"
+            }
+          }
+        },
+        "contractingAuthority": {
+          "id": 57,
+          "identificationNumber": "P2007900J",
+          "name": "Ayuntamiento de Bergara",
+          "scope": "GIPUZKOA",
+          "address": "San Martín de Agirre Plaza, 1. 20570 Bergara",
+          "webPage": "http://www.bergara.net/",
+          "publicationDate": "2019-10-03",
+          "mainActivity": "Servicios públicos generales",
+          "codNUTS": "ES212",
+          "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/poder_adjudicador/poder57/es_doc/es_arch_poder57.html",
+          "_links": {
+            "self": {
+              "name": "Ayuntamiento de Bergara",
+              "href": "https://api.euskadi.eus/procurements/contracting-authorities/57"
+            }
+          }
+        },
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 4,
+          "name": "Plazo cerrado",
+          "_links": {
+            "self": {
+              "name": "Plazo cerrado",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/4"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 1,
+          "name": "Abierto",
+          "_links": {
+            "self": {
+              "name": "Abierto",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
+            }
+          }
+        },
+        "deadlineDate": "2026-08-12",
+        "budgetWithoutVAT": 163269,
+        "webpagElectronicBidding": "https://www.contratacion.euskadi.eus/KPELicitacion",
+        "financedEuropeanFunds": false,
+        "recoveryPlan": false,
+        "minorContract": false,
+        "subjectAppeal": false,
+        "sara": false,
+        "openingDates": [
+          "1_17/08/2026",
+          "2_03/09/2026",
+          "3_10/09/2026"
+        ],
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso732699/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Servicio de comunicación",
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384041"
+          },
+          "contracts": {
+            "href": "https://api.euskadi.eus/procurements/contracts/contracting-notices/1384041"
+          }
+        }
+      },
+      "titulo": "Servicio de comunicación",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Publicidad y comunicación (general)"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "licitacion"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
         "id": 1383668,
         "code": "NK 11/26",
         "object": "Servicios de comunicación y organización de eventos dentro del Proyecto europeo ACTIV-N del que NEIKER participa.",
@@ -48520,115 +48864,6 @@
         }
       },
       "titulo": "Explotación de los espacios publicitarios en Metro Bilbao",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Publicidad y comunicación (general)"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "licitacion"
-    },
-    {
-      "fuente": "Euskadi",
-      "original": {
-        "id": 1382940,
-        "code": "2026KOZB0013",
-        "object": "Servicio de comunicación",
-        "firstPublicationDate": "2026-07-28",
-        "lastPublicationDate": "2026-09-28",
-        "entity": {
-          "id": 357,
-          "name": "Ayuntamiento de Bergara",
-          "org": {
-            "id": 911229,
-            "name": "Alcalde",
-            "_links": {
-              "self": {
-                "name": "Alcalde",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/911229"
-              }
-            }
-          },
-          "_links": {
-            "self": {
-              "name": "Ayuntamiento de Bergara",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/357"
-            }
-          }
-        },
-        "contractingAuthority": {
-          "id": 57,
-          "identificationNumber": "P2007900J",
-          "name": "Ayuntamiento de Bergara",
-          "scope": "GIPUZKOA",
-          "address": "San Martín de Agirre Plaza, 1. 20570 Bergara",
-          "webPage": "http://www.bergara.net/",
-          "publicationDate": "2019-10-03",
-          "mainActivity": "Servicios públicos generales",
-          "codNUTS": "ES212",
-          "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/poder_adjudicador/poder57/es_doc/es_arch_poder57.html",
-          "_links": {
-            "self": {
-              "name": "Ayuntamiento de Bergara",
-              "href": "https://api.euskadi.eus/procurements/contracting-authorities/57"
-            }
-          }
-        },
-        "contractType": {
-          "id": 2,
-          "name": "Servicios",
-          "_links": {
-            "self": {
-              "name": "Servicios",
-              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
-            }
-          }
-        },
-        "contractProcedureStatus": {
-          "id": 4,
-          "name": "Plazo cerrado",
-          "_links": {
-            "self": {
-              "name": "Plazo cerrado",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/4"
-            }
-          }
-        },
-        "contractProcedureType": {
-          "id": 1,
-          "name": "Abierto",
-          "_links": {
-            "self": {
-              "name": "Abierto",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
-            }
-          }
-        },
-        "deadlineDate": "2026-08-12",
-        "budgetWithoutVAT": 163269,
-        "webpagElectronicBidding": "https://www.contratacion.euskadi.eus/KPELicitacion",
-        "financedEuropeanFunds": false,
-        "recoveryPlan": false,
-        "minorContract": false,
-        "subjectAppeal": false,
-        "sara": false,
-        "openingDates": [
-          "1_17/08/2026",
-          "2_03/09/2026",
-          "3_10/09/2026"
-        ],
-        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso732699/es_doc/index.html",
-        "_links": {
-          "self": {
-            "name": "Servicio de comunicación",
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/1382940"
-          },
-          "contracts": {
-            "href": "https://api.euskadi.eus/procurements/contracts/contracting-notices/1382940"
-          }
-        }
-      },
-      "titulo": "Servicio de comunicación",
       "cpv": [],
       "incluir": true,
       "categorias": [
@@ -51819,132 +52054,6 @@
     {
       "fuente": "Euskadi",
       "original": {
-        "id": 1379250,
-        "code": "15/26",
-        "object": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
-        "firstPublicationDate": "2026-06-26",
-        "lastPublicationDate": "2026-09-16",
-        "entity": {
-          "id": 763,
-          "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
-          "org": {
-            "id": 912230,
-            "name": "Director",
-            "_links": {
-              "self": {
-                "name": "Director",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912230"
-              }
-            }
-          },
-          "_links": {
-            "self": {
-              "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/763"
-            }
-          }
-        },
-        "contractingAuthority": {
-          "id": 314,
-          "identificationNumber": "A20003737",
-          "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
-          "scope": "GIPUZKOA",
-          "address": "Fernando Sasiain 7, 20015 Donostia/San Sebastián (Gipuzkoa)",
-          "webPage": "http://www.dbus.eus",
-          "publicationDate": "2019-10-03",
-          "mainActivity": "Otra actividad",
-          "alternativeActivity": "Transportes",
-          "codNUTS": "ES212",
-          "CPV": [
-            {
-              "name": "Servicios de transporte por carretera"
-            }
-          ],
-          "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/poder_adjudicador/poder314/es_doc/es_arch_poder314.html",
-          "_links": {
-            "self": {
-              "name": "Compañía del Tranvía de San Sebastián, S.A.U.",
-              "href": "https://api.euskadi.eus/procurements/contracting-authorities/314"
-            },
-            "contractingAuthorities": [
-              {
-                "name": "Ayuntamiento de Donostia/San Sebastián",
-                "href": "https://api.euskadi.eus/procurements/contracting-authorities/16941"
-              }
-            ]
-          }
-        },
-        "contractType": {
-          "id": 2,
-          "name": "Servicios",
-          "_links": {
-            "self": {
-              "name": "Servicios",
-              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
-            }
-          }
-        },
-        "contractProcedureStatus": {
-          "id": 5,
-          "name": "Adjudicación",
-          "_links": {
-            "self": {
-              "name": "Adjudicación",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
-            }
-          }
-        },
-        "contractProcedureType": {
-          "id": 1,
-          "name": "Abierto",
-          "_links": {
-            "self": {
-              "name": "Abierto",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
-            }
-          }
-        },
-        "deadlineDate": "2026-07-13",
-        "budgetWithoutVAT": 80500,
-        "webpagElectronicBidding": "https://www.contratacion.euskadi.eus/KPELicitacion",
-        "financedEuropeanFunds": false,
-        "recoveryPlan": false,
-        "minorContract": false,
-        "subjectAppeal": false,
-        "sara": false,
-        "numberBidders": 1,
-        "numberBiddersPyme": 1,
-        "electronicTenders": 1,
-        "openingDates": [
-          "1_14/07/2026",
-          "2_16/07/2026",
-          "2_21/07/2026",
-          "3_06/08/2026",
-          "3_21/07/2026"
-        ],
-        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso723866/es_doc/index.html",
-        "_links": {
-          "self": {
-            "name": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/1379250"
-          },
-          "contracts": {
-            "href": "https://api.euskadi.eus/procurements/contracts/contracting-notices/1379250"
-          }
-        }
-      },
-      "titulo": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Diseño y desarrollo web"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "licitacion"
-    },
-    {
-      "fuente": "Euskadi",
-      "original": {
         "id": 1379229,
         "code": "2026-028114",
         "object": "servicio de atención ciudadana- teléfono  010",
@@ -52066,12 +52175,12 @@
           "id": 1121,
           "name": "Ayuntamiento de Vitoria-Gasteiz",
           "org": {
-            "id": 912872,
-            "name": "Junta de Gobierno Local",
+            "id": 912865,
+            "name": "Concejala-Delegada del Departamento de Promoción Económica, Empleo, Comercio y Turismo",
             "_links": {
               "self": {
-                "name": "Junta de Gobierno Local",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912872"
+                "name": "Concejala-Delegada del Departamento de Promoción Económica, Empleo, Comercio y Turismo",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912865"
               }
             }
           },
@@ -52390,12 +52499,12 @@
           "id": 1236,
           "name": "Presidencia del Gobierno - Lehendakaritza",
           "org": {
-            "id": 26755,
-            "name": "Secretaría General de Comunicación e Innovación Social",
+            "id": 914257,
+            "name": "Dirección de Servicios",
             "_links": {
               "self": {
-                "name": "Secretaría General de Comunicación e Innovación Social",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/26755"
+                "name": "Dirección de Servicios",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/914257"
               }
             }
           },
@@ -53188,12 +53297,12 @@
           "id": 1121,
           "name": "Ayuntamiento de Vitoria-Gasteiz",
           "org": {
-            "id": 912865,
-            "name": "Concejala-Delegada del Departamento de Promoción Económica, Empleo, Comercio y Turismo",
+            "id": 912872,
+            "name": "Junta de Gobierno Local",
             "_links": {
               "self": {
-                "name": "Concejala-Delegada del Departamento de Promoción Económica, Empleo, Comercio y Turismo",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912865"
+                "name": "Junta de Gobierno Local",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912872"
               }
             }
           },
@@ -53660,12 +53769,12 @@
           "id": 882,
           "name": "Ayuntamiento de Berango",
           "org": {
-            "id": 912466,
-            "name": "Alcaldía",
+            "id": 912467,
+            "name": "Pleno",
             "_links": {
               "self": {
-                "name": "Alcaldía",
-                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912466"
+                "name": "Pleno",
+                "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912467"
               }
             }
           },
@@ -106002,6 +106111,84 @@
     {
       "fuente": "Euskadi",
       "original": {
+        "id": "15$26763_00001",
+        "object": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 8,
+          "name": "Formalizado / En ejecución",
+          "_links": {
+            "self": {
+              "name": "Formalizado / En ejecución",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/8"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 1,
+          "name": "Abierto",
+          "_links": {
+            "self": {
+              "name": "Abierto",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/1"
+            }
+          }
+        },
+        "CIF": "B48810345",
+        "socialReason": "CBT, COMUNICACIÓN MULTIMEDIA, S.L.",
+        "awardDate": "2026-09-16",
+        "companySignatureDate": "2026-09-30",
+        "administrationSignatureDate": "2026-09-30",
+        "contractEndDate": "2028-09-30",
+        "awardAmount": 74778,
+        "awardAmountWithoutVAT": 61800,
+        "monthsContractDuration": 24,
+        "CPV": "72413000-8",
+        "minorContract": false,
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso723866/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+            "href": "https://api.euskadi.eus/procurements/contracts/15$26763_00001"
+          },
+          "contractingAuthority": {
+            "href": "https://api.euskadi.eus/procurements/contracting-authorities/314"
+          },
+          "contractingNotice": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384140"
+          },
+          "entity": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/763"
+          },
+          "org": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/912230"
+          }
+        },
+        "organismo_resuelto": "Compañía del Tranvía de San Sebastián, S.A.U."
+      },
+      "titulo": "Servicios de mantenimiento y nuevos desarrollos de la página web gestionada por CTSS",
+      "cpv": [
+        "72413000-8"
+      ],
+      "incluir": true,
+      "categorias": [
+        "Diseño y desarrollo web"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "adjudicacion"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
         "id": "2026$CO_MPRI$00841121_00001",
         "object": "Patrocinio publicitario del torneo Hiru Hiriburuak 2026",
         "contractType": {
@@ -154499,34 +154686,6 @@
     {
       "fuente": "UE-subvenciones",
       "original": {
-        "reference": "51144387TOPICSen",
-        "identifier": "DIGITAL-2026-SUPPORT-10-DISSEMINATION",
-        "titulo": "Support to Dissemination and Exploitation (D&E) for the Digital Europe Programme",
-        "deadlineDate": "2026-10-01T00:00:00.000+0000",
-        "startDate": "2026-04-21T00:00:00.000+0000",
-        "frameworkProgramme": "43152860",
-        "status": "31094502",
-        "type": "1",
-        "typesOfAction": "DIGITAL Coordination and Support Actions",
-        "callccm2Id": "51144405",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-SUPPORT-10-DISSEMINATION",
-        "descripcion": "Expected Outcome: Optimisation of the operational framework for D&E for the Digital Europe Programme taking into account the elements mentioned under “scope”, with solid methodological and practical approaches. Identification of distinct types of adopters and the creation of a taxonomy articulating their respective interests and needs. Support to projects in the preparation and execution of D&E activities, including valorisation and uptake of results via advisory, business support and acceleration services A plan to deliver on the operational framework backed by monitoring and evaluation metrics. The delivery of actions implementing the operational framework and involving stakeholders as appropriate, including sector specific and programme-wide events. The means and tools to facilitate the delivery of the operational framework, including functional and technical requirements for a dedicated results platform. A plan for the sustainability of the operational framework and the actions implemented by the project. The dissemination and exploitation of results (including the access to infrastructures) in the specific context of security restrictions and the protection of EU interests overall. Produce a data base with concrete cases of DEP results, across all Specific Objectives and Implementing bodies, with exemplary dissemination and use of results. Objective: Maximise the impact of the Digital Europe Programme and the take up of its results through a Dissemination and Exploitation (D&E) operational framework and the implementation of practical actions supported by appropriate tools. The action will leverage programme-level D&E efforts already in place and enhance them. The Digital Europe Programme seeks to improve the valorisation of project results and their effective uptake. Dissemination and Exploitation (D&E) activities are therefore expected to make a substantive contribution to the achievement of the Programme’s objectives. The actions funded by the programme need to implement efficient and targeted dissemination and exploitation activities to increase the impact of EU funding. Beyond the D&E works of individual projects, the programme funds support activities in certain thematic fields which support the projects in the respective area. Additionally, there is a clear need for a programme-wide perspective on D&E. An ongoing coordination and support action ( DEDEP.eu ) is designing a conceptual and operational framework for the implementation of effective D&E activities in the programme, helping funded projects to strategically share results with relevant stakeholders and building a corpus of reusable materials and tools. The programme is now entering a pivotal phase in which many initiatives are delivering tangible results. Placing a strong emphasis on the dissemination and exploitation of these outcomes will ensure the wider uptake of existing and forthcoming results, and significantly amplify the overall impact of the programme. Scope: The action will address, at least, the following dimensions: the overall programme, its Specific Objectives (SO) and areas therein, down to topics and projects where appropriate, across funding instruments in particular grants, procurements and financial instruments; the capacity building and use strands of Digital Europe Programme, taking into account the type of result and its dissemination and exploitation audience; the different types of organisations participating in the programme; the different stakeholders, including final adopters and/or users of the results; the stages of the project lifecycle and the reporting obligations; the security and strategic autonomy specificities of the programme, including the implications in the use of critical infrastructures and exploitation of results; coordination within EU and beyond when relevant, taking into account the policy priorities and initiatives; within the Digital Europe Programme itself, identifying and exploiting complementarities of projects among SO and topics, including SO specific coordination and support actions and project aggregators; between the Digital Europe Programme, other EU programmes and national/regional programmes; of the different programme’s implementing bodies, e.g. European Commission, Health and Digital Executive Agency (HaDEA), Joint Undertakings (JUs) and similar bodies, taking into account their specificities in the handling of results resulting from their actions. The action will complement and enrich the D&E activities of the programme’s projects. The action will provide means that can help deliver its objective, including leveraging already existing tools, e.g. of other EU programmes, and the use of innovative approaches to D&E. The action will promote the uptake of Digital Europe Programme results beyond the entities directly involved in the programme’s projects.",
-        "destino_descripcion": "",
-        "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-SUPPORT-10-DISSEMINATION"
-      },
-      "titulo": "Support to Dissemination and Exploitation (D&E) for the Digital Europe Programme",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Creación de contenidos"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "convocatoria_ue"
-    },
-    {
-      "fuente": "UE-subvenciones",
-      "original": {
         "reference": "50128894TOPICSen",
         "identifier": "HORIZON-CL5-2027-06-D6-12",
         "titulo": "Support for dissemination events in the field of Transport Research",
@@ -155059,34 +155218,6 @@
     {
       "fuente": "UE-subvenciones",
       "original": {
-        "reference": "51125121TOPICSen",
-        "identifier": "DIGITAL-2026-BESTUSE-RSF-10-AWARENESS",
-        "titulo": "Research Support Framework for Situational Awareness on information integrity",
-        "deadlineDate": "2026-10-01T00:00:00.000+0000",
-        "startDate": "2026-04-21T00:00:00.000+0000",
-        "frameworkProgramme": "43152860",
-        "status": "31094502",
-        "type": "1",
-        "typesOfAction": "DIGITAL Grants for Financial Support",
-        "callccm2Id": "51125143",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-BESTUSE-RSF-10-AWARENESS",
-        "descripcion": "Expected Outcome: At a general level, the project should achieve a strong, visible and recognised impact in scaling, facilitating and accelerating research and analytical efforts focussing on the information environment and information integrity. The main outcomes of the awarded project will be: The technical solutions created or supported The insights generated from supported research and monitoring projects The proof of concept and lessons learnt for the support of shared infrastructures to support research on the information environment Project applications will formulate their own deliverables in accordance with their needs analyses and proposed means to address them. At the minimum, deliverables should include: A suite or network of solutions capable of addressing Specific Objectives 1 and 2 (c.f. section 2 ‘Scope – Specific Objectives 1 and 2’) A methodology and dissemination plan for creating access to the created resources (c.f. section 2 ‘Scope – Specific Objective 3) A sub-granting methodology in line with the scope set forth in the section above (c.f. section 2 ‘Scope – Specific Objective 5’) A final report detailing lessons learnt and identifying clear paths for future actions Objective: The overarching objective of this action is as follows: Creating a common research framework with the necessary infrastructure to enable advanced research and analysis on information integrity in the EU. In order to achieve this overall objective, the action rests on the following specific objectives: Securing or setting up necessary infrastructure, comprising both hardware and software capacities, needed for advanced research on information integrity, that can be accessed by third parties across the EU Supporting, acquiring or creating a set of dedicated tools to facilitate research on information integrity and the analysis of information manipulation Making the dedicated tools and computational capacity accessible to researchers and civil society, where needed through a transparent and effective access mechanism, and promoting its solutions in the relevant communities Contributing to the DSA’s data access regime by collecting views from the research community on the data access API’s of very large online platforms required by the DSA, documenting best practices and shortcomings, and representing the research community in efforts to improve the capability of API’s Set up and implement a grant structure to distribute funds to third parties from the research and civil society communities, funding as the eligible activities: Third party tools or capabilities that support the delivery of Specific Objectives 1 and 2 Research projects that utilise the outputs established under Specific Objectives 1 and 2 Scope: Applying consortia must convincingly detail how they will achieve the objectives and deliverables set forth in this call for proposals. Proposals must be clearly and well-defined, researched and fully developed taking all time-schedule and budget considerations into account. This action is a grant for financial support, which foresees both the delivery of a set of actions by the awarded consortium co-funded at 100% as well as the distribution of a majority of the funds to third parties based on fair and transparent selection criteria (c.f. section 6 ‘Eligibility – Eligible Activities’). Proposals must allocate at least 60% of their proposed budget to the financial support to third parties. The below details the scope for the activities of the consortium, as well as for the provision of grants to third parties. Two important, cross-cutting considerations apply to these descriptions on scope: Firstly, all provided examples for concrete means of implementation should be considered as indicative illustrations only, and thus not mandatory elements for grant applications. Rather, applying consortia will need to base their proposals on a clear, evidence informed needs analysis that is centred on the demands from the relevant research and civil society communities. The sophistication of the logical links between needs analysis and activities will form a key part of the evaluation process. Secondly, proposals should focus on quality over quantity: The proposal of a more limited, but highly impactful set of actions is preferable over spreading resources on an overly wide set of actions that could undermine practical feasibility. Thirdly, an emphasis on long-evity is essential. Activities should be planned in a manner that caters to the long-term interests and needs of the relevant communities. A focus on elements such as transferability of outputs will be an important part of the selection process.",
-        "destino_descripcion": "",
-        "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2026-BESTUSE-RSF-10-AWARENESS"
-      },
-      "titulo": "Research Support Framework for Situational Awareness on information integrity",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Creación de contenidos"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "convocatoria_ue"
-    },
-    {
-      "fuente": "UE-subvenciones",
-      "original": {
         "reference": "51121953TOPICSen",
         "identifier": "HORIZON-EURATOM-2027-02-01",
         "titulo": "Key enabling technologies for fusion power plants (European Partnership on Fusion Energy)",
@@ -155536,107 +155667,23 @@
     {
       "fuente": "UE-subvenciones",
       "original": {
-        "reference": "52303942TOPICSen",
-        "identifier": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-        "titulo": "Strengthening EU cybersecurity capacities & capabilities in line with legislative requirements",
-        "deadlineDate": "2027-01-14T00:00:00.000+0000",
-        "startDate": "2026-09-01T00:00:00.000+0000",
-        "frameworkProgramme": "43152860",
-        "status": "31094502",
-        "type": "1",
-        "typesOfAction": "DIGITAL JU Simple Grants",
-        "callccm2Id": "52303968",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG",
-        "descripcion": "Expected Outcome: One or more of the following should be covered: Implementation of guidelines, standardised processes, or manuals – in the EU or multiple EU MS – concerning the most challenging issues, supporting specific stakeholders and sectors addressed by cybersecurity legislation. Develop and implement tools, raise awareness and encourage and facilitate industry uptake, with a focus on SMEs, of conformity assessments of essential cybersecurity requirements for products with digital elements (hardware and software) under the CRA. Support for mechanisms reducing the administrative burden for entities, like single entry point for incident notification. Establish secure communication channels allowing for cooperation and information sharing initiatives. Support the organisation of regular meetings/workshops to identify good practices within specific sectors or emerging areas and facilitate collaborative efforts between different sectors. Support the development of training courses, on the basis of the ECSF and exercises that promote capacity building and internal awareness. Contribution to CR standardisation: Training materials and training actions on cybersecurity certification for national authorities and conformity assessment bodies. Fostering certification: Educational and supporting materials and an explanatory press campaign using interactive material such as ‘Do I comply with CRA?’. Information campaign through various channels such as conferences, meetings, etc. Website dedicated to the mandatory certification and conformity assessments of essential requirements. Development of training programmes and materials, including tools for cross-country collaboration and exchange, aimed at enhancing participants’ skills and readiness for real-world threats. These programmes can also support non-formal education for high school students and teachers, enhancing digital literacy and cybersecurity awareness at early educational levels. Creation of benchmarking and assessment programmes to evaluate and optimise the performance of participants in cybersecurity training programmes, ensuring continuous improvement and alignment with industry standards. Implement peer exchange and fellowship programmes, aimed at fostering a connected, resilient community of cybersecurity professionals across Europe. These programmes will also include support for cross-border training initiatives and non formal education activities, ensuring that both students and educators can participate in hands-on cybersecurity learning experiences and contribute to long-term talent development. Establishment of cross-border collaboration programmes to support the development of pan-European teams in cybersecurity competitions. These programmes will provide access to mentorship, advanced tools, and leadership training, ensuring European teams remain competitive on the global stage. Additionally, the programmes will foster the growth of a European cybersecurity leadership pipeline, enhancing Europe’s visibility and effectiveness in international cybersecurity challenges. Support organisations, including SMEs, in assessing the robustness, applicability and relevance of security- and privacy-enhancing technologies to be integrated in the ICT products and services they develop. Set-up pilot projects to test CRA compliance, use open-source software and libraries for conformity assessment and testing; develop assessment methodologies for the purpose of CRA compliance/requirements. Develop best practices or guidelines for setting-up and operating market surveillance authorities in MSs; develop awareness of CRA requirements. Support organisations, including SMEs, in commercialising privacy-enhancing technologies and demonstrate how they can address security and privacy risks from emerging technologies. Facilitate cooperation between the producers of emerging technologies, the users of those technologies and regulators. Such cooperation would make it possible to identify which requirements can be met by which privacy-enhancing technology, in which use cases, to what extent they could facilitate compliance or reduce the cost thereof, and how to engineer it in practice, during the early phases of design and development of ICT products and services. Strengthen cooperation in the whole privacy-enhancing technology value chain, including between researchers, providers, integrators and users, and GDPR national authorities/European supervisors. Objective: The objective of this topic is to support the European ecosystem to strengthen its cybersecurity capacities and to support the implementation of the regulatory framework in line with the Cyber Resilience Act (CRA), NIS 2 Directive, GDPR, DORA, Cybersecurity Act, specific requirements of the AI Act, etc. in a homogeneous approach. Additionally, and in alignment with the Digital education plan, which emphasises the development of digital skills crucial for the modern economy, and in support of initiatives like the Cybersecurity Skills Academy, activities related to cybersecurity challenges should also be promoted. These initiatives aim to address the skills shortage in cybersecurity and develop a workforce capable of meeting regulatory and operational demands. By providing practical training, attracting young professionals, and encouraging diversity within the field, these efforts are vital to Europe’s ability to respond to evolving cyber threats and to comply with new legislation. Additionally, these activities foster equal opportunities and raise cybersecurity awareness among future generations, contributing to Europe’s broader strategic goals in the digital domain. The implementation of EU cybersecurity legislation needs to be supported to achieve a higher level of cybersecurity in the EU, especially in a constantly changing threat landscape. Cybersecurity maturity levels are different depending on each sector. This means that efforts and investments are needed to ensure and continuously improve cyber security in both the public and private sectors. Such efforts and investments are crucial in each Member State and therefore require increased focus and joint efforts at European level. Empowerment and self-assessment tools can be the most effective. All the above efforts should consider that data security and protection must be promoted during the design and development of ICT products and services. Scope: EU cybersecurity legislation brings new responsibilities and imposes obligations on key stakeholders, ICT systems, Operational Technology and IoT manufacturers. For instance, the cost of obtaining a cybersecurity certification for an ICT or digital product, service or process is often an insuperable barrier for EU start-ups and SMEs. Support must be provided for the implementation of these obligations. The activities under this action require various types of support, including financial and organisational. Applications should address at least one of the eligible pieces of cybersecurity legislation but can also address more. The focus will also be on fostering cross-border collaboration and promoting diversity within the cybersecurity workforce, encouraging participation from women and other underrepresented groups. In conjunction with initiatives like the Cybersecurity Skills Academy, these activities will contribute to building capacity, raising awareness, and supporting the uptake of the aforementioned regulatory framework. By integrating these challenges into a broader capacity-building framework, they will ensure that stakeholders across sectors are equipped to address evolving cybersecurity threats and comply with the new legislative landscape. Aligned with the goals of the Digital Education Action Plan which focuses on enhancing digital skills across Europe, activities related to cybersecurity challenges will play a crucial role in developing the next generation of cybersecurity professionals. These challenges will provide hands-on experience for young professionals and students, helping to close the cybersecurity skills gap and ensuring they are well-prepared to meet the demands of new legislative requirements. The assessment of products and services is an essential step in the EU cybersecurity certification process. As cybersecurity threats are rapidly evolving and attacks are becoming more sophisticated, it is important to find a way to address these challenges. In addition, the EU needs to cope with the continuous growth of information systems (in terms of size and complexity) and the significant expansion of the digital space by enabling fast but secure replication of assessments. Furthermore, it is a great opportunity for the EU to develop interoperable solutions that will increase its competitiveness. In doing so, the Union can rely on a large and dynamic number of players who have already developed high-quality offerings. The certification process is also very formal in terms of the documentation that is later used as proof for issuing the certificate. There is currently no platform to help proponents overcome the challenges posed by the use of many different and complex documents by all parties. This action involves building capacity of national cybersecurity certification authorities to undertake market surveillance and supervise conformity assessment bodies and conformity assessments of essential requirements for cybersecurity products, services and processes. It should ensure the mutual recognition across Member States. Furthermore, the action is also about building up capabilities of conformity assessment bodies and certification laboratories to meet the requirements of the Cyber Security Act and the Cyber Resilience Act, as regards verifying declarations of conformity from suppliers and vendors. The action involves also the development of supporting tools for certification and evaluation processes, including a ‘Certification and Evaluation as a Service’ software platform to assist conformity assessment as well as support in creating national or cross-regional expert hubs to assist with these processes. Its development should involve relevant stakeholders such as CBs, CABs, and client representatives. The ‘Certification and Evaluation as a Service platform’ could facilitate and streamline the management of all documentation used in the certification process. It could also help to speed up the information exchange between the bodies taking part in the process. The platform could help to harmonise and standardise the documentation and tools to be used across Europe. The main areas considered under the scope of this action could include: The implementation of EU legislation in cybersecurity to be supported to achieve a higher cybersecurity level in Europe. Provide support to SMEs aiming to enhance cybersecurity resilience with a particular focus on legal requirements deriving from EU legislation such as NIS 2, Cyber Resilience Act, Cybersecurity Act, etc., including practical guidelines and user-friendly tools allowing the company to check whether its solutions are compliant with the requirements of the new legislation considering open standards. Develop reporting platforms for NIS 2 (e.g. incident reporting platform) and CRA (e.g. vulnerability single reporting platform). Establish short-term and long-term actions to prepare professionals to properly implement the requirements of new EU regulations in entities covered by those regulations. Develop programmes to promote diversity and equal opportunities for all young Europeans, providing tailored onboarding programmes for youth. These programmes will offer resources and easy access to educational content, ensuring that participants from various backgrounds can engage with cybersecurity training. By supporting non formal education and offering participation opportunities, such as cybersecurity challenges, these efforts will help equip the next generation with the skills needed to thrive in the sector. Creation and development of cooperation initiatives in cross-border and cross-sector contexts. Encourage collaboration between national and regional authorities to enhance cyber resilience and raise cybersecurity maturity levels through development and implementation of common methodologies. The design and evaluation of platforms for training programmes and tools for cross country exchange will support these efforts. Additionally, benchmarking and assessment programmes will help optimise performance, enhancing participants’ skills. These initiatives, including training materials, with cybersecurity challenges as one example, will also include peer exchange and fellowship opportunities, fostering a connected community of cybersecurity professionals. By encouraging cross-border collaboration and ongoing engagement, these programmes aim to strengthen Europe’s cybersecurity workforce and support long-term talent development. Support the development of cross-border collaboration programmes, enabling pan European teams to participate in international cybersecurity competitions, enhancing visibility and competitiveness on the global stage. These initiatives will provide teams with access to advanced tools, mentorship, and leadership training, fostering the growth of a European cybersecurity talent pipeline. By promoting excellence, skills development, and leadership, this support will ensure that Europe’s top talent remains competitive, well-prepared, and collaborative in facing global cybersecurity challenges. In addition to providing supports for national cybersecurity certification authorities, conformity assessment bodies and national accreditation bodies with certification, the implementation of the NIS 2 Directive will continue in the coming years. In particular, competent authorities will need to build up capacity in audit and compliance to ensure that essential and important entities are meeting their responsibilities. Training and awareness raising activities along with trust and confidence building activities to facilitate information sharing and knowledge building should be provided. Overall, this action is intended to increase collaboration between national authorities, supporting or supplementing the structures under the NIS Directive that need to comply with CRA (e.g. Software Bill of Materials, CRA Single Reporting Platform contributions and open prototypes, CVD processes or security advisory automation, like the CSAF), as well as between national authorities and stakeholders, especially SMEs, to raise cybersecurity maturity levels through the development and implementation of common methodologies to enable the deployment of cybersecurity processes and the uptake of products and services by entities. This action involves the creation and deployment of common tools for regulation and enforcement, including targeted security audits and incident notifications to national competent authorities to facilitate information exchange. Under information exchange, the action can also include: At national level, federate national actors working on cyber threat intelligence and national competent authorities around a common platform. Including facilitating and centralising the notification process for NIS 2 entities. At vertical level within the EU, organise or support cyber threats intelligence (CTI) unclassified information sharing in confidence between stakeholders of the given vertical. At EU level, enabling and organising collaboration between countries and information sharing. Collaborate on and implement a framework of guidelines - in the EU or multiple EU MS - to ensure and continuously improve cybersecurity both within the public and private sectors through better protection of their data, a significant reduction of the risk of the most common cyberattacks, and an increase of cyber resilience in general. In addition, this topic promotes security and privacy ‘by design’ in existing and emerging technologies, applications and hardware, including IoT, Operational Technology, Identity and e-government systems, by supporting and/or funding research and innovation opportunities. Privacy-enhancing technologies aim to minimise the risks to the privacy of data subjects. Implementing security and privacy features in emerging technologies, applications and hardware from the outset – in the design and implementation phase [1] – ensures that potential vulnerabilities and risks are recognised and addressed early in the development process. In addition, to be in line with data protection regulations, this approach can be more cost effective and would reduce the likelihood of security and personal data breaches. Consortia should consider including at least one representative of each of the following categories to reflect the whole value chain: privacy-enhancing technology researchers, privacy-enhancing technology providers, developers of ICT products and services integrating privacy-enhancing technologies, and ICT product and services user organisations. [1] Data Protection Engineering, ENISA, 2022, available at: https://www.enisa.europa.eu/publications/data protection-engineering.",
-        "destino_descripcion": "",
-        "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-EULEG"
-      },
-      "titulo": "Strengthening EU cybersecurity capacities & capabilities in line with legislative requirements",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Publicidad y comunicación (general)"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "convocatoria_ue"
-    },
-    {
-      "fuente": "UE-subvenciones",
-      "original": {
-        "reference": "52303934TOPICSen",
-        "identifier": "DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-        "titulo": "Enhancing the NCC Network",
-        "deadlineDate": "2027-01-14T00:00:00.000+0000",
-        "startDate": "2026-09-01T00:00:00.000+0000",
-        "frameworkProgramme": "43152860",
-        "status": "31094502",
-        "type": "1",
-        "typesOfAction": "DIGITAL JU Simple Grants",
-        "callccm2Id": "52303968",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC",
-        "descripcion": "Expected Outcome: Depending on the decision of each NCC, one or more of the following should be covered: Network of national initiatives to accelerate the cybersecurity industry and facilitate Access-to-Market. European frameworks for establishing cybersecurity incubators and accelerators. Cybersecurity Community Observatory to inform subsequent policy interventions by the ECCC and NCCs. Matchmaking events to create connections and build trust; platforms and events for Access-to-Finance and Access-to-Market including in the area of dual-use technologies. Strengthened Cybersecurity Community to support the European Cybersecurity Industrial, Technology and Research Competence Centre; Maintained technical registration possibilities for candidates for the Cybersecurity Competence Community; Technical assistance for potential applicants for ECCC calls. Uptake of cybersecurity solutions. Strengthened cybersecurity capacities of stakeholders. Synergetic activities that strengthen the role of NCC. Centralised the many initiatives focusing on raising awareness and work together with other NCCs to support a cross European approach covering education, studies, training courses and awareness campaigns [1] Share and provide best practices related to the awareness topic. Support the transfer of best practices related to cybersecurity teaching for primary and secondary school and other activities for children and youngsters (including camps, materials, games, etc.). Support for teachers and professors to have access to best practices available in the EU and facilitate dialogue. Support the development of cross-over educational solutions for SMEs, for example by gamification. Cyber campaign material focused on young professionals and students of all ages and gender to pursue and advance in cybersecurity careers, where the NCCs can build on in view of regional differences. Cyber campaign material focused on parents and teachers of future students of all ages and gender to raise the number of cybersecurity students. Platform supporting a network of young cybersecurity ambassadors spreading awareness and fostering a culture of cybersecurity among Europe's youth. Common services to be provided within national cyber campuses. Hybrid events for the cybersecurity competence community to increase awareness of cybersecurity threats, threat actor modus operandi and potential impact, potentially in collaboration with existing initiatives and platforms. Deliverables supporting the implementation of the Cyber skills Academy. Support for activities dedicated to the EU Cybersecurity Challenges. In addition, activities could cover setting up a platform integrating all other existing platforms, hosted and maintained at the European level under the .eu domain , so as to: Establish and maintain a marketplace for cybersecurity products and services. Allow the retrieval of information on entities adhering to the 27 NCC communities. [1] The activities should consider other ongoing projects, activities, campaigns as well as the mandate of ENISA and other EU or national bodies. These actions should ensure synergies at EU level and should not duplicate efforts at EU or national levels. Objective: The National Coordination Centres (NCCs) set up by the Regulation (EU) 2021/887 are designed to work together through a network and to contribute to achieving the objectives of the regulation and to foster the Cybersecurity Competence Community in each Member State, by contributing to the acquisition of the necessary capacity. National Coordination Centres can also support priority areas such as the implementation of EU legislation (Directive (EU) 2022/2555, the proposed Cyber Resilience Act and the Cybersecurity Act). The objective of this topic is to support the operation of the NCCs and to enable them to support the cybersecurity community, including SMEs, for the uptake and dissemination of state-of-the-art cybersecurity solutions and strengthen cybersecurity capacities. This could also be achieved by using Financial Support for Third Parties (FSTPs). Based on the financing received in previous years and on the different operational start dates in the Member States, this activity aims to continue providing support for NCCs. In this regard, it is important to stress that individual NCC can choose from the list of activities and deliverables included in this topic depending on their interest and mandate. There is no obligation for NCCs to execute all actions. This topic also considers providing support for the uptake of EU cybersecurity technologies and products, commercialisation and scale-up of the European cybersecurity start-up/SME ecosystem, in collaboration and complementarity with the European and ongoing national and regional initiatives, such as accelerator and incubation programmes and technology transfer programmes. Such a strategy should also include support for scale-ups, considering the use of public procurement and private investment. An essential aspect of this action is to create a framework for the emergence of such incubators and accelerators in the Member States, based on best practices and considering the specific needs and requirements arising from EU legislation (such as the Cyber Resilience Act, NIS 2 Directive). In addition, this topic could contribute to cybersecurity awareness. It is becoming increasingly important to inform and educate EU citizens on cybersecurity topics in their daily use of digital technologies. Cybersecurity awareness helps individuals and organisations to identify threats and take appropriate action. By promoting awareness, the likelihood of incidents and data breaches can be reduced. Within this topic, NCCs are encouraged to build upon ongoing initiatives, including for example the ones from the EC and ENISA, to improve the awareness of EU citizens, businesses and organisations about cybersecurity risks and threats and to support Europe-wide actions to increase the number of students in cybersecurity courses, students engaged in cybersecurity research activities and students and young professionals choosing a career in cybersecurity. Furthermore, European companies are innovative and develop highly competitive products, but the still underdeveloped Digital Single Market confines most of these companies (especially SMEs and start-ups) to their home country. A platform that can open the European market for small and medium-sized enterprises would also act as a springboard into international markets. This platform will ensure the competitiveness of European cybersecurity solutions. As such, this topic could also support the EU market’s growth in cybersecurity products and services by providing a platform on which European SMEs and start-ups can post their (market-ready) products and solutions and on which businesses, public authorities and private individuals can search for the best solution for their needs, regardless of the country. Scope: The National Coordination Centre should carry out, depending on their decision, one or more of the following tasks: Acting as contact points at the national level for the Cybersecurity Competence Community to support the ECCC in achieving its objectives and missions. Providing expertise and actively contributing to the strategic tasks of the ECCC, taking into account relevant national and regional challenges for cybersecurity in different sectors and deliver tasks supporting the implementation of the Cyber skills Academy. Promoting, encouraging and facilitating the participation of civil society and industry, in particular start-ups and SMEs, academic and research communities and other actors at Member State level in cross-border projects and cybersecurity actions funded through all relevant Union programmes. Providing technical assistance to stakeholders by supporting stakeholders in their application phase for projects managed by the ECCC, and in full compliance with the rules of sound financial management, especially on conflicts of interests. This should be done in close coordination with the relevant NCPs set up by the Member States. Seeking to establish synergies with relevant activities at national, regional and local levels, such as addressing cybersecurity in national policies on research, development and innovation in the area of those policies stated in the national cybersecurity strategies. Where relevant, implementing specific actions for which grants have been awarded by the ECCC, including through the provision of financial support to third parties in accordance with Article 204 of the Financial Regulation under the conditions specified in the grant agreements concerned, in particular aimed at strengthening the uptake and dissemination of state-of-the-art cybersecurity solutions (notably by SMEs). Supporting the scaling-up of start-ups by finding other funding to implement existing projects. Promoting and disseminating the relevant outcomes of the work of the Network and the ECCC at national, regional or local level. Assessing requests for becoming part of the Cybersecurity Competence Community by entities established in the same Member State as the NCC. Advocating and promoting involvement by relevant entities in the activities arising from the ECCC, the Network of National Coordination Centres, and the Cybersecurity Competence Community, and monitoring, as appropriate, the level of engagement with actions awarded for cybersecurity research, developments and deployments. Supporting the Cybersecurity Competence Community registration (on platforms such as ATLAS) and contributing to the development of suitable community management tools. In addition, this action aims to promote safer digital behaviours, grow talents and attract more youth to cybersecurity careers; the NCCs could also, depending on their national context, carry out one or more of the following tasks: Provide support to innovative ideas towards market-readiness. Promote cybersecurity awareness, best practices, and careers in schools, universities, and community events (for instance by launching a pan-European programme where young individuals will be trained as ambassadors to promote cybersecurity.) Strengthen collaboration between institutions for higher education, e.g. by jointly organising events, by teaching students and working together on cutting-edge research. Support activities in primary and secondary levels of education to increase cybersecurity awareness and hygiene, through educating the teachers and educators. Build stronger partnerships with established SMEs, tech companies, and government agencies to develop and distribute software tools and services that assist in early threat detection, actor identification, and threat evolution monitoring. These collaborations can ensure that cybersecurity professionals have access to the latest tools and technologies for effective threat management. In collaboration with other entities, as needed, organise periodic cybersecurity boot camps, challenges, awareness campaigns and training courses across Europe, specifically for SMEs or students (e.g. focusing on equipping participants with hands on skills to manage prevalent cyber threats through training sessions, workshops, and simulation activities tailored to their industry). Organise periodic awareness raising campaigns, at national and regional level, to increase cybersecurity awareness and hygiene aimed at different demographics. Organise national and regional cyber exercises to enhance the security and resilience of critical sectors as well as SMEs. Foster a community of cybersecurity professionals who can share their experiences, challenges, and solutions. Support and encourage the uptake of cybersecurity educational policy goals in national (cybersecurity) strategies. Promote safer digital behaviours and more youth considering cybersecurity careers. The action could also aim to: Support the adoption of market-ready innovative cybersecurity solutions, including solutions developed in the framework of EU-supported research and innovation projects. Provide and deploy up to date tools and services to organisations (in particular SMEs) to prepare, protect (e.g. network security, advanced two-factor or passwordless authentication) and respond to cybersecurity threats. This topic targets exclusively National Coordination Centres which have been recognised by the Commission as having the capacity to manage funds to achieve the mission and objectives laid down in the Regulation establishing the European Cybersecurity Industrial, Technology and Research Competence Centre and the Network of National Coordination Centres. These actions aim at the operation of National Coordination Centres, which occupy a central role in the cybersecurity landscape as foreseen in Regulation (EU) 2021/887. Due to the synergetic role they play with regard to the activities at national, regional and local levels, such as addressing cybersecurity in national policies on research, development and innovation in the area of those policies stated in the national cybersecurity strategies, they must be able to handle sensitive information, and be protected against possible dependencies and vulnerabilities in cybersecurity to pre-empt undue foreign influence and control. As previously noted, participation of non-EU entities entails the risk of highly sensitive information about security infrastructure, risks and incidents being subject to legislation or pressure that obliges those non-EU entities to disclose this information to non-EU governments, with an unpredictable security risk. Therefore, based on the outlined security reasons, the actions are subject to Article 12(5) of the DEP Regulation (2021/694).",
-        "destino_descripcion": "",
-        "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-ECCC-2027-DEPLOY-CYBER-11-NCC"
-      },
-      "titulo": "Enhancing the NCC Network",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Redes sociales / community management"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "convocatoria_ue"
-    },
-    {
-      "fuente": "UE-subvenciones",
-      "original": {
-        "reference": "50217411TOPICSen",
-        "identifier": "HORIZON-CL3-2026-01-DRS-02",
-        "titulo": "Multi-hazard approach and cumulative / cascading impacts",
-        "deadlineDate": "2026-11-05T00:00:00.000+0000",
-        "startDate": "2026-05-06T00:00:00.000+0000",
+        "reference": "15721COMPETITIVE_CALLen",
+        "identifier": "HORIZON-CL6-2022-GOVERNANCE-01-02",
+        "titulo": "European Partnership for a climate neutral, sustainable and productive Blue Economy",
+        "deadlineDate": "2026-11-16T15:00:00.000+0000",
+        "startDate": "2026-09-14T00:00:00.000+0000",
         "frameworkProgramme": "43108390",
         "status": "31094502",
-        "type": "1",
-        "typesOfAction": "HORIZON Innovation Actions",
-        "callccm2Id": "50217687",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2026-01-DRS-02",
-        "descripcion": "Expected Outcome: Project results are expected to contribute to some or all of the following expected outcomes: Integrated single-hazard systems into multi-hazard next generation predictive models to assess cascading effects (e.g., heatwave, floods, droughts, landslides, heavy rain) and interactions across meteorological, geophysical, and technological hazards; Enhanced hazard forecasting and response through research on model integration and platform interoperability; Development of holistic risk and resilience metrics to support multi-hazard prevention strategies, encompassing main physical, economic and social effects; Improvement of analysis models considering evolving vulnerability state, due to cascading and cumulative effects, through numerical simulations and experimental tests, possibly also supported by AI applications; Collected reliable data (same granularity and format) and ways to share and analyse it. The interoperability of all kinds of systems and information sharing is crucial, based on the need-to-know principle; Improved knowledge/experience-sharing from past emergencies to cope with future emergencies, also strengthening trans-national knowledge and data exchange among EU countries as well as from early warning to early action; Improved disaster risk and resilience management due to single/multiple threats through a holistic, systemic and cross-cutting approach, also considering relevant changes such as changing climate, digital transformation, environmental and socio-economic conditions; Development of holistic Risk and Resilience Metrics to support multi-hazard prevention strategies, encompassing main physical, economic and social effects; Solutions shall include the analysis of the physical, social and governance systems and take into account the development of an EU comprehensive risks and threats assessment. Scope: Advancing multi-hazard risk assessment and disaster resilience is a necessity. Building on the integrated all-hazard approach, the advancement will be achieved by integrating single-hazard models into next-generation predictive systems capable of analysing cascading and cumulative effects. A key focus should be on early and anticipatory action, improving the understanding of interactions between meteorological, geophysical, and technological hazards, including their compounding impacts on societies, economies, and critical infrastructure. Proposals should aim to develop and validate integrated forecasting models, that enhance the prediction and management of multi-hazard scenarios, supports flexibility and extensibility, and coordination of responses by incorporating real-time data, AI-driven analytics, and remote sensing technologies. These models should facilitate improved hazard forecasting by addressing challenges in platform interoperability and data exchange, ensuring that diverse hazard monitoring systems at local, national, and global levels can effectively communicate and operate in synergy. Efforts should also explore the interoperability of regional and national hazard warning systems, enhancing global forecasting capabilities for hazards such as landslides triggered by extreme weather events, or cumulative damage modelling for earthquakes and their aftershocks. Research should address gaps in loss estimation models by considering the cascading and long-term impacts of disasters on infrastructure, the built environment, supply chains, and diverse needs of communities. Furthermore, proposals should contribute to the development of advanced tools and methodologies to assess the combined effects of multiple hazards on critical infrastructure, ensuring that disaster risk management strategies account for interdependencies across sectors This should include scenario-based stress testing, digital twins for risk modelling, and AI-powered decision-support systems, taking into account existing biases, to enhance resilience planning for lifeline services such as energy, water, transport and telecommunications. A holistic, systemic, and cross-cutting approach should be applied to disaster risk management, taking into consideration climate change trends, environmental degradation, and vulnerabilities such as gender, age, disabilities and others social factors. The topic should lead to the creation of comprehensive Risk and Resilience Metrics, integrating physical, economic, and social dimensions to support decision-makers in designing effective prevention and adaptation strategies. Considering building on and leveraging from existing systems, such as the Copernicus Emergency Management Service (CEMS) the Destination Earth Platform or Risk Data Hub, could be beneficial. Projects should conduct a stakeholder or market analysis and a roadmap or plan for uptake of the developed methodologies, findings, and technologies to the industry, the research and innovation community, and/or the relevant authorities. Projects may take into account the assets but also particular challenges faced by the European outermost regions and may include entities from these regions in the consortium’s composition. Projects should contribute to strengthening risk governance at multiple levels by fostering collaboration between scientific communities, policymakers, emergency responders, and infrastructure operators. Efforts should be made in leveraging citizens-generated content in social media and decentralised digital platforms for citizen-driven early warning and situational awareness. Alignment with EU policies, international risk reduction frameworks, and best practices in resilience planning should be ensured, maximizing the applicability and impact of the developed solutions. The Preparedness Union Strategy is a key document in this regard and includes a key action on developing an EU comprehensive risks and threats assessment. Finding synergies with projects from operational grants, such as the Knowledge for Action in Prevention & Preparedness (KAPP) [1] , is recommended. Where applicable, proposals should leverage the data and services available through European Research Infrastructures federated under the European Open Science Cloud, as well as data from relevant Data Spaces. Particular efforts should be made to ensure that the data produced in the context of this topic is FAIR (Findable, Accessible, Interoperable and Re-usable). Technology Readiness Level - Technology readiness level expected from completed projects Activities are expected to achieve TRL 6 by the end of the project – see General Annex B. [1] Knowledge for Action in Prevention and Preparedness (KAPP) - European Commission - https://civil-protection-humanitarian-aid.ec.europa.eu/funding-evaluations/financing-civil-protection/cp-calls-proposals/knowledge-action-prevention-and-preparedness-kapp-0_en",
-        "destino_descripcion": "",
-        "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL3-2026-01-DRS-02"
+        "type": "8",
+        "typesOfAction": null,
+        "callccm2Id": "15721",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/44092120",
+        "descripcion": "Expected Outcome: The partnership is expected to contribute to all of the following expected outcomes: In line with the objectives of the European Green Deal and Digital Europe priorities, the successful proposal will contribute to the sustainability and resilience of the blue economy by supporting the establishment of innovative governance models. It will also contribute to strengthening the EU and international science-policy interfaces in marine- and maritime-related domains as well as the Global Earth Observation System of Systems (GEOSS) by supporting the further deployment and exploitation of Environmental Observation data and products and of digital and data technologies. EU and national multi-level cooperation and alignment across and within regional seas of research and innovation programmes, priorities and investments are enhanced, based on established strategic research and innovation agendas and related cooperation activities, including international agreements and outreach; as well as cooperation with other Horizon Europe initiatives, European partnerships and missions. Europe’s role in ocean science, research, social and technological developments, innovation and productivity in the marine domain is clearly strengthened by 2030 and transformative governance enables the advances of the role of Europe in business, finance and social developments in the marine/maritime domain. By 2030, Europe has contributed significantly and in a measurable way to the climate neutrality of the blue economy, the European Green Deal objectives and its different strategies. The science-based implementation of EU marine-related legislation, regulations and objectives is supported, as well as the advanced sustainability of activities, practices and existing and new products and services of the blue economy value chains throughout European regional seas and the Atlantic. Transformative change is promoted and enabled through actionable science and sustainable, fair and just solutions for the blue economy and for communities, involving a participatory and multi-stakeholder approach. The deployment of digital, nature-based and social innovations as well as community-led and purpose-driven technology for the blue economy is supported. Ocean literacy in the EU and beyond is increased. Sustained ocean and coastal observations and availability of FAIR data for environmental, climate and blue economy purposes are substantially increased. Global cooperation with key partners bordering the different EU sea basins is strengthened. Scope: Europe’s seas and ocean do not stop at national borders, nor do the challenges they face. Many of the issues are common throughout European seas and the Atlantic, even globally. A major effort is needed to increase the development of ocean science, research, technological developments and innovation, both to protect the ocean and to increase the resilience of its ecosystems and to ensure a strong sustainable blue economy and science-based design of marine spatial planning, involving all stakeholders. No nation can face this on its own and undertake the investments in research, technology and innovation that are needed to steer new business, governance and social developments [1] . Many of the identified research priorities and activities of the EU and individual countries are similar and, therefore, require alignment over all European seas and ocean. Existing and new funding streams from national, public and private sources will need to be pooled, together with EU funding, in order to maximise efforts and achieve efficiency gains. To address these issues, sea basin-specific Research and Innovation Agendas (RIAs) have been developed for the Atlantic, the Mediterranean, the Baltic Sea and the North Sea, and the Black Sea [2] . An impact-driven and coherent approach needs to be designed to combine all of these research and innovation agendas, in order to structure the European landscape, so that common issues can be addressed jointly, and national marine strategies are developed in a consistent way. The partnership should catalyse the transformation of Europe’s blue economy towards climate neutral status by 2050. By aligning national, regional and EU R&I priorities and bringing together science, industry, governance and society, it should deliver knowledge and solutions to make the blue economy sustainable. Responding to national and EU policy goals (e.g. European Green Deal, Marine Strategy Framework Directive), the partnership should aim to achieve a healthy ocean, a sustainable and productive blue economy and the well-being of citizens. The partnership should increase scientific contributions, applicable in a legal/regulatory context, related to biodiversity, ecosystem conservation and restoration, climate mitigation and adaptation, and pollution, including eutrophication, noise, marine litter and hazardous substances, and should facilitate the use of scientific knowledge by regulators and policy-makers, contributing to the EU biodiversity strategy for 2030, the farm to fork strategy, the mission in the area “Ocean, seas and waters”, the circular economy action plan and the zero pollution ambition. The partnership should promote technological, nature-based, social, economic and cultural innovation and experiment with new planning, governance, business and finance models. It should also contribute to the future EU initiative on ocean observation, to the development of a common European ocean data space, to the Ocean Digital Twin and to the implementation of the European Ocean Observing System (EOOS). The partnership should put the emphasis on the development of basin- or Europe-wide holistic, integrated, systemic and cross-sectoral approaches and foster co-creation processes involving all relevant stakeholders and actors, while remaining operationally manageable. It should engage local, regional and national authorities, industry and businesses, including SMEs, knowledge institutions and citizens through Open Science and an inclusive governance, policy and decision-making. It should harness the full potential of social sciences and humanities (SSH), social innovation and citizen engagement to deliver portfolios of solutions, measures and tools and facilitate their replication, and upscaling. In particular, this topic should involve the effective contribution of SSH disciplines. It should contribute to improve the quality of life and long-term socio-economic prospects of coastal communities, including women, youth and the most vulnerable groups like indigenous people, in the context of major transitions and rising threats to climate, resources and health, including by increasing their resilience to crises like the COVID-19 pandemic. In line with the European Commission’s political vision of leaving no one behind, the wide diversity and heterogeneity in levels of socio-economic, technological, institutional, innovation and skills potential should be taken into account. The European Partnership for a climate neutral, sustainable and productive blue economy should be implemented through a joint programme of activities for high impact, relevance and capacity building, ranging from research to coordination and networking activities, including training, demonstration, communication and dissemination activities in all research and innovation projects of the partnership. Emphasis should be given to demonstration, upscaling and experimentation calls. To ensure effective and smooth implementation, three dedicated pillars of activities within the partnership are needed: Implementation of joint activities in particular calls for proposals with co-funding from the Union. Implementation of joint activities without co-funding from the Union. A broad set of activities supporting coordination, international cooperation and outreach, uptake of results etc. These activities should be structured along the following main building blocks of activities: Development of work programmes as implementation steps of the high-level Strategic Research and Innovation Agenda (SRIA). This SRIA should be included in the proposal, outlining implementation modalities and building on existing SRIAs or equivalent in the EU sea basins. It should include the demonstration of the achievability of policy targets at sea-basin scale. Joint calls for challenge-driven R&I to address critical issues for a sustainable climate-neutral blue economy with integrated and multi-stakeholder approaches. Setting-up a multi-stakeholder community of practice to facilitate science-policy-business-society dialogues, share experiences and disseminate results and innovations on key issues for social transition and sustainable development. Undertaking communication and dissemination measures to make R&I results accessible for all stakeholder groups and users and prepare guidelines, references, tools and trainings for replication and mainstreaming; communicating to citizens and civil society at large, and involving them to achieve policy goals. Synthesising R&I results and achievements from clusters of projects. Setting-up (a) knowledge hub(s) to support capacity-building on integrated approaches. Setting-up rigorous monitoring to follow progress of projects and taking stock of diverse solutions, good practice cases and the contribution to the achievement of the objectives of the partnership and the related policy targets. Exploring interfaces with public procurement and investment programmes by developing links with other programmes, private funds, etc. to support take-up and larger-scale implementation of tested approaches and solutions. Given the global dimension of ocean policy, membership and other modalities of participation from organisations and institutions in non-associated third countries is strongly encouraged, in particular key partners bordering the different EU sea basins. International cooperation should contribute to align strategies and research agendas, strengthen data collection, monitoring and sharing, as well as access to infrastructures, promote good practice for maritime policies, promote the exchange and export of key technologies and gradually open up cooperation with new countries outside of Europe. It should support the EU’s strong commitment to the UN Decade of Ocean Science, the G7 Future of the Seas and Oceans Initiative, the All-Atlantic Ocean Research Alliance, the BLUEMED Initiative, the Black Sea Synergy and other international initiatives. The partnership should cover the Atlantic, the Baltic Sea, the North Sea, the Mediterranean and the Black Sea. It is expected to include and be open to all relevant public marine/maritime funding organisations and ministries from EU Member States and associated countries as core members, in close cooperation with the private sector, including SMEs and foundations. Appropriate links to other relevant ministries and organisations, including civil society, will be established. Partners are expected to provide financial and/or in-kind contributions for the governance structure, the joint calls and other dedicated implementation actions and efforts for national coordination. The partnership is expected to mobilise EU, national and regional capacities to leverage investments, including from the private sector, increase up-scalability and market accessibility for the developed solutions and thus increase the return to investments. To ensure the coherence and complementarity of activities, and to leverage knowledge investment possibilities, the partnership is expected to foster close cooperation and synergies with other relevant proposed European Partnerships, notably “Rescuing biodiversity to safeguard life on Earth”, “Safe and Sustainable Food Systems”, “Water security for the planet (Water4All)”, “Zero-emission waterborne transport”, “Clean Energy Transition” and others where relevant, as well as the EIT Climate KIC and the EIT FOOD. The partnership will also be linked to the relevant objectives of the mission in the area of “Ocean, seas and waters”. Proposers are expected to describe in details the way to implement such collaborations. Proposals should pool the necessary financial resources from the participating national (or regional) research programmes with a view to implementing joint calls for transnational proposals resulting in grants to third parties. Financial support provided by the participants to third parties is one of the primary activities of this action in order to be able to achieve its objectives. Therefore, the 60 000 EUR threshold provided for in Article 204 (a) of the Financial Regulation No 2018/1046 does not apply. It is expected that the partnership organises joint calls on an annual base and therefore it should consider ample time for the implementation of the co-funded projects. The EU contribution for this action will be implemented in annual instalments of around EUR 20-30 million. Engaging with managing authorities of European Structural and Investment Funds, as well as others like LIFE, Instrument for Pre-Accession Assistance (IPA III) and Neighbourhood, Development and International Cooperation Instrument (NDICI), during partnership implementation would help increase the implementation of the project outcomes and support and facilitate further uptake. T he Commission envisages to include new actions in future work programme(s) to continue providing support to the partnership for the duration of Horizon Europe. null The total indicative budget for the duration of the partnership is EUR 150 million. [1] The final evaluation of the BONUS programme, the mid-term review of the EU Atlantic Strategy, the OECD report on the Blue Economy, the IPCC report on the ocean and cryosphere, etc. support this. [2] The Strategic Research and Innovation Agenda for the Black Sea is a milestone feature of the EU’ Black Sea Synergy policy and a scientific pillar of the Common Maritime Agenda for the Black Sea.",
+        "destino_descripcion": "Innovative governance, environmental observations and digital solutions in support of the Green Deal",
+        "destino_detalle": "Transformative changes such as the ones required within the Green Deal are dynamic processes that require appropriate governance. At the same time, to ensure coordination and for collaborative decision-making, governance requires multiple channels and networks that provide readily available data and information coming from different sources. R&I activities under this destination aim at both: experimenting with new ways to govern the transition process and modernising the governance, in particular by making information and knowledge available and accessible. R&I for governance to support the Green Deal shall provide insights into institutional barriers such as lock-ins, path dependency, political and cultural inertia power imbalances and regulatory inconsistencies or weaknesses. Innovative governance supporting the Green Deal objectives needs to recognise, cope with and promote resilience in the face of on-going shocks and disruptions both globally and across Europe, whether these be climatic, ecological, economic, social, geo-political or related to health. Critical risk assessment and reduction strategies need to be incorporated, including the diversification of infrastructures, resources and knowledge through more self-sufficiency and autonomy. Taking advantage of the use, uptake, deployment and exploitation of environmental observations [1] as well as digital solutions, assessed through the “do not harm” principle of the Green Deal, is key for innovative governance models and a more science-based policy design, implementation and monitoring. To maximise impacts of R&I on the ground and spark behavioural and socio-economic change, the knowledge and innovation produced throughout the whole cluster should be widely disseminated to key stakeholders of the relevant sectors of the cluster. In particular, the Agricultural Knowledge and Innovation Systems (AKIS) needs to be reinforced to accelerate the required transformative changes. Data and information obtained through Environmental Observation is of great value when assessing the state of the planet and is delivering crucial information to support the Green Deal and the climate and ecological transition. Integration of this information from different sources (space-based, airborne including drones, in-situ and citizens observations) with other relevant data and knowledge while ensuring (better) accessible, interoperable or deployable information, delivers information necessary for shaping the direction of the development of policies in the broad context of Cluster 6 of Horizon Europe. A strong link to the European Earth observations programme Copernicus (in Cluster 4) and the European Space Agency’s (ESA) Earth observation programme, as well as support to the Group on Earth Observations (GEO), its European regional initiative (EuroGEO) and the Global Earth Observation System of Systems (GEOSS) is foreseen for topics on environmental observations under this destination. R&I activities relevant to ocean, seas and coastal waters will complement and support the UN Decade of Ocean Science for Sustainable Development and UN Decade on Restoration, the G7 Future of the Seas and Oceans Initiative, the pan-Commission Destination Earth initiative, the European Global Ocean Observing System (EOOS) and the GOOS 2030 strategy. Digital innovation, in complementarity with Cluster 4 and Digital Europe Programmes activities, should bring benefits for citizens, businesses, researchers, the environment, society at large and policy-makers. The potential of the ongoing digital transformation, and its wider impacts, positive and negative, need to be better understood and monitored in view of future policy design and implementation, governance, and solution development This destination will develop innovative digital and data based solutions to support communities and society at large, and economic sectors relevant for this cluster to achieve sustainability objectives. R&I activities will add value to the knowledge and cost-effectiveness of innovative technologies in and across primary production sectors, food systems, bioeconomy, ocean and biodiversity. Knowledge and advice to all actors relevant to this cluster are key to improve sustainability. For instance, primary producers have a particular need for impartial and tailored advice on sustainable management choices. Knowledge and Innovation Systems are key drivers to enhance co-creation and thus speed up innovation and the take-up of results needed to achieve the Green Deal objectives and targets. This will include promoting interactive innovation and co-ownership of results by users, as well as strengthening synergies with other EU Funds in particular the CAP, reinforcing the multi-actor approach and setting up structural networking within national/regional/local AKISs. AKIS goes beyond agriculture, farming and rural activities and covers environment, climate, biodiversity, landscape, bio-based economy, consumers and citizens, i.e., all food and bio-based systems including transformation and distribution chains up until the consumer. Expected impact Proposals for topics under this destination should set out a credible pathway to contributing to innovative governance and sound decision making in policy for the green transition, and more specifically to one or several of the following impacts: Innovative governance models enabling sustainability and resilience notably to achieve better informed decision-making processes, societal engagement and innovation; Green Deal related domains benefit from further deployment and exploitation of Environmental Observation data and products ; A strengthened Global Earth Observation System of Systems (GEOSS) [2] ; Sustainability performance and competitiveness in the domains covered by Cluster 6 are enhanced through further deployment of digital and data technologies as key enablers; More informed and engaged stakeholders and end users including primary producers and consumers thanks to effective platforms such as Agriculture Knowledge and Innovation Systems (AKIS) Strengthened EU and international science-policy interfaces to achieve the Sustainable Development Goals When considering their impact, proposals also need to assess their compliance with the “Do No Significant Harm” principle [3] according to which the research and innovation activities of the project should not be supporting or carrying out activities that make a significant harm to any of the six environmental objectives of the EU Taxonomy Regulation. Topics under this destination will have impacts in the following areas: “Climate change mitigation and adaptation”; “Clean and healthy air, water and soil”; “Enhancing ecosystems and biodiversity on land and in water”; “Sustainable food systems from farm to fork on land and sea”; “High quality digital services for all”; and “A Competitive and secure data-economy”. Social innovation is recommended when the solution is at the socio-technical interface and requires social change, new social practices, social ownership or market uptake. [1] The capacity to observe the environment, including space-based, in-situ-based (air, sea, land) observation, and citizen observations [2] The European Commission is a member and co-chair of the Group on Earth Observations (GEO), as such the European Commission adopted the GEO Canberra Declaration ( https://earthobservations.org/canberra_declaration.php and Commission Decision C(2019)7337/F1) and committed to contribute to the GEO objectives, including to the Global Earth Observation System of Systems (GEOSS). [3] as per Article 17 of Regulation (EU) No 2020/852 on the establishment of a framework to facilitate sustainable investment (EU Taxonomy Regulation)",
+        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL6-2022-GOVERNANCE-01-02"
       },
-      "titulo": "Multi-hazard approach and cumulative / cascading impacts",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Redes sociales / community management"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "convocatoria_ue"
-    },
-    {
-      "fuente": "UE-subvenciones",
-      "original": {
-        "reference": "50128100TOPICSen",
-        "identifier": "HORIZON-CL4-2027-01-MAT-PROD-47",
-        "titulo": "Pilot access schemes to Technology Infrastructures for European startups, scaleups and innovative SMEs (CSA)",
-        "deadlineDate": "2027-02-02T00:00:00.000+0000",
-        "startDate": "2026-09-22T00:00:00.000+0000",
-        "frameworkProgramme": "43108390",
-        "status": "31094501",
-        "type": "1",
-        "typesOfAction": "HORIZON Coordination and Support Actions",
-        "callccm2Id": "50128175",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL4-2027-01-MAT-PROD-47",
-        "descripcion": "Expected Outcome: Proposals should demonstrate the following expected outcomes: A sound understanding of the specific needs of industrial users (including but not limited to innovative SMEs, startups and scaleups) for Technology infrastructure services in specific priority areas including but not limited to advanced materials, clean energy, or health and biotechnology; Increased opportunities for industrial users for development, testing, up-scaling and deployment of new technologies via the use of services offered by Technology Infrastructures; Strengthened innovation and technology development capacity of European SMEs, startups and scaleups via improved access to Technology Infrastructures; Attractiveness and effectiveness of the developed access schemes for broadening the range of Technology Infrastructures users, especially for startups and scaleups, including with transnational access. Scope: Startups, scaleups and other innovative SMEs require access to state-of-the-art research and technology facilities, equipment and expertise to test, upscale, validate new products and technologies, shortening the time-to-market and increasing the chances for a successful commercialisation. Access mechanisms to Technology Infrastructures as well as access contracts and collaboration or service provision agreements are often complex, while the costs of using such infrastructures can significantly surpass the financial capacities of growing innovative companies. The action will develop and test pilot multi-site access schemes for startups, scaleups and other innovative SMEs, involving a critical mass of Technology Infrastructures operators and users in priority areas (including but not limited to advanced materials, clean energy, or health and biotechnology). It should build on existing initiatives with already developed single access points to a comprehensive set of facilities and services in a selected technology area, like for example Open Innovation Test Beds or other integrated networks, that allow for a quick deployment of a common access scheme. The action should include setting-up a pilot centrally managed and funded access programme, allowing companies quick access to the needed services, with simplified and standardised access conditions applicable across the EU, to be coordinated and in line with the work on the envisaged European Charter of access for industrial users to research and technology infrastructures. While the focus shall be the provision of access and support services to companies, the action can also include enhancing the accessibility and usability of technology infrastructure services to ensure that they meet the evolving needs of users. The action should aim at significant broadening of the user base of the technology infrastructures to address the needs of startups and scaleups that do not have access to such facilities in their local ecosystems. To this end, proposals should include the development and implementation of activities to increase the visibility and promote and demonstrate the uptake of technology infrastructures services provided to users across the EU. Furthermore, proposals should aim to enhance transnational and multisite collaboration among Technology Infrastructures fostering the building of technology infrastructures ecosystems, the sharing of experience, resources, and best practices in management, service offer, staff exchange and networking. Proposals may also benefit, especially for communication and dissemination activities, from sharing best practices and taking stock of what other relevant projects are developing in the field of Technology Infrastructures.",
-        "destino_descripcion": "Achieving technological leadership for Europe’s open strategic autonomy in raw materials, chemicals and innovative materials (2026-27)",
-        "destino_detalle": "This Destination brings together the research and innovation for a globally competitive European industry through the twin green and digital transition , and the availability, development, use, reuse and disposal of chemicals, advanced materials and critical raw materials . The Competitiveness Compass announces initiatives that should be served directly by industry-linked activities in Cluster 4, through new, focused R&I activities, but also through the activities supported up to now: Clean Industrial Deal adopted in February 2025; Critical Raw Materials Act; Advanced Materials Communication and future Advanced Materials Act planned for 2026; Future Circular Economy Act planned for 2026; Steel and Metals Action Plan adopted in March 2025; European Chemicals Industry Action Plan adopted in July 2025; Industrial action plan for the European automotive sector adopted in March 2025; and Strategy on research and technology infrastructures, with regard to technology infrastructures and the valorisation of knowledge. In order to better translate these policy priorities into actions, to integrate the latest inputs from the partnerships, and to achieve synergies, this Work Programme part adopts a more integrated approach. The headings used under the two industry-focused destinations in previous work programmes, reflecting different partnerships and industrial sectors, are replaced by new headings making strongly interconnected contributions to the corresponding expected impacts in the Strategic Plan 2025-27, on green and digital transition and on autonomy in raw and advanced materials. The new approach takes into account R&I investments under previous work programmes and intends to introduce more synergies with other pillars (notably the European Innovation Council under Pillar III) as well as with Cluster 5. Topics in this Work Programme increasingly combine the priorities of different partnerships to enable synergies, e.g. with the Investment fund, while continuing to address the particularities of each partnership. The development of new and cross-cutting technologies will help transform existing value chains and create new ones. In addition to this Work Programme part, Cluster 4 participates in a horizontal Clean Industrial Deal Call , aiming to increase the competitiveness and decarbonisation of industry. The initiative will allow Horizon Europe beneficiaries to feed the EU deployment pipeline with R&I solutions close to market uptake and deployment, whilst also supporting the development by 2035 of a new batch of industry-led demonstrators designed for higher market readiness. In addition to decarbonisation, manufacturing and energy-intensive industries need to embrace the circular economy as a key pillar in the design of their value chains. This will be fundamental to their resource efficiency (in terms of materials, energy and water). Particularly important in this context is the upcycling of secondary raw materials and waste; de- and re-manufacturing; and the development of sustainable and resource-efficient industrial processes This Work Programme continues to promote across the calls the application of Safe and Sustainable by Design approach incorporating early and parallel considerations of innovation design choices on impacts on health, environment, climate and other sustainability parameters as a way of achieving stated policy objectives and fostering quick market uptake. Where projects are asked to contribute to the development of safe and sustainable products, projects should take into account safety concerns for consumers as well as the organisational health and safety aspects for industrial workers. Finally, to support start-ups and scale-ups , this Work Programme includes support for technology infrastructures and valorisation of knowledge. Business cases and exploitation strategies for industrialisation : This section applies only to those topics in this Destination, for which proposals should demonstrate the expected outcomes by including a business case and exploitation strategy for industrialisation . A business case and a credible initial exploitation strategy are essential components in the ultimate success of an industry-based project, as well as its prospects to attract further investments for deployment. They will both be decisive factors under the impact criterion, and proposers are encouraged to use the extended page limit to present a carefully considered business case and exploitation strategy, backed by the management of the companies involved. The business case should demonstrate the expected impact of the proposal in terms of enhanced market opportunities for the participants and deployment in the EU, in the short to medium term. It should describe the targeted market(s); estimated market size in the EU and globally; user and customer needs; and demonstrate that the solutions will match the market and user needs in a cost-effective manner; and describe the expected market position and competitive advantage. The exploitation strategy should identify obstacles, requirements and necessary actions involved in reaching higher TRLs (Technology Readiness Levels), for example: securing the required investments, including through possible synergies with other programmes; accessing the required skills; matching value chains; enhancing product robustness; securing industrial integrators; and user acceptance. For TRLs 6 and 7, a credible strategy to achieve future full-scale deployment in the EU is expected, indicating the intentions of the industrial partners after the end of the project. Where relevant, in the context of skills , it is recommended to develop training material to endow workers with the right skillset in order to support the uptake and deployment of new innovative products, services, and processes developed in the different projects. This material should be tested and be scalable, and can potentially be up-scaled through the European Social Fund Plus (ESF+). This will help the European labour force to close the skill gaps in the relevant sectors and occupational groups and improve employment and social levels across the EU and associated countries. Where projects are asked to contribute to the development of safe and sustainable products, projects should take into account safety concerns for consumers and the organisational health and safety aspects for industrial workers. For topics in this destination, consortia (if selected for funding) will be called upon to cooperate with the relevant parts of the Joint Research Centre (JRC) , in order to inform the next stages of EU technology and innovation policies. INnovation Centre for Industrial Transformation and Emissions (INCITE) ( https://innovation-centre-for-industrial-transformation.ec.europa.eu/ ). The Energy and Industry Geography Lab: EIGL ( https://energy-industry-geolab.jrc.ec.europa.eu/ ). Legal entities established in China are not eligible to participate in both Research and Innovation Actions (RIAs) and Innovation Actions (IAs) falling under this destination. For additional information please see “Restrictions on the participation of legal entities established in China” found in General Annex B of the General Annexes.",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL4-2027-01-MAT-PROD-47"
-      },
-      "titulo": "Pilot access schemes to Technology Infrastructures for European startups, scaleups and innovative SMEs (CSA)",
+      "titulo": "European Partnership for a climate neutral, sustainable and productive Blue Economy",
       "cpv": [],
       "incluir": true,
       "categorias": [
@@ -155844,6 +155891,63 @@
     {
       "fuente": "UE-subvenciones",
       "original": {
+        "reference": "52663544TOPICSen",
+        "identifier": "HORIZON-BRIDGING-2027-01-09",
+        "titulo": "EU AI Media Platform – modular multilingual public-interest infrastructure for European news and audiovisual media (IA) - Apply AI",
+        "deadlineDate": "2027-02-16T00:00:00.000+0000",
+        "startDate": "2026-10-20T00:00:00.000+0000",
+        "frameworkProgramme": "43108390",
+        "status": "31094501",
+        "type": "1",
+        "typesOfAction": "HORIZON Innovation Actions",
+        "callccm2Id": "52663636",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-BRIDGING-2027-01-09",
+        "descripcion": "Expected Outcome: The project will support the development of a modular, trustworthy and interoperable AI-enabled infrastructure enabling pan-European public-interest media platform(s) to make available real time news and information from professional media outlets across the EU and associated countries to wider audiences [1] . It will harness AI to translate, process and distribute content for relevant channels through classification, recognition, linguistic analysis, translation and other multimodal workflows. It will also enable prototypic content creation and testing of immersive and innovation-inspired media experiences consistent with a public-interest mission for different age groups, taking into account gender-responsive design and promoting news diversity. Overall, it will improve multilingual access, including low-resource European languages, strengthen media pluralism and resilience for public service media and professional media outlets, content creators and independent publishers, and embed trust, provenance and accountability by design. The concrete expected outcomes are: Reliable, modular and interoperable infrastructure with validated service levels and sustainability pathways, integrating AI-based components that support multilingual and multimodal media workflows including audiovisual processing and adaptation workflows, relevant metadata interoperability for broadcast and streaming contexts, social-media-facing interaction and adaptive, personalised, and interactive content experiences (modular journalism) catering for diverse user needs. Content in multiple languages and onboarding conditions and equal access for all types of media organisations, from public broadcasters to small local publishers, SMEs, cultural institutions and civil society groups. Built-in safety, transparency and governance features, fair human-data interactions (e.g., legibility, agency, negotiability), traceability of key decisions, open evaluation methods, and validated governance and interoperability frameworks. Reliable tracking of content origins through provenance information, attribution metadata and verification signals. Scope: This topic will support pilots for AI-enabled media infrastructures, fostering research and innovation in the European media sector. It should deliver innovative solutions by consolidating, integrating and validating reusable AI-enabled infrastructure components and governance arrangements of platform pilots [2] for pan-European public-interest media platform(s), making use, where appropriate, of European AI infrastructure and building on results from relevant Horizon Europe, Digital Europe and pilot actions, in preparation for wider scale-up from 2028 onward. The action will encourage the development, testing and improvement of innovative solutions that respond to the needs of the media ecosystem. Proposals should integrate and scale up relevant results and move existing pilots towards operational validation in real-word conditions against declared service levels, including appropriate resilience, lifecycle-managed storage, a KPI framework and independent evaluation, in line with Union standards, and observability, traceability and content provenance by design. AI components should follow transparent and accountable practices, including documentation, explainability, logging and evaluation, to enable audit, redress and effective oversight. The project should demonstrate a credible pathway towards broad European language coverage, accessibility and support for relevant emerging formats, with a credible post-grant sustainability approach and, where relevant, onboarding, training and pilot cohorts. It should foster participation of media organisations by addressing industry needs, including bridging tools and common formats linking editorial workflows and platform technologies (e.g. ingestion, aggregation, curation, metadata exchange, rights and licensing parameters, attribution and provenance information). The project should present a mechanism to bring together public and private media outlets and publishers, broadcasters, AI and language-technology providers, platform developers, content creators and social media actors, fact-checking and integrity actors, and rights-management organisations. Where relevant, cultural and heritage institutions and civil society organisations should also be involved. The infrastructure should test advanced open APIs solutions and demonstrate their technical viability. Moreover, the infrastructure should provide SDKs and documentation to enable integration with multiple front ends and third-party environments, onboarding pathways for smaller players, and where relevant, open-source development approaches. This includes social-media-facing interaction and referral functions, and, AI companion-style interactions via an API. Collective contextualisation services, facilitation of user onboarding and support for cooperation, the embedding of robust provenance safeguards for synthetic or manipulated content with clear redress paths and where relevant, cooperation with fact-checking and integrity actors, may equally be considered. The project should contribute to an existing or establish a structured multi-stakeholder governance framework including structured exchanges with relevant stakeholders and related initiatives through an appropriate coordination mechanism. Technology Readiness Level - Technology readiness level expected from completed projects Activities are expected to start at TRL 6 and achieve TRL 8 by the end of the project – see General Annex B. [1] COMMUNICATION FROM THE COMMISSION TO THE EUROPEAN PARLIAMENT AND THE COUNCIL Apply AI Strategy, 2.10. Cultural and creative sectors, and media ; Communication on the European Democracy Shield [2] Such as “ Supporting multilingual access to trusted news and public-interest information across Europe ”",
+        "destino_descripcion": "",
+        "destino_detalle": "",
+        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-BRIDGING-2027-01-09"
+      },
+      "titulo": "EU AI Media Platform – modular multilingual public-interest infrastructure for European news and audiovisual media (IA) - Apply AI",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Creación de contenidos",
+        "Redes sociales / community management"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "convocatoria_ue"
+    },
+    {
+      "fuente": "UE-subvenciones",
+      "original": {
+        "reference": "52664320TOPICSen",
+        "identifier": "HORIZON-NATURE-2027-02-01",
+        "titulo": "Assessing direct and indirect drivers of biodiversity decline of invertebrates",
+        "deadlineDate": "2027-01-14T00:00:00.000+0000",
+        "startDate": "2026-10-13T00:00:00.000+0000",
+        "frameworkProgramme": "43108390",
+        "status": "31094501",
+        "type": "1",
+        "typesOfAction": "HORIZON  Research and Innovation Actions",
+        "callccm2Id": "52664614",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NATURE-2027-02-01",
+        "descripcion": "Expected Outcome: Proposals are expected to contribute to all the following expected outcomes: stakeholders involved in biodiversity conservation and restoration activities have an improved understanding of how direct and indirect drivers [1] of biodiversity decline work, considering spatial and temporal scales and dynamics, and their interactions; the implementation at different spatial and temporal scales of the EU biodiversity policies and legislation, notably the Nature Restoration Regulation (NRR) is improved, enabling the prioritisation of actions and the identification of systemic solutions; stakeholders, including primary producers, whose business models rely on ecosystem services are better equipped to take strategic decisions that support biodiversity, thereby increasing opportunities while reducing their exposure to risks linked to the decline of these services. Scope: Biodiversity decline has rippling effects on climate, economy, and human well-being. Focusing on representative groups of invertebrates (including insects, molluscs and crustaceans and, in particular, understudied taxonomic groups) across representative European terrestrial, freshwater and marine ecosystems, is crucial for developing effective biodiversity conservation strategies since they are the foundation for healthy ecosystems and their decline has cascading impacts on ecosystem health and services. Understanding the relative impact of the aforementioned drivers at different spatial (from local to global) and temporal (from immediate to long-term) scales and dynamics, is needed to develop effective and coherent biodiversity protection and restoration strategies to implement the EU Nature Restoration Regulation [2] while building a resilient competitive economy. Proposals should: assess and rank the direct and indirect drivers of biodiversity decline based on invertebrates´ cases studies across representative European terrestrial, freshwater and marine ecosystems, considering their cumulative impacts, different spatial and temporal scales and dynamics, and their interactions; better understand the drivers of invertebrates decline and how they vary spatially and temporally, aiming to advance in the attribution of causality. This could involve the use of spatial analysis techniques, temporal trend analysis, and modelling approaches as well as other modern technological approaches to anticipate future changes; develop methods and recommendations to replicate this exercise in other spatial settings; involving relevant stakeholders, develop and provide decision-support tools to competent authorities and stakeholders for effective protection and restoration strategies, enabling them to prioritise and address the most critical drivers of invertebrates´ decline, with the aim of enhancing ecosystem resilience and services; building on relevant existing ecosystem modelling frameworks, include/add an anticipatory and predictive dimension, integrating early-warning systems and stress-testing approaches able to assess future trajectories under different land-uses scenarios; ensure that results feed into decision support tools [3] developed for primary producers to make informed choices that enhance the resilience and competitiveness of their business by restoring and protecting the ecosystems that provide the services they depend on; Proposal should focus on invertebrates´ species, in particular, understudied taxonomic groups, across representative European terrestrial, freshwater and marine ecosystems, addressing Area A : Focus on insects or Area B : Focus on molluscs and crustaceans. The area (A or B) should be clearly indicated on the application. Concrete efforts should be made to ensure that the data produced in the context of the funded projects is FAIR (Findable, Accessible, Interoperable and Re-usable), particularly in the context of real-time data feeds, exploring workflows that can provide “FAIR-by-design” data, i.e., data that is FAIR from its generation. Possibilities offered by the European Open Science Cloud (EOSC) to store and give access to research data should be considered. This topic requires the effective contribution of SSH disciplines and the involvement of SSH experts, institutions as well as the inclusion of relevant SSH expertise, in order to produce meaningful and significant effects enhancing the societal impact of the related research activities. International cooperation is encouraged. In order to increase synergies and the impact of the projects, all proposals selected for funding should form a cluster and are expected to participate in common networking and joint activities, including with projects from other calls where deemed appropriate. These activities should be included in a dedicated work package, having sufficient budget allocated to it. These activities may include: a common dissemination and communication strategy; common Data Management Strategy and Common Policy Strategy (including joint policy briefs); thematic workshops/trainings/working groups on issues of common interest (e.g. data management and exchange); close cooperation with the EC Knowledge Centre for Biodiversity (KCBD) [4] and its Science Service, including participating in answering science to policy requests. [1] Direct and indirect drivers of biodiversity decline | IPBES secretariat [2] Regulation (EU) 2024/1991 of the European Parliament and of the Council of 24 June 2024 on nature restoration and amending Regulation (EU) 2022/869 (Text with EEA relevance) [3] Notably AKIS, and projects, missions and partnerships (agroecology). [4] https://knowledge4policy.ec.europa.eu/biodiversity-knowledge-centre_en",
+        "destino_descripcion": "",
+        "destino_detalle": "",
+        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NATURE-2027-02-01"
+      },
+      "titulo": "Assessing direct and indirect drivers of biodiversity decline of invertebrates",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Publicidad y comunicación (general)"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "convocatoria_ue"
+    },
+    {
+      "fuente": "UE-subvenciones",
+      "original": {
         "reference": "52664569TOPICSen",
         "identifier": "HORIZON-NATURE-2027-02-05",
         "titulo": "Cost-effective biodiversity monitoring for EU policies",
@@ -155984,28 +156088,28 @@
     {
       "fuente": "UE-subvenciones",
       "original": {
-        "reference": "52663544TOPICSen",
-        "identifier": "HORIZON-BRIDGING-2027-01-09",
-        "titulo": "EU AI Media Platform – modular multilingual public-interest infrastructure for European news and audiovisual media (IA) - Apply AI",
-        "deadlineDate": "2027-02-16T00:00:00.000+0000",
-        "startDate": "2026-10-20T00:00:00.000+0000",
-        "frameworkProgramme": "43108390",
-        "status": "31094501",
+        "reference": "52519580TOPICSen",
+        "identifier": "CREA-MEDIA-2027-DEVVGIM",
+        "titulo": "European video games and immersive content",
+        "deadlineDate": "2027-02-02T00:00:00.000+0000",
+        "startDate": "2026-09-30T00:00:00.000+0000",
+        "frameworkProgramme": "43251814",
+        "status": "31094502",
         "type": "1",
-        "typesOfAction": "HORIZON Innovation Actions",
-        "callccm2Id": "52663636",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-BRIDGING-2027-01-09",
-        "descripcion": "Expected Outcome: The project will support the development of a modular, trustworthy and interoperable AI-enabled infrastructure enabling pan-European public-interest media platform(s) to make available real time news and information from professional media outlets across the EU and associated countries to wider audiences [1] . It will harness AI to translate, process and distribute content for relevant channels through classification, recognition, linguistic analysis, translation and other multimodal workflows. It will also enable prototypic content creation and testing of immersive and innovation-inspired media experiences consistent with a public-interest mission for different age groups, taking into account gender-responsive design and promoting news diversity. Overall, it will improve multilingual access, including low-resource European languages, strengthen media pluralism and resilience for public service media and professional media outlets, content creators and independent publishers, and embed trust, provenance and accountability by design. The concrete expected outcomes are: Reliable, modular and interoperable infrastructure with validated service levels and sustainability pathways, integrating AI-based components that support multilingual and multimodal media workflows including audiovisual processing and adaptation workflows, relevant metadata interoperability for broadcast and streaming contexts, social-media-facing interaction and adaptive, personalised, and interactive content experiences (modular journalism) catering for diverse user needs. Content in multiple languages and onboarding conditions and equal access for all types of media organisations, from public broadcasters to small local publishers, SMEs, cultural institutions and civil society groups. Built-in safety, transparency and governance features, fair human-data interactions (e.g., legibility, agency, negotiability), traceability of key decisions, open evaluation methods, and validated governance and interoperability frameworks. Reliable tracking of content origins through provenance information, attribution metadata and verification signals. Scope: This topic will support pilots for AI-enabled media infrastructures, fostering research and innovation in the European media sector. It should deliver innovative solutions by consolidating, integrating and validating reusable AI-enabled infrastructure components and governance arrangements of platform pilots [2] for pan-European public-interest media platform(s), making use, where appropriate, of European AI infrastructure and building on results from relevant Horizon Europe, Digital Europe and pilot actions, in preparation for wider scale-up from 2028 onward. The action will encourage the development, testing and improvement of innovative solutions that respond to the needs of the media ecosystem. Proposals should integrate and scale up relevant results and move existing pilots towards operational validation in real-word conditions against declared service levels, including appropriate resilience, lifecycle-managed storage, a KPI framework and independent evaluation, in line with Union standards, and observability, traceability and content provenance by design. AI components should follow transparent and accountable practices, including documentation, explainability, logging and evaluation, to enable audit, redress and effective oversight. The project should demonstrate a credible pathway towards broad European language coverage, accessibility and support for relevant emerging formats, with a credible post-grant sustainability approach and, where relevant, onboarding, training and pilot cohorts. It should foster participation of media organisations by addressing industry needs, including bridging tools and common formats linking editorial workflows and platform technologies (e.g. ingestion, aggregation, curation, metadata exchange, rights and licensing parameters, attribution and provenance information). The project should present a mechanism to bring together public and private media outlets and publishers, broadcasters, AI and language-technology providers, platform developers, content creators and social media actors, fact-checking and integrity actors, and rights-management organisations. Where relevant, cultural and heritage institutions and civil society organisations should also be involved. The infrastructure should test advanced open APIs solutions and demonstrate their technical viability. Moreover, the infrastructure should provide SDKs and documentation to enable integration with multiple front ends and third-party environments, onboarding pathways for smaller players, and where relevant, open-source development approaches. This includes social-media-facing interaction and referral functions, and, AI companion-style interactions via an API. Collective contextualisation services, facilitation of user onboarding and support for cooperation, the embedding of robust provenance safeguards for synthetic or manipulated content with clear redress paths and where relevant, cooperation with fact-checking and integrity actors, may equally be considered. The project should contribute to an existing or establish a structured multi-stakeholder governance framework including structured exchanges with relevant stakeholders and related initiatives through an appropriate coordination mechanism. Technology Readiness Level - Technology readiness level expected from completed projects Activities are expected to start at TRL 6 and achieve TRL 8 by the end of the project – see General Annex B. [1] COMMUNICATION FROM THE COMMISSION TO THE EUROPEAN PARLIAMENT AND THE COUNCIL Apply AI Strategy, 2.10. Cultural and creative sectors, and media ; Communication on the European Democracy Shield [2] Such as “ Supporting multilingual access to trusted news and public-interest information across Europe ”",
+        "typesOfAction": "CREA Lump Sum Grants",
+        "callccm2Id": "52519615",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/CREA-MEDIA-2027-DEVVGIM",
+        "descripcion": "Scope: The objective of the support to Video games and immersive content development is to increase the capacity of European video game producers, XR studios and audiovisual production companies to develop video games and interactive immersive experiences with the potential to reach global audiences. The support also aims to improve the competiveness of the European video games industry and other companies producing interactive immersive content in European and international markets by enabling the retention of intellectual property by European developers. Expected results Increased quality, appeal, feasibility and cross-border potential for selected projects. A stronger position on the European and international market for video games developers and companies producing interactive immersive experiences. Description of the activities to be funded Support will be given to the development of works and prototypes of interactive narrative storytelling with original content and/or quality gameplay intended for production and global commercial exploitation via PCs, consoles, mobile devices, tablets, smart phones and other technologies. The aim is to provide funds to video game production companies and other companies producing immersive content to develop works with a high level of originality and innovative and creative value, and that have a high level of commercial ambition and extensive cross-border potential to reach European and international markets. This will allow for further investment in innovative European content and increase the competitiveness of European companies in the digital global market. Applications should present adequate strategies to ensure a more sustainable and more environmentally-respectful industry and to ensure gender balance, inclusion, diversity and representativeness.",
         "destino_descripcion": "",
         "destino_detalle": "",
-        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-BRIDGING-2027-01-09"
+        "url_detalle": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/CREA-MEDIA-2027-DEVVGIM"
       },
-      "titulo": "EU AI Media Platform – modular multilingual public-interest infrastructure for European news and audiovisual media (IA) - Apply AI",
+      "titulo": "European video games and immersive content",
       "cpv": [],
       "incluir": true,
       "categorias": [
         "Creación de contenidos",
-        "Redes sociales / community management"
+        "Producción de vídeo / contenido audiovisual"
       ],
       "revisar_manual": false,
       "tipo_registro": "convocatoria_ue"
@@ -156129,8 +156233,8 @@
         "reference": "50140252TOPICSen",
         "identifier": "HORIZON-HLTH-2027-01-DISEASE-10",
         "titulo": "Prevention and management of chronic non-communicable diseases in children and young people (GACD)",
-        "deadlineDate": "2027-04-13T00:00:00.000+0000",
-        "startDate": "2027-02-10T00:00:00.000+0000",
+        "deadlineDate": "2027-02-17T00:00:00.000+0000",
+        "startDate": "2026-10-29T00:00:00.000+0000",
         "frameworkProgramme": "43108390",
         "status": "31094501",
         "type": "1",
@@ -156755,6 +156859,80 @@
       "incluir": true,
       "categorias": [
         "Diseño y desarrollo web"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "contrato_menor_venciendo"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
+        "id": "ECM-26-02244315_00001",
+        "object": "Video promocional ARDI2",
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 5,
+          "name": "Adjudicación",
+          "_links": {
+            "self": {
+              "name": "Adjudicación",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 10,
+          "name": "Directo/Contrato Menor",
+          "_links": {
+            "self": {
+              "name": "Directo/Contrato Menor",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
+            }
+          }
+        },
+        "CIF": "XXXXX940R",
+        "socialReason": "LURVISUAL-EDUARDO RUÍZ DE EGUINO  JIMÉNEZ",
+        "awardDate": "2026-08-26",
+        "companySignatureDate": "2026-08-26",
+        "contractEndDate": "2026-09-10",
+        "awardAmount": 5783.8,
+        "awardAmountWithoutVAT": 4780,
+        "monthsContractDuration": 15,
+        "minorContract": true,
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expcm533606/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Video promocional ARDI2",
+            "href": "https://api.euskadi.eus/procurements/contracts/ECM-26-02244315_00001"
+          },
+          "contractingAuthority": {
+            "href": "https://api.euskadi.eus/procurements/contracting-authorities/48"
+          },
+          "contractingNotice": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384181"
+          },
+          "entity": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/315"
+          },
+          "org": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/911155"
+          }
+        },
+        "organismo_resuelto": "NEIKER, Instituto Vasco de Investigación y Desarrollo Agrario, S.A."
+      },
+      "titulo": "Video promocional ARDI2",
+      "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Producción de vídeo / contenido audiovisual"
       ],
       "revisar_manual": false,
       "tipo_registro": "contrato_menor_venciendo"
@@ -157439,6 +157617,83 @@
     {
       "fuente": "Euskadi",
       "original": {
+        "id": "051P$20261238_00001",
+        "object": "Prestación de servicios profesionales de diseño gráfico, reestructuración informativa, señalización y elementos de comunicación para el Instituto de Arquitectura de Euskadi\r\n",
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 5,
+          "name": "Adjudicación",
+          "_links": {
+            "self": {
+              "name": "Adjudicación",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 10,
+          "name": "Directo/Contrato Menor",
+          "_links": {
+            "self": {
+              "name": "Directo/Contrato Menor",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
+            }
+          }
+        },
+        "CIF": "XXXXX0114",
+        "socialReason": "Perrine Saint Martin",
+        "awardDate": "2026-07-27",
+        "companySignatureDate": "2026-07-27",
+        "contractEndDate": "2026-07-27",
+        "awardAmount": 15730,
+        "awardAmountWithoutVAT": 13000,
+        "CPV": "71320000-7",
+        "minorContract": true,
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso744490/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Prestación de servicios profesionales de diseño gráfico, reestructuración informativa, señalización y elementos de comunicación para el Instituto de Arquitectura de Euskadi\r\n",
+            "href": "https://api.euskadi.eus/procurements/contracts/051P$20261238_00001"
+          },
+          "contractingAuthority": {
+            "href": "https://api.euskadi.eus/procurements/contracting-authorities/1"
+          },
+          "contractingNotice": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384296"
+          },
+          "entity": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/1238"
+          },
+          "org": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/914256"
+          }
+        },
+        "organismo_resuelto": "Gobierno Vasco"
+      },
+      "titulo": "Prestación de servicios profesionales de diseño gráfico, reestructuración informativa, señalización y elementos de comunicación para el Instituto de Arquitectura de Euskadi\r\n",
+      "cpv": [
+        "71320000-7"
+      ],
+      "incluir": true,
+      "categorias": [
+        "Publicidad y comunicación (general)",
+        "Diseño gráfico / branding"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "contrato_menor_venciendo"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
         "id": "26$C-29568_00001",
         "object": "Servicio para la realización de una campaña publicitaria de puesta en valor de la Red Foral de Carreteras del Territorio Histórico de Álava",
         "contractType": {
@@ -157950,6 +158205,83 @@
       },
       "titulo": "Página web de proyecto - Mantenimiento servidor y backup  (plan anual) y renovación de dominio y Hosting anual",
       "cpv": [],
+      "incluir": true,
+      "categorias": [
+        "Diseño y desarrollo web"
+      ],
+      "revisar_manual": false,
+      "tipo_registro": "contrato_menor_venciendo"
+    },
+    {
+      "fuente": "Euskadi",
+      "original": {
+        "id": "046P20261238_00001",
+        "object": "Coordinación y actualización del sitio web del IAE\r\n",
+        "contractType": {
+          "id": 2,
+          "name": "Servicios",
+          "_links": {
+            "self": {
+              "name": "Servicios",
+              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
+            }
+          }
+        },
+        "contractProcedureStatus": {
+          "id": 5,
+          "name": "Adjudicación",
+          "_links": {
+            "self": {
+              "name": "Adjudicación",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
+            }
+          }
+        },
+        "contractProcedureType": {
+          "id": 10,
+          "name": "Directo/Contrato Menor",
+          "_links": {
+            "self": {
+              "name": "Directo/Contrato Menor",
+              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
+            }
+          }
+        },
+        "CIF": "B20482303",
+        "socialReason": "K6 GESTION CULTURAL, S.L.",
+        "awardDate": "2026-07-10",
+        "companySignatureDate": "2026-07-10",
+        "contractEndDate": "2026-11-10",
+        "awardAmount": 18029,
+        "awardAmountWithoutVAT": 14900,
+        "monthsContractDuration": 4,
+        "CPV": "72500000-0",
+        "minorContract": true,
+        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso744482/es_doc/index.html",
+        "_links": {
+          "self": {
+            "name": "Coordinación y actualización del sitio web del IAE\r\n",
+            "href": "https://api.euskadi.eus/procurements/contracts/046P20261238_00001"
+          },
+          "contractingAuthority": {
+            "href": "https://api.euskadi.eus/procurements/contracting-authorities/1"
+          },
+          "contractingNotice": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/1384251"
+          },
+          "entity": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/1238"
+          },
+          "org": {
+            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/914256"
+          }
+        },
+        "organismo_resuelto": "Gobierno Vasco"
+      },
+      "titulo": "Coordinación y actualización del sitio web del IAE\r\n",
+      "cpv": [
+        "72500000-0"
+      ],
       "incluir": true,
       "categorias": [
         "Diseño y desarrollo web"
@@ -163962,232 +164294,6 @@
       },
       "titulo": "campaña de sensibilizacion podcast tecnología y sostenibilidad",
       "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Publicidad y comunicación (general)"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "contrato_menor_venciendo"
-    },
-    {
-      "fuente": "Euskadi",
-      "original": {
-        "id": "CM26$0007490_00001",
-        "object": "Publicidad en Araba Euskaraz 2026",
-        "contractType": {
-          "id": 2,
-          "name": "Servicios",
-          "_links": {
-            "self": {
-              "name": "Servicios",
-              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
-            }
-          }
-        },
-        "contractProcedureStatus": {
-          "id": 5,
-          "name": "Adjudicación",
-          "_links": {
-            "self": {
-              "name": "Adjudicación",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
-            }
-          }
-        },
-        "contractProcedureType": {
-          "id": 10,
-          "name": "Directo/Contrato Menor",
-          "_links": {
-            "self": {
-              "name": "Directo/Contrato Menor",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
-            }
-          }
-        },
-        "CIF": "G01400324",
-        "socialReason": "ARABA EUSKARAZ ELKARTEA",
-        "awardDate": "2026-06-11",
-        "companySignatureDate": "2026-06-11",
-        "contractEndDate": "2026-07-11",
-        "awardAmount": 1210,
-        "awardAmountWithoutVAT": 1000,
-        "monthsContractDuration": 1,
-        "minorContract": true,
-        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expcm522836/es_doc/index.html",
-        "_links": {
-          "self": {
-            "name": "Publicidad en Araba Euskaraz 2026",
-            "href": "https://api.euskadi.eus/procurements/contracts/CM26$0007490_00001"
-          },
-          "contractingAuthority": {
-            "href": "https://api.euskadi.eus/procurements/contracting-authorities/120"
-          },
-          "contractingNotice": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/1355204"
-          },
-          "entity": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/490"
-          },
-          "org": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/27061"
-          }
-        },
-        "organismo_resuelto": "AZPILUR EUSKADI, S.A.M.P."
-      },
-      "titulo": "Publicidad en Araba Euskaraz 2026",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Publicidad y comunicación (general)"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "contrato_menor_venciendo"
-    },
-    {
-      "fuente": "Euskadi",
-      "original": {
-        "id": "20262246%20-%20PO1162_00001",
-        "object": "itsasargiak kanpaina, una producción audiovisual sobre el voluntariado, se realizó en colaboración con varios \"influencers\".",
-        "contractType": {
-          "id": 2,
-          "name": "Servicios",
-          "_links": {
-            "self": {
-              "name": "Servicios",
-              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
-            }
-          }
-        },
-        "contractProcedureStatus": {
-          "id": 5,
-          "name": "Adjudicación",
-          "_links": {
-            "self": {
-              "name": "Adjudicación",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
-            }
-          }
-        },
-        "contractProcedureType": {
-          "id": 10,
-          "name": "Directo/Contrato Menor",
-          "_links": {
-            "self": {
-              "name": "Directo/Contrato Menor",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
-            }
-          }
-        },
-        "CIF": "B20928982",
-        "socialReason": "IKOM IRUDI ETA KOMUNIKAZIOA, S.L.",
-        "awardDate": "2026-06-11",
-        "companySignatureDate": "2026-06-11",
-        "contractEndDate": "2026-08-10",
-        "awardAmount": 10225,
-        "awardAmountWithoutVAT": 8450,
-        "monthsContractDuration": 60,
-        "minorContract": true,
-        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expcm530237/es_doc/index.html",
-        "_links": {
-          "self": {
-            "name": "itsasargiak kanpaina, una producción audiovisual sobre el voluntariado, se realizó en colaboración con varios \"influencers\".",
-            "href": "https://api.euskadi.eus/procurements/contracts/20262246%20-%20PO1162_00001"
-          },
-          "contractingAuthority": {
-            "href": "https://api.euskadi.eus/procurements/contracting-authorities/146"
-          },
-          "contractingNotice": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/1374752"
-          },
-          "entity": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/1162"
-          },
-          "org": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/26245"
-          }
-        },
-        "organismo_resuelto": "Diputación Foral de Gipuzkoa"
-      },
-      "titulo": "itsasargiak kanpaina, una producción audiovisual sobre el voluntariado, se realizó en colaboración con varios \"influencers\".",
-      "cpv": [],
-      "incluir": true,
-      "categorias": [
-        "Producción de vídeo / contenido audiovisual",
-        "Marketing de influencers / creators"
-      ],
-      "revisar_manual": false,
-      "tipo_registro": "contrato_menor_venciendo"
-    },
-    {
-      "fuente": "Euskadi",
-      "original": {
-        "id": "45GO$44S$20261255_00001",
-        "object": "Coordinación técnica y pedagógica, comunicación y organización del proyecto educativo Ruta al Exilio, así como el transporte, alojamiento y manutención del personal que acompañe al alumnado en el proyecto. ",
-        "contractType": {
-          "id": 2,
-          "name": "Servicios",
-          "_links": {
-            "self": {
-              "name": "Servicios",
-              "href": "https://api.euskadi.eus/procurements/contracts/types/2"
-            }
-          }
-        },
-        "contractProcedureStatus": {
-          "id": 5,
-          "name": "Adjudicación",
-          "_links": {
-            "self": {
-              "name": "Adjudicación",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-status/5"
-            }
-          }
-        },
-        "contractProcedureType": {
-          "id": 10,
-          "name": "Directo/Contrato Menor",
-          "_links": {
-            "self": {
-              "name": "Directo/Contrato Menor",
-              "href": "https://api.euskadi.eus/procurements/contracting-notices/procedures-type/10"
-            }
-          }
-        },
-        "CIF": "G44880342",
-        "socialReason": "Ruta al Exilio",
-        "awardDate": "2026-06-11",
-        "companySignatureDate": "2026-06-11",
-        "contractEndDate": "2026-07-31",
-        "awardAmount": 18148.79,
-        "awardAmountWithoutVAT": 14999,
-        "monthsContractDuration": 50,
-        "CPV": "98130000-3",
-        "minorContract": true,
-        "mainEntityOfPage": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso731022/es_doc/index.html",
-        "_links": {
-          "self": {
-            "name": "Coordinación técnica y pedagógica, comunicación y organización del proyecto educativo Ruta al Exilio, así como el transporte, alojamiento y manutención del personal que acompañe al alumnado en el proyecto. ",
-            "href": "https://api.euskadi.eus/procurements/contracts/45GO$44S$20261255_00001"
-          },
-          "contractingAuthority": {
-            "href": "https://api.euskadi.eus/procurements/contracting-authorities/1"
-          },
-          "contractingNotice": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/1355401"
-          },
-          "entity": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/entities/1255"
-          },
-          "org": {
-            "href": "https://api.euskadi.eus/procurements/contracting-notices/orgs/914252"
-          }
-        },
-        "organismo_resuelto": "Gobierno Vasco"
-      },
-      "titulo": "Coordinación técnica y pedagógica, comunicación y organización del proyecto educativo Ruta al Exilio, así como el transporte, alojamiento y manutención del personal que acompañe al alumnado en el proyecto. ",
-      "cpv": [
-        "98130000-3"
-      ],
       "incluir": true,
       "categorias": [
         "Publicidad y comunicación (general)"
