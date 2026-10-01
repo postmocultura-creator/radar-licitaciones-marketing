@@ -46,7 +46,7 @@ import sys
 import tempfile
 import time
 import zipfile
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -326,6 +326,90 @@ def pieza_placsp(feed: str, periodo: str) -> list[dict]:
             return []
 
 
+URL_EUSKADI_CONTRATOS = "https://api.euskadi.eus/procurements/contracts"
+
+
+def _rango_periodo(periodo: str) -> tuple[str, str]:
+    """'2024' -> ('2024-01-01', '2024-12-31'); '202609' -> ('2026-09-01', '2026-09-30')."""
+    anio = int(periodo[:4])
+    if len(periodo) == 4:
+        return f"{anio}-01-01", f"{anio}-12-31"
+    mes = int(periodo[4:6])
+    siguiente = date(anio + (mes == 12), mes % 12 + 1, 1)
+    return f"{anio}-{mes:02d}-01", (siguiente - timedelta(days=1)).isoformat()
+
+
+def pieza_euskadi_menores(periodo: str) -> list[dict]:
+    """Contratos menores de organismos vascos, desde la API de contratación
+    de Euskadi. Hacen falta aparte: los organismos vascos publican sus
+    menores en su propia plataforma, no en PLACSP (el feed de menores de
+    PLACSP solo traía 896 expedientes vascos en 5 años, de la UPV/EHU y la
+    Autoridad Portuaria, frente a ~84.000 menores al año en esta API), y el
+    feed de plataformas agregadas excluye los menores por definición.
+
+    'minor-contract=true' filtra en el servidor (verificado: 93.033 -> 83.760
+    en 2025). El tamaño de página máximo es 50 (100 devuelve 400)."""
+    import euskadi  # noqa: E402  (resuelve y cachea el nombre del organismo)
+
+    desde, hasta = _rango_periodo(periodo)
+    salida: dict[str, dict] = {}
+    pagina, total_paginas = 1, 1
+    while pagina <= total_paginas:
+        params = {"minor-contract": "true", "award-date.gt": desde, "award-date.lt": hasta,
+                  "itemsOfPage": 50, "currentPage": pagina}
+        datos = None
+        for intento in range(4):
+            try:
+                resp = requests.get(URL_EUSKADI_CONTRATOS, params=params, timeout=60,
+                                    headers={"Accept": "application/json"})
+                resp.raise_for_status()
+                datos = resp.json()
+                break
+            except (requests.RequestException, ValueError):
+                time.sleep(10 * (intento + 1))
+        if datos is None:
+            raise RuntimeError(f"La API de Euskadi no responde (página {pagina} de {periodo})")
+        total_paginas = datos.get("totalPages", 1)
+        for item in datos.get("items", []):
+            titulo = item.get("object") or ""
+            empresa = item.get("socialReason")
+            if not empresa or not _ALGUNA_KEYWORD.search(_normalizar_texto(titulo)):
+                continue
+            clasif = clasificar_texto(titulo, [])
+            if not clasif["incluir"]:
+                continue
+            href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
+            fecha = (item.get("awardDate") or "")[:10]
+            identificador = str(item.get("id") or "")
+            salida[identificador] = {
+                "id": _id("EUSKADI", identificador),
+                "expediente": identificador,
+                "titulo": titulo,
+                "organismo": euskadi._resolver_organismo(href) or "no publicado",
+                "organismo_nif": None,
+                "ambito": "Euskadi",
+                "tipo_contrato": (item.get("contractType") or {}).get("name") or "no publicado",
+                "procedimiento": "Contrato menor",
+                "menor": True,
+                "presupuesto": None,
+                "cpv": [],
+                "categorias": clasif["categorias"],
+                "enlace": item.get("mainEntityOfPage"),
+                "fuente": "Euskadi",
+                "actualizado": fecha,
+                "lotes": [{
+                    "empresa": empresa,
+                    "nif": (item.get("CIF") or "").upper().replace("-", "").replace(" ", "") or None,
+                    "fecha": fecha or None,
+                    "importe": _importe(str(item.get("awardAmountWithoutVAT") or item.get("awardAmount") or "")),
+                    "ofertas": None, "pyme": None, "lote": None,
+                }],
+            }
+        pagina += 1
+        time.sleep(0.3)
+    return list(salida.values())
+
+
 def pieza_ted(anio: str) -> list[dict]:
     """Avisos de resultado de TED de organismos españoles, mismos rangos CPV
     que el radar. Casi todos están también en PLACSP; combinar() descarta
@@ -571,7 +655,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="accion", required=True)
     p = sub.add_parser("pieza")
-    p.add_argument("--feed", choices=[*FEEDS, "ted"], required=True)
+    p.add_argument("--feed", choices=[*FEEDS, "ted", "euskadi_menores"], required=True)
     p.add_argument("--periodo", required=True, help="AAAA (anual) o AAAAMM (mensual; TED solo AAAA)")
     p.add_argument("--zip", help="ZIP ya descargado (pruebas locales)")
     p.add_argument("--salida", required=True)
@@ -586,6 +670,8 @@ def main() -> None:
 
     if args.feed == "ted":
         registros = pieza_ted(args.periodo[:4])
+    elif args.feed == "euskadi_menores":
+        registros = pieza_euskadi_menores(args.periodo)
     elif args.zip:
         registros = list(procesar_zip(Path(args.zip), es_menor=(args.feed == "menores")).values())
     else:

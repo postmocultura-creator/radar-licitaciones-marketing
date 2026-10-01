@@ -22,6 +22,10 @@ on:
         default: reciente
         type: choice
         options: [reciente, completo]
+      fuentes:
+        description: "Opcional: solo estas fuentes, separadas por comas (licitaciones, agregadas, menores, euskadi_menores, ted). Se suman a lo ya publicado."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -43,7 +47,10 @@ jobs:
           from datetime import date
           modo = "${{ github.event.inputs.modo || 'reciente' }}"
           hoy = date.today()
-          feeds = ["licitaciones", "agregadas", "menores"]
+          # euskadi_menores: los organismos vascos publican sus contratos
+          # menores en su plataforma, no en PLACSP (API de Euskadi, sin ZIP).
+          feeds = ["licitaciones", "agregadas", "menores", "euskadi_menores"]
+          solo = [f.strip() for f in "${{ github.event.inputs.fuentes }}".split(",") if f.strip()]
           mes_anterior = date(hoy.year - (hoy.month == 1), (hoy.month - 2) % 12 + 1, 1)
           if modo == "completo":
               periodos = [str(a) for a in range(2021, hoy.year)]
@@ -53,7 +60,19 @@ jobs:
               periodos = sorted({mes_anterior.strftime("%Y%m"), hoy.strftime("%Y%m")})
               anios_ted = sorted({str(mes_anterior.year), str(hoy.year)})
           piezas = [{"feed": f, "periodo": p} for f in feeds for p in periodos]
+          if modo != "completo":
+              # Los menores vascos se publican con meses de retraso (por
+              # trimestres): en septiembre de 2026 solo había 4 de ese mes.
+              # La API se consulta por fecha de adjudicación, así que cada
+              # semana se repasan los últimos 6 meses, no solo 2. (Los ZIP de
+              # PLACSP no lo necesitan: traen lo actualizado ese mes, sea cual
+              # sea la fecha de adjudicación.)
+              meses = [(hoy.year * 12 + hoy.month - 1 - i) for i in range(6)]
+              piezas = [p for p in piezas if p["feed"] != "euskadi_menores"]
+              piezas += [{"feed": "euskadi_menores", "periodo": f"{m // 12}{m % 12 + 1:02d}"} for m in sorted(meses)]
           piezas += [{"feed": "ted", "periodo": a} for a in anios_ted]
+          if solo:
+              piezas = [p for p in piezas if p["feed"] in solo]
           print("piezas=" + json.dumps(piezas))
           EOF
 

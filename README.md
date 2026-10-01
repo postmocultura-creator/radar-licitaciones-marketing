@@ -362,6 +362,14 @@ Fuentes (verificadas en vivo el 2026-09-30):
 | `sindicacion_1044` | Plataformas autonómicas agregadas (Euskadi, Cataluña, Madrid, Andalucía...) | ZIP anual 75-140 MB |
 | `sindicacion_1143` | Contratos menores de PLACSP | ZIP anual 155-300 MB |
 | TED | Avisos de resultado de organismos españoles | API (`scope=ALL`) |
+| API de Euskadi (`/procurements/contracts`, `minor-contract=true`) | Contratos menores de organismos vascos | ~84.000 al año, 50 por página |
+
+Los menores vascos van aparte porque los organismos vascos los publican en
+su plataforma, no en PLACSP: el feed de menores de PLACSP solo traía 896
+expedientes vascos en 5 años (UPV/EHU, Autoridad Portuaria) frente a los
+~2.000 al año relevantes que da la API, y el feed de plataformas agregadas
+excluye los menores. Se publican con meses de retraso, así que la
+actualización semanal repasa los últimos 6 meses.
 
 El ZIP mensual NO es una foto completa: el de septiembre de 2026 trae ~41.000
 expedientes y el 85% de sus adjudicaciones son de 2026. Hacen falta los
