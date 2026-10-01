@@ -134,6 +134,7 @@ def _parsear_entry(entry) -> dict:
     # vacío en PUB/EV/PRE- para que clasificar.py pueda construir la
     # categoría "adjudicaciones" sin volver a tocar este scraper.
     empresa_adjudicataria = None
+    empresa_nif = None
     fecha_adjudicacion = None
     importe_adjudicado = None
     tender_result = cfs.find("cac:TenderResult", NS) if cfs is not None else None
@@ -141,6 +142,9 @@ def _parsear_entry(entry) -> dict:
         nombre_ganador = tender_result.find("cac:WinningParty/cac:PartyName/cbc:Name", NS)
         if nombre_ganador is not None and nombre_ganador.text:
             empresa_adjudicataria = nombre_ganador.text.strip()
+        # NIF del ganador: para quedarse solo con empresas españolas (ver
+        # normalizar.es_empresa_espanola).
+        empresa_nif = _texto(tender_result, "cac:WinningParty/cac:PartyIdentification/cbc:ID")
         fecha_adjudicacion = _texto(tender_result, "cbc:AwardDate")
         importe_nodo = tender_result.find(
             "cac:AwardedTenderedProject/cac:LegalMonetaryTotal/cbc:PayableAmount", NS
@@ -174,6 +178,7 @@ def _parsear_entry(entry) -> dict:
         "enlace": enlace,
         "resumen_feed": _texto(entry, "atom:summary"),
         "empresa_adjudicataria": empresa_adjudicataria,
+        "empresa_nif": empresa_nif,
         "fecha_adjudicacion": fecha_adjudicacion,
         "importe_adjudicado": importe_adjudicado,
         "duracion_valor": duracion_valor,

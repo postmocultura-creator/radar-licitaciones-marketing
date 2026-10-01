@@ -269,7 +269,7 @@ def pieza_ted(anio: str) -> list[dict]:
     query = (f"({' OR '.join(partes_cpv)}) AND buyer-country=ESP AND form-type=result "
              f"AND publication-date>={anio}0101 AND publication-date<={anio}1231")
     campos = ["publication-number", "notice-title", "buyer-name", "buyer-country-sub",
-              "publication-date", "winner-name", "winner-identifier", "result-value-lot",
+              "publication-date", "winner-name", "winner-identifier", "winner-country", "result-value-lot",
               "result-value-cur-lot", "classification-cpv", "received-submissions-type-val"]
     salida = []
     for n in ted._consultar(query, campos, limite_paginas=200, scope="ALL"):
@@ -282,6 +282,7 @@ def pieza_ted(anio: str) -> list[dict]:
         if not ganadores:
             continue
         nifs = n.get("winner-identifier") or []
+        paises = n.get("winner-country") or []
         importes = n.get("result-value-lot") or []
         region = (n.get("buyer-country-sub") or [""])[0]
         fecha = (n.get("publication-date") or "")[:10]
@@ -308,6 +309,7 @@ def pieza_ted(anio: str) -> list[dict]:
                 "fecha": fecha or None,
                 "importe": _importe(str(importes[i])) if i < len(importes) else None,
                 "ofertas": None, "pyme": None, "lote": None,
+                "pais": paises[i] if i < len(paises) else None,
             } for i, g in enumerate(ganadores)],
         })
     return salida
@@ -401,7 +403,7 @@ def _leer_publicado() -> list[dict]:
 
 
 def combinar(rutas: list[str]) -> None:
-    from normalizar import _normalizar_clave, _organismos_compatibles
+    from normalizar import _normalizar_clave, _organismos_compatibles, es_empresa_espanola
 
     registros: dict[str, dict] = {}
     ted: list[dict] = []
@@ -435,6 +437,19 @@ def combinar(rutas: list[str]) -> None:
         registros[r["id"]] = r
         ids_solo_ted.add(r["id"])
     solo_ted = len(ids_solo_ted)
+
+    # Solo lotes ganados por empresas españolas (vascas incluidas): la
+    # agencia quiere ver a sus competidores, no a una empresa extranjera.
+    # Misma regla que el radar diario (normalizar.es_empresa_espanola). Se
+    # aplica también a lo ya publicado, así una actualización la impone
+    # sobre datos generados antes de existir la regla.
+    lotes_extranjeros = 0
+    for r in registros.values():
+        antes = len(r["lotes"])
+        r["lotes"] = [l for l in r["lotes"]
+                      if es_empresa_espanola(l["nif"], [l["pais"]] if l.get("pais") else None, comprador_espanol=True)]
+        lotes_extranjeros += antes - len(r["lotes"])
+    print(f"[historico] {lotes_extranjeros} lotes descartados por ser de empresas no españolas")
 
     finales = [r for r in registros.values()
                if any((l["fecha"] or "") >= f"{ANIO_INICIO}-01-01" for l in r["lotes"])]
