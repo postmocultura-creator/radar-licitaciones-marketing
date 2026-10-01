@@ -384,11 +384,45 @@ def _from_placsp_web(registro: dict) -> dict:
         # plataforma vasca agregada), gana esa versión, más completa y con
         # la fuente correcta.
         "_prioridad_dedup": 3,
+        "_origen_web": True,
         "_clave_dedup": "licitacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
     }
 
 
-EUSKADI_BUSQUEDA_ANUNCIOS ="https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
+# Topónimos que identifican sin ambigüedad a un organismo de la CAPV.
+TOPONIMOS_VASCOS = (
+    "euskadi", "pais vasco", "vasco", "vasca", "eusko", "bizkaia", "vizcaya", "gipuzkoa",
+    "guipuzcoa", "araba", "alava", "bilbao", "bilbo", "donostia", "san sebastian",
+    "vitoria", "gasteiz", "barakaldo", "getxo", "irun", "portugalete", "santurtzi",
+    "basauri", "errenteria", "leioa", "eibar", "durango", "zarautz", "galdakao",
+)
+HISTORICO_DASHBOARD = Path(__file__).resolve().parent / "dashboard" / "historico-data.js"
+
+
+def _organismos_vascos(registros: list[dict]) -> set[str]:
+    """Organismos ya conocidos como vascos: los de la API de Euskadi en los
+    datos actuales y los de ámbito Euskadi del histórico de adjudicaciones."""
+    vascos = {_normalizar_clave(r["organismo"]) for r in registros if r["fuente"] == "Euskadi"}
+    if HISTORICO_DASHBOARD.exists():
+        try:
+            texto = HISTORICO_DASHBOARD.read_text(encoding="utf-8")
+            datos = json.loads(texto[texto.index("{"):].rstrip().rstrip(";"))
+            nombres = datos["dic"]["organismo"]
+            vascos |= {_normalizar_clave(nombres[e[2]]) for e in datos["exp"] if e[3] == 1}
+        except (ValueError, KeyError, IndexError, OSError):
+            pass
+    vascos.discard("")
+    return vascos
+
+
+def _es_organismo_vasco(organismo: str, vascos: set[str]) -> bool:
+    clave = _normalizar_clave(organismo)
+    if any(re.search(r"\b" + t + r"\b", clave) for t in TOPONIMOS_VASCOS):
+        return True
+    return any(_organismos_compatibles(clave, v) for v in vascos)
+
+
+EUSKADI_BUSQUEDA_ANUNCIOS = "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
 
 
 def _from_euskadi(registro: dict) -> dict:
@@ -906,6 +940,15 @@ def main() -> None:
 
     PRIMERA_APARICION.parent.mkdir(parents=True, exist_ok=True)
     PRIMERA_APARICION.write_text(json.dumps(mapa_nuevo, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # El buscador web de PLACSP incluye la plataforma de Euskadi agregada
+    # pero no dice de qué comunidad es el organismo: lo que solo llega por
+    # ahí salía como "Estado" (caso real del 2026-10-01: redes sociales del
+    # Ayuntamiento de Bilbao). Se pasa a "Euskadi" si el organismo es vasco.
+    vascos = _organismos_vascos(finales)
+    for r in finales:
+        if r.pop("_origen_web", False) and _es_organismo_vasco(r["organismo"], vascos):
+            r["fuente"] = "Euskadi"
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna
