@@ -239,9 +239,10 @@ def _descargar(url: str, destino: Path) -> bool:
 
 
 # Prefiltro sobre el texto en bruto. Parsear todo el XML y clasificar cada
-# título palabra clave a palabra clave tardaba ~2 min por cada 10 MB de ZIP
-# (medido: 7 min el mensual de 294 MB; los anuales de 1,7-2,2 GB no cabían
-# en 3 h de GitHub Actions). El 98% de los expedientes no interesa, así que
+# título palabra clave a palabra clave tardaba 7 min con el mensual de
+# 294 MB (ahora ~1,5). Ojo: esto NO es lo que hacía que los anuales no
+# cupieran en 3 h de GitHub Actions; eso es la descarga de PLACSP (~0,8 MB/s
+# en total), ver el timeout del workflow. El 98% de los expedientes no interesa, así que
 # antes de parsear nada se descarta lo que no tiene adjudicatario y lo que
 # no contiene NINGUNA palabra clave de la taxonomía (una sola búsqueda con
 # todas las palabras, misma semántica de palabra completa que
