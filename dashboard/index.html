@@ -44,33 +44,19 @@
     <details class="filtros-avanzados">
       <summary>Más filtros</summary>
       <div class="filtros-avanzados__contenido">
+        <!-- Nombre, tramos y opciones de estos tres controles los pone app.js
+             según la pestaña (IMPORTE_POR_TIPO, ORDENES_POR_TIPO). -->
         <label id="campo-presupuesto-min">
-          Presupuesto mínimo
-          <select id="filtro-presupuesto-min">
-            <option value="0">Sin mínimo</option>
-            <option value="15000">15.000 €</option>
-            <option value="40000">40.000 €</option>
-            <option value="100000">100.000 €</option>
-            <option value="500000">500.000 €</option>
-          </select>
+          <span id="etiqueta-importe-min">Presupuesto mínimo</span>
+          <select id="filtro-presupuesto-min"></select>
         </label>
         <label id="campo-presupuesto-max">
-          Presupuesto máximo
-          <select id="filtro-presupuesto-max">
-            <option value="">Sin máximo</option>
-            <option value="15000">15.000 €</option>
-            <option value="40000">40.000 €</option>
-            <option value="100000">100.000 €</option>
-            <option value="500000">500.000 €</option>
-          </select>
+          <span id="etiqueta-importe-max">Presupuesto máximo</span>
+          <select id="filtro-presupuesto-max"></select>
         </label>
-        <label>
+        <label id="campo-orden">
           Ordenar por
-          <select id="filtro-orden">
-            <option value="plazo">Fecha límite (ascendente)</option>
-            <option value="presupuesto-desc">Presupuesto (mayor primero)</option>
-            <option value="publicacion-desc">Publicación (más reciente)</option>
-          </select>
+          <select id="filtro-orden"></select>
         </label>
         <button id="boton-reset" type="button">Limpiar filtros</button>
       </div>
