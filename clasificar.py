@@ -60,6 +60,7 @@ import json
 import re
 import sys
 import unicodedata
+from datetime import date, timedelta
 from pathlib import Path
 
 import config
@@ -357,6 +358,37 @@ def _cargar_resultados(ruta: Path | None) -> list[dict]:
     return payload.get("resultados", [])
 
 
+# Fuentes cuyo crudo NO es una foto completa de lo vigente: el ZIP mensual de
+# PLACSP trae solo los expedientes ACTUALIZADOS ese mes. Al cambiar de mes
+# (primer cruce: 2026-10-01), el ZIP nuevo llega con uno o dos días de datos
+# y, si sustituyera sin más al resultado anterior, desaparecerían del radar
+# las licitaciones publicadas el mes pasado que siguen abiertas. Para estas
+# fuentes el resultado se acumula entre ejecuciones.
+FUENTES_ACUMULATIVAS = {"placsp", "placsp_menores"}
+DIAS_MAX_ACUMULADO = 400  # tope para que la caché no crezca sin fin
+
+
+def _clave_placsp(original: dict) -> str | None:
+    return original.get("enlace") or original.get("expediente")
+
+
+def _acumular(previos: list[dict], items_nuevos: list[dict], clasificados: list[dict]) -> list[dict]:
+    """Lo clasificado ahora + lo anterior que NO viene en el crudo nuevo.
+
+    Un expediente que sí viene en el crudo nuevo -en el estado que sea- deja
+    de contar con su versión anterior: si pasó de "publicado" a "en
+    evaluación" o "anulado", clasificar ya no lo devuelve y aquí tampoco se
+    conserva. normalizar.py sigue descartando lo caducado en cada pasada."""
+    vistos = {_clave_placsp(it) for it in items_nuevos}
+    corte = (date.today() - timedelta(days=DIAS_MAX_ACUMULADO)).isoformat()
+    conservados = [
+        c for c in previos
+        if _clave_placsp(c["original"]) not in vistos
+        and (c["original"].get("fecha_actualizacion") or "9999") >= corte
+    ]
+    return clasificados + conservados
+
+
 def main() -> None:
     resultado_final: list[dict] = []
 
@@ -408,6 +440,10 @@ def main() -> None:
         clasificados = funcion(items)
         for c in clasificados:
             c["tipo_registro"] = tipo_registro
+        if prefijo in FUENTES_ACUMULATIVAS:
+            nuevos = len(clasificados)
+            clasificados = _acumular(cache_previo.get(clave_cache) or [], items, clasificados)
+            print(f"[clasificar] {prefijo} ({tipo_registro}): {nuevos} del crudo nuevo + {len(clasificados) - nuevos} conservados de ejecuciones anteriores")
         print(f"[clasificar] {prefijo} ({tipo_registro}): {len(items)} extraídas -> {len(clasificados)} relevantes (de {ruta.name})")
         resultado_final.extend(clasificados)
         cache_nuevo[clave_cache] = clasificados

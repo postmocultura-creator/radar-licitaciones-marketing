@@ -138,11 +138,25 @@ def _recorrer_resultados(page, dia: date, filas: list[dict]) -> None:
     page.fill(SEL("textMaxFecAnuncioMAQ"), texto_dia)
     page.click(SEL("button1"))
 
+    # Un día sin resultados (domingo, o el día en curso de madrugada) muestra
+    # "No se han encontrado resultados" y no pinta la tabla. Hay que esperar a
+    # una de las dos cosas: antes, agotar la espera se tomaba por "no hay
+    # resultados" y un día lento se quedaba en 0 sin avisar (pasó el
+    # 2026-10-01 por la tarde: 0 filas donde por la mañana había 78). Si no
+    # llega ninguna, es un fallo y salta como tal.
+    estado = page.wait_for_function(
+        """() => {
+          if (document.querySelector('#myTablaBusquedaCustom tbody tr')) return 'filas';
+          if (document.body.innerText.includes('No se han encontrado resultados')) return 'vacio';
+          return false;
+        }""",
+        timeout=ESPERA_MS,
+    ).json_value()
+    if estado == "vacio":
+        return
+
     for _ in range(MAX_PAGINAS_POR_DIA):
-        try:
-            page.wait_for_selector("#myTablaBusquedaCustom tbody tr", timeout=ESPERA_MS)
-        except Exception:
-            return  # sin resultados ese día (p. ej. domingo)
+        page.wait_for_selector("#myTablaBusquedaCustom tbody tr", timeout=ESPERA_MS)
         primera = page.locator("#myTablaBusquedaCustom tbody tr").first.inner_text()
         filas.extend(page.evaluate(_JS_FILAS))
         siguiente = page.locator('input[id*=":form1:bt_"][value^="Siguiente"]')
