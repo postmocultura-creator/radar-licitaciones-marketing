@@ -124,6 +124,9 @@ PAISES_ISO3 = {
     "CAN": "Canadá", "USA": "Estados Unidos", "AND": "Andorra",
     "MCO": "Mónaco", "SRB": "Serbia", "MKD": "Macedonia del Norte",
     "MNE": "Montenegro", "ALB": "Albania", "TUR": "Turquía", "UKR": "Ucrania",
+    # Sin estos salían como código en el desplegable ("BIH", 2026-10-01).
+    "BIH": "Bosnia y Herzegovina", "MDA": "Moldavia", "GEO": "Georgia",
+    "ARM": "Armenia", "ISR": "Israel", "MAR": "Marruecos", "TUN": "Túnez",
 }
 
 
