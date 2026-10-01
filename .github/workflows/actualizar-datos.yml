@@ -85,6 +85,17 @@ jobs:
         run: python scrapers/eu_grants.py
         continue-on-error: true
 
+      # Histórico de adjudicaciones: se alimenta cada día con lo que los
+      # scrapers de arriba ya han descargado (los ZIP de PLACSP del mes), más
+      # lo pequeño (plataformas agregadas, TED del año, un mes de menores de
+      # Euskadi en rotación). No hay actualización semanal aparte. Si falla,
+      # el radar se publica igual y el histórico se queda como estaba.
+      - name: Histórico de adjudicaciones
+        id: historico
+        timeout-minutes: 25
+        run: python scrapers/historico_adjudicaciones.py diario
+        continue-on-error: true
+
       - name: Clasificar
         run: python clasificar.py
 
@@ -129,5 +140,10 @@ jobs:
           git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json
           # Solo existe si el scraper web ha funcionado alguna vez.
           if [ -f data/placsp_web_acumulado.json ]; then git add data/placsp_web_acumulado.json; fi
+          # Solo si el paso del histórico terminó bien: si se cortó a medias,
+          # no se publican ficheros a medio escribir.
+          if [ "${{ steps.historico.outcome }}" = "success" ]; then
+            git add data/historico_adjudicaciones.json dashboard/historico-data.js dashboard/historico-detalle
+          fi
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
           git push origin HEAD:main
