@@ -346,6 +346,60 @@ ya está cerrado): `fecha_publicacion` guarda la fecha de adjudicación para
 que el orden por defecto y el filtro de ventana temporal (últimos 30 días)
 no necesiten un camino aparte.
 
+## Histórico de adjudicaciones (desde 2021)
+
+Vista aparte, `dashboard/historico.html` (enlazada desde la cabecera del
+radar): qué empresas ganan los contratos de servicios de agencia, por cuánto,
+de qué tipo y a qué organismos. Ámbito decidido con el usuario: Estado +
+Euskadi + licitaciones españolas que solo llegan por TED, **incluidos
+contratos menores**.
+
+Fuentes (verificadas en vivo el 2026-09-30):
+
+| Fuente | Qué es | Tamaño |
+|---|---|---|
+| `sindicacion_643` | Perfiles alojados en PLACSP | ZIP anual 0,6-2,2 GB (2021-2025), mensual ~300 MB |
+| `sindicacion_1044` | Plataformas autonómicas agregadas (Euskadi, Cataluña, Madrid, Andalucía...) | ZIP anual 75-140 MB |
+| `sindicacion_1143` | Contratos menores de PLACSP | ZIP anual 155-300 MB |
+| TED | Avisos de resultado de organismos españoles | API (`scope=ALL`) |
+
+El ZIP mensual NO es una foto completa: el de septiembre de 2026 trae ~41.000
+expedientes y el 85% de sus adjudicaciones son de 2026. Hacen falta los
+anuales (~8,9 GB para 2021-2025, más ~3 GB de mensuales de 2026).
+
+Cómo se construye (`scrapers/historico_adjudicaciones.py` +
+`.github/workflows/historico-adjudicaciones.yml`):
+
+- **Modo completo** (a mano, una vez): un trabajo por fuente y periodo (~50),
+  4 en paralelo. Cada uno descarga un ZIP, se queda con la última versión de
+  cada expediente, filtra por la taxonomía del radar y sube solo lo
+  relevante.
+- **Modo reciente** (cada lunes): mes en curso y anterior, añadidos sobre lo
+  ya publicado.
+- Se guardan **todos los lotes** de cada expediente (un expediente puede
+  tener varias adjudicatarias) con NIF, importe sin IVA, ofertas recibidas
+  y si la ganadora es pyme. Las empresas se agrupan por NIF: el nombre se
+  escribe de muchas formas ("S.L.", "SL", "SOCIEDAD LIMITADA").
+- Plataformas agregadas: no rellenan la fecha de adjudicación del lote ni la
+  dirección del organismo. La fecha sale del anuncio de adjudicación
+  (`DOC_CAN_ADJ`) o de formalización; Euskadi se detecta por lugar de
+  ejecución (NUTS ES21x) o por el enlace a contratacion.euskadi.eus.
+- **Acuerdos marco con varias adjudicatarias**: PLACSP repite el importe total
+  del acuerdo en cada ganadora (Ingenio Media e Imaxe Intermedia, 6,9 M€
+  cada una del mismo acuerdo de Turismo de Galicia). Se reparte a partes
+  iguales; si no, los totales por empresa se multiplicaban.
+- TED antes de eForms (octubre de 2023) apenas rellena el ganador: aporta
+  poco (30 expedientes en 2023). Solo entra lo que no está ya en PLACSP.
+- Formato compacto por columnas en `dashboard/historico-data.js`
+  (diccionarios de empresas y organismos, categorías como máscara de bits):
+  con ~70.000 expedientes, como lista de objetos serían ~70 MB.
+
+Ojo al leer importes: la taxonomía deja entrar algunos contratos enormes que
+no son de agencia en sentido estricto (gestión de un canal de televisión
+autonómico, 54 M€; derechos de una carrera de motos; centralitas de
+emergencias). Inflan los totales en euros; el ranking por número no se ve
+afectado.
+
 ## Contratos menores — probado, retirado, y por qué se está recuperando
 
 Se probó recuperar los "contratos menores" (adjudicación directa, sin
@@ -748,15 +802,20 @@ Incluye:
   (fuente/categoría/país) y su propia plantilla de tarjeta, porque cada
   tipo de dato tiene una semántica de fecha distinta (una licitación
   cuenta días hasta el cierre, una adjudicación no tiene plazo)
-- **"Publicadas recientemente"** (primera pestaña, a petición del usuario):
-  combina licitaciones + calls for proposals con `fecha_publicacion` de
-  hoy o ayer. No es un `tipo_registro` real — es una vista calculada en
-  `app.js` (`esPublicacionReciente()`) sobre esos dos tipos, porque en la
-  lista general algo recién publicado con plazo lejano puede quedar
-  enterrado bajo cosas con plazo más urgente pero publicadas hace semanas.
-  Limitación real: las fuentes solo dan fecha, no hora, así que "últimas
-  24-48h" se aproxima a "hoy o ayer" (día natural), no a un cálculo por
-  horas. Esta pestaña se sigue mostrando aunque tenga 0 resultados (a
+- **"Publicadas recientemente"** (primera pestaña y la que se abre por
+  defecto, a petición del usuario): solo licitaciones de organismos
+  españoles -PLACSP (feed y buscador web), portal de Euskadi y las de
+  organismos españoles en TED, que se asignan a Euskadi por región NUTS
+  ES21x- que el radar vio por primera vez en los últimos 3 días
+  (`fecha_primera_aparicion`, no `fecha_publicacion`: ver normalizar.py),
+  ordenadas por `fecha_publicacion`. Desde la reunión del 2026-09-30 con la
+  agencia ya no entran licitaciones de otros países ni calls for proposals.
+  Filtro de fuente fijo: Estado / Euskadi. No es un `tipo_registro` real —
+  es una vista calculada en `app.js` (`esPublicacionReciente()`,
+  `ambitoReciente()`), porque en la lista general algo recién publicado con
+  plazo lejano puede quedar enterrado bajo cosas con plazo más urgente pero
+  publicadas hace semanas. Limitación real: las fuentes solo dan fecha, no
+  hora, así que la ventana se cuenta en días naturales. Esta pestaña se sigue mostrando aunque tenga 0 resultados (a
   diferencia de las demás, que se ocultan en 0) — que desapareciera justo
   el día que no hay nada nuevo parecería un fallo, no información útil.
   Sus tarjetas se muestran más grandes y ya desplegadas (`tarjeta--grande`
