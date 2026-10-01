@@ -68,6 +68,10 @@ jobs:
       # que no depende de los lotes de exportación del feed (ver
       # scrapers/placsp_web.py). Necesita un Chromium sin interfaz.
       - name: Scraper PLACSP web (aviso temprano)
+        # Límite propio: si la web de PLACSP va muy lenta no puede comerse
+        # el tiempo del job y dejar el día sin publicar. Si se corta, el
+        # radar sigue con el feed y con lo acumulado de días anteriores.
+        timeout-minutes: 20
         run: |
           python -m playwright install --with-deps chromium
           python scrapers/placsp_web.py
@@ -107,18 +111,23 @@ jobs:
       # commit nuevo en main (código, o un push manual) que deja a este job
       # por detrás del remoto -pasó de verdad en la primera prueba real, un
       # push mío mientras corría el workflow hizo que "git push" fallara con
-      # "fetch first"-. Se resuelve con fetch + reset --soft justo antes de
+      # "fetch first"-. Se resuelve con fetch + reset justo antes de
       # comitear: el commit de este job siempre se basa en el main más
-      # reciente, y como estos dos ficheros son datos regenerados por
-      # completo en cada ejecución (no código con lógica que fusionar), no
-      # hay nada que conservar del estado anterior — "el más nuevo gana" es
-      # exactamente la semántica correcta aquí.
+      # reciente, y como los ficheros de datos se regeneran por completo en
+      # cada ejecución, "el más nuevo gana" es la semántica correcta.
       - name: Publicar cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          git reset --soft origin/main
-          git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json data/placsp_web_acumulado.json
+          # "reset" normal, NO "--soft": --soft dejaba en el índice el código
+          # tal como estaba al empezar la ejecución, y si entretanto se subía
+          # código nuevo, el commit de datos lo revertía en silencio (pasó el
+          # 2026-09-30; GitHub lo rechazó solo porque tocaba este workflow).
+          # Así el commit parte de origin/main y solo añade los datos.
+          git reset origin/main
+          git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json
+          # Solo existe si el scraper web ha funcionado alguna vez.
+          if [ -f data/placsp_web_acumulado.json ]; then git add data/placsp_web_acumulado.json; fi
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
           git push origin HEAD:main
