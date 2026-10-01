@@ -65,29 +65,71 @@
     "Noruega", "País Vasco", "Países Bajos", "Polonia", "Portugal", "Reino Unido", "Rumanía",
     "Suecia", "Suiza",
   ];
+  // El filtro de país solo existe en "Licitaciones abiertas", la única
+  // pestaña con licitaciones de otros países. En las demás solo ofrecía
+  // "España / País Vasco" (o "UE"), que duplica el filtro Estado/Euskadi -y
+  // mal: una licitación vasca que llega por TED figura como "España"-.
   var PAISES_POR_TIPO = {
-    recientes: ["España", "País Vasco"],
     licitacion: PAISES_TED,
-    // Solo adjudicatarias españolas: en la práctica, contratos en España.
-    adjudicacion: ["España", "País Vasco"],
-    contrato_menor_venciendo: ["España", "País Vasco"],
-    convocatoria_ue: ["UE"],
   };
+
+  // Filtro de importe (mínimo/máximo) por pestaña: qué campo se filtra, cómo
+  // se llama y con qué tramos. Las licitaciones tienen presupuesto; las
+  // adjudicaciones y los contratos menores, importe adjudicado (los menores
+  // rara vez pasan de 15.000 €, de ahí sus tramos más bajos); las calls for
+  // proposals no publican importe por convocatoria: sin filtro.
+  var TRAMOS_GENERALES = [15000, 40000, 100000, 500000];
+  var IMPORTE_POR_TIPO = {
+    recientes: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
+    licitacion: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
+    adjudicacion: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
+    contrato_menor_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: [3000, 5000, 10000, 15000] },
+  };
+
+  // Opciones de "Ordenar por" de cada pestaña: [clave, etiqueta]. La primera
+  // es el orden por defecto. Solo criterios que existen en esa pestaña (antes
+  // el desplegable era el mismo en todas y solo funcionaba en dos). Una
+  // pestaña sin entrada no muestra el selector: "Adjudicaciones" va siempre
+  // de la más reciente a la más antigua.
+  var ORDENES_POR_TIPO = {
+    recientes: [
+      ["fecha-desc", "Publicación (más reciente)"],
+      ["plazo", "Fecha límite (más próxima)"],
+      ["importe-desc", "Presupuesto (mayor primero)"],
+    ],
+    licitacion: [
+      ["plazo", "Fecha límite (más próxima)"],
+      ["fecha-desc", "Publicación (más reciente)"],
+      ["importe-desc", "Presupuesto (mayor primero)"],
+    ],
+    contrato_menor_venciendo: [
+      ["vencimiento", "Vencimiento (más próximo)"],
+      ["importe-desc", "Importe adjudicado (mayor primero)"],
+      ["fecha-desc", "Adjudicación (más reciente)"],
+    ],
+    convocatoria_ue: [
+      ["plazo", "Fecha límite de solicitud (más próxima)"],
+      ["fecha-desc", "Apertura (más reciente)"],
+    ],
+  };
+  var ORDEN_SIN_SELECTOR = "fecha-desc";
+
+  function ordenPorDefecto(tipo) {
+    return ORDENES_POR_TIPO[tipo] ? ORDENES_POR_TIPO[tipo][0][0] : ORDEN_SIN_SELECTOR;
+  }
+
+  // La búsqueda de texto también mira la empresa adjudicataria donde la hay.
+  var BUSQUEDA_POR_TIPO = {
+    adjudicacion: "Buscar por título, organismo o empresa…",
+    contrato_menor_venciendo: "Buscar por título, organismo o empresa…",
+  };
+  var BUSQUEDA_GENERAL = "Buscar por título u organismo…";
 
   // Ventana de "recientes": el dato solo tiene fecha (YYYY-MM-DD), no hora,
   // así que "últimos 3 días" se aproxima a nivel de día -publicado hoy,
   // ayer o anteayer- en vez de horas exactas, que no se pueden calcular con
   // lo que publican las fuentes.
   var DIAS_VENTANA_RECIENTES = 2;
-
-  // Solo "licitacion" trae presupuesto_valor poblado: adjudicaciones y
-  // contratos menores guardan el importe en importe_adjudicado_valor (otro
-  // campo, no filtrable por este control) y las calls for proposals no
-  // publican presupuesto por convocatoria. Sin esto, el filtro de
-  // presupuesto mostraba 0 resultados sin explicación en esas pestañas
-  // (bug real detectado en auditoría: el control seguía visible en las 4
-  // pestañas pero solo funcionaba en una).
-  var TIPOS_CON_PRESUPUESTO = { licitacion: true };
 
   var EXPLICACION_TIPO = {
     recientes:
@@ -111,7 +153,7 @@
     soloRevisarManual: false,
     presupuestoMin: 0,
     presupuestoMax: null,
-    orden: "plazo",
+    orden: ordenPorDefecto("recientes"),
   };
 
   var NO_PUBLICADO = "no publicado";
@@ -127,7 +169,10 @@
   var elPresupuestoMax = document.getElementById("filtro-presupuesto-max");
   var elCampoPresupuestoMin = document.getElementById("campo-presupuesto-min");
   var elCampoPresupuestoMax = document.getElementById("campo-presupuesto-max");
+  var elEtiquetaImporteMin = document.getElementById("etiqueta-importe-min");
+  var elEtiquetaImporteMax = document.getElementById("etiqueta-importe-max");
   var elOrden = document.getElementById("filtro-orden");
+  var elCampoOrden = document.getElementById("campo-orden");
   var elReset = document.getElementById("boton-reset");
   var elContenedor = document.getElementById("contenedor-tarjetas");
   var elConteo = document.getElementById("conteo-resultados");
@@ -239,10 +284,40 @@
     return DATOS.filter(function (t) { return t.tipo_registro === estado.tipoRegistro; });
   }
 
-  function actualizarVisibilidadPresupuesto() {
-    var soportado = !!TIPOS_CON_PRESUPUESTO[estado.tipoRegistro];
-    elCampoPresupuestoMin.hidden = !soportado;
-    elCampoPresupuestoMax.hidden = !soportado;
+  // Con punto de millar siempre: toLocaleString("es-ES") no agrupa los
+  // números de cuatro cifras ("3000 €" junto a "10.000 €").
+  function euros(valor) {
+    return String(valor).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+  }
+
+  // Reconstruye los controles que cambian de una pestaña a otra: filtro de
+  // importe (campo, nombre y tramos), "Ordenar por" y el texto del buscador.
+  // Deja el estado en los valores por defecto de la pestaña.
+  function construirControlesDePestana() {
+    var tipo = estado.tipoRegistro;
+
+    var importe = IMPORTE_POR_TIPO[tipo];
+    elCampoPresupuestoMin.hidden = !importe;
+    elCampoPresupuestoMax.hidden = !importe;
+    estado.presupuestoMin = 0;
+    estado.presupuestoMax = null;
+    if (importe) {
+      elEtiquetaImporteMin.textContent = importe.nombre + " mínimo";
+      elEtiquetaImporteMax.textContent = importe.nombre + " máximo";
+      var opciones = importe.tramos.map(function (v) { return '<option value="' + v + '">' + euros(v) + "</option>"; }).join("");
+      elPresupuestoMin.innerHTML = '<option value="0">Sin mínimo</option>' + opciones;
+      elPresupuestoMax.innerHTML = '<option value="">Sin máximo</option>' + opciones;
+    }
+
+    var ordenes = ORDENES_POR_TIPO[tipo];
+    elCampoOrden.hidden = !ordenes;
+    estado.orden = ordenPorDefecto(tipo);
+    if (ordenes) {
+      elOrden.innerHTML = ordenes.map(function (par) { return '<option value="' + par[0] + '">' + par[1] + "</option>"; }).join("");
+      elOrden.value = estado.orden;
+    }
+
+    elTexto.placeholder = BUSQUEDA_POR_TIPO[tipo] || BUSQUEDA_GENERAL;
   }
 
   function construirSegmentedTipo() {
@@ -277,20 +352,14 @@
         estado.categoria = "";
         estado.pais = "";
         estado.soloRevisarManual = false;
-        estado.presupuestoMin = 0;
-        estado.presupuestoMax = null;
-        estado.orden = "plazo";
         elTexto.value = "";
-        elPresupuestoMin.value = "0";
-        elPresupuestoMax.value = "";
-        elOrden.value = "plazo";
         elBotonRevisar.classList.remove("activo");
         Array.prototype.forEach.call(elSegmentedTipo.children, function (b) {
           b.setAttribute("aria-pressed", b === boton ? "true" : "false");
         });
         elExplicacionTipo.textContent = EXPLICACION_TIPO[valor] || "";
         elExplicacionTipo.setAttribute("data-tipo", valor);
-        actualizarVisibilidadPresupuesto();
+        construirControlesDePestana();
         construirControles();
         pintarResumenCabecera();
         aplicarFiltros();
@@ -334,9 +403,13 @@
     // (FUENTES_POR_TIPO), aunque alguna esté a 0 ese día: que un filtro
     // desaparezca parecería un fallo, no información.
     var opcionesFuente = [["", "Todas (" + subconjunto.length + ")"]];
-    conOpcionesFijas(FUENTES_POR_TIPO[estado.tipoRegistro], fuentes).forEach(function (f) {
+    var fuentesPestana = conOpcionesFijas(FUENTES_POR_TIPO[estado.tipoRegistro], fuentes);
+    fuentesPestana.forEach(function (f) {
       opcionesFuente.push([f, f + " (" + (fuentes[f] || 0) + ")"]);
     });
+    // Con una sola fuente posible (calls for proposals: solo la UE) no hay
+    // nada que filtrar.
+    elSegmentedFuente.hidden = fuentesPestana.length < 2;
 
     elSegmentedFuente.innerHTML = "";
     opcionesFuente.forEach(function (par) {
@@ -374,9 +447,11 @@
       elCategoria.appendChild(opt);
     });
 
-    // Desplegable de país/territorio: los fijos de la pestaña
-    // (PAISES_POR_TIPO) aunque estén a 0, alfabético.
-    var paisesOrdenados = conOpcionesFijas(PAISES_POR_TIPO[estado.tipoRegistro], paises)
+    // Desplegable de país/territorio: solo en las pestañas con entrada en
+    // PAISES_POR_TIPO; ahí, los fijos aunque estén a 0, alfabético.
+    var paisesFijos = PAISES_POR_TIPO[estado.tipoRegistro];
+    elPais.hidden = !paisesFijos;
+    var paisesOrdenados = !paisesFijos ? [] : conOpcionesFijas(paisesFijos, paises)
       .sort(function (a, b) { return a.localeCompare(b, "es"); });
     elPais.innerHTML = '<option value="">Todos los países (' + subconjunto.length + ")</option>";
     paisesOrdenados.forEach(function (p) {
@@ -418,68 +493,56 @@
       if (pajar.indexOf(estado.texto) === -1) return false;
     }
 
+    var importe = IMPORTE_POR_TIPO[estado.tipoRegistro];
     var minActivo = estado.presupuestoMin > 0;
     var maxActivo = estado.presupuestoMax !== null && estado.presupuestoMax !== "";
-    if (minActivo || maxActivo) {
-      if (t.presupuesto_valor === null || t.presupuesto_valor === undefined) return false;
-      if (minActivo && t.presupuesto_valor < estado.presupuestoMin) return false;
-      if (maxActivo && t.presupuesto_valor > Number(estado.presupuestoMax)) return false;
+    if (importe && (minActivo || maxActivo)) {
+      // Sin importe publicado no se puede saber si entra en el rango: fuera.
+      var valor = t[importe.campo];
+      if (valor === null || valor === undefined) return false;
+      if (minActivo && valor < estado.presupuestoMin) return false;
+      if (maxActivo && valor > Number(estado.presupuestoMax)) return false;
     }
 
     return true;
   }
 
-  function comparar(a, b) {
-    // "Contratos menores por vencer": lo más accionable es visitar primero
-    // el que caduca antes, así que se ordena ascendente por fecha fin
-    // estimada (a diferencia de adjudicaciones, donde lo relevante es la
-    // más reciente primero).
-    if (estado.tipoRegistro === "contrato_menor_venciendo") {
-      var da2 = diasRestantes(a.fecha_fin_estimada);
-      var db2 = diasRestantes(b.fecha_fin_estimada);
-      if (da2 === null && db2 === null) return 0;
-      if (da2 === null) return 1;
-      if (db2 === null) return -1;
-      return da2 - db2;
-    }
-    // "Publicadas recientemente": entra en la pestaña por fecha_primera_aparicion
-    // (ver esPublicacionReciente), pero se ordena por fecha_publicacion —
-    // la oficial de la fuente, mostrada en cada tarjeta— descendente, para
-    // que arriba quede siempre lo publicado más recientemente. Ignora el
-    // selector "Ordenar por" (igual que "Contratos menores por vencer"
-    // arriba ignora el mismo selector para ordenar por fecha fin).
-    if (estado.tipoRegistro === "recientes") {
-      var ra = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
-      var rb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
-      return rb.localeCompare(ra);
-    }
-    // "Calls for proposals UE" tiene la misma semántica de fecha que una
-    // licitación (fecha_limite = fecha límite de solicitud), así que
-    // comparte el orden por defecto de más abajo (plazo ascendente). Fuera
-    // de esos dos, no hay plazo que ordenar: el orden por defecto es la
-    // fecha más relevante en desc (fecha_publicacion guarda la fecha de
-    // adjudicación en el tipo "adjudicacion").
-    if (estado.tipoRegistro !== "licitacion" && estado.tipoRegistro !== "convocatoria_ue") {
-      var xa = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
-      var xb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
-      return xb.localeCompare(xa);
-    }
-    if (estado.orden === "presupuesto-desc") {
-      var pa = a.presupuesto_valor === null ? -Infinity : a.presupuesto_valor;
-      var pb = b.presupuesto_valor === null ? -Infinity : b.presupuesto_valor;
-      return pb - pa;
-    }
-    if (estado.orden === "publicacion-desc") {
-      var fa = a.fecha_publicacion === NO_PUBLICADO ? "" : a.fecha_publicacion;
-      var fb = b.fecha_publicacion === NO_PUBLICADO ? "" : b.fecha_publicacion;
-      return fb.localeCompare(fa);
-    }
-    var da = diasRestantes(a.fecha_limite);
-    var db = diasRestantes(b.fecha_limite);
+  // Fecha más reciente primero. fecha_publicacion guarda la fecha propia de
+  // cada tipo: publicación (licitaciones), adjudicación (adjudicaciones y
+  // contratos menores) o apertura (calls for proposals).
+  function porFechaDesc(a, b) {
+    var fa = a.fecha_publicacion === NO_PUBLICADO ? "" : (a.fecha_publicacion || "");
+    var fb = b.fecha_publicacion === NO_PUBLICADO ? "" : (b.fecha_publicacion || "");
+    return fb.localeCompare(fa);
+  }
+
+  // Fecha más próxima primero; sin fecha, al final.
+  function porFechaProxima(campo, a, b) {
+    var da = diasRestantes(a[campo]);
+    var db = diasRestantes(b[campo]);
     if (da === null && db === null) return 0;
     if (da === null) return 1;
     if (db === null) return -1;
     return da - db;
+  }
+
+  // Ordena según estado.orden, que siempre es una de las claves de
+  // ORDENES_POR_TIPO de la pestaña activa (o ORDEN_SIN_SELECTOR). A igualdad
+  // en el criterio elegido, lo más reciente primero.
+  function comparar(a, b) {
+    var resultado = 0;
+    if (estado.orden === "plazo") {
+      resultado = porFechaProxima("fecha_limite", a, b);
+    } else if (estado.orden === "vencimiento") {
+      resultado = porFechaProxima("fecha_fin_estimada", a, b);
+    } else if (estado.orden === "importe-desc") {
+      // Mayor importe primero; sin importe publicado, al final.
+      var campo = IMPORTE_POR_TIPO[estado.tipoRegistro].campo;
+      var ia = a[campo] === null || a[campo] === undefined ? -Infinity : a[campo];
+      var ib = b[campo] === null || b[campo] === undefined ? -Infinity : b[campo];
+      resultado = ib === ia ? 0 : (ib > ia ? 1 : -1);
+    }
+    return resultado || porFechaDesc(a, b);
   }
 
   function plantillaTarjetaLicitacion(t, grande) {
@@ -733,7 +796,7 @@
     }
 
     construirSegmentedTipo();
-    actualizarVisibilidadPresupuesto();
+    construirControlesDePestana();
     construirControles();
     pintarResumenCabecera();
 
@@ -767,15 +830,10 @@
       estado.categoria = "";
       estado.pais = "";
       estado.soloRevisarManual = false;
-      estado.presupuestoMin = 0;
-      estado.presupuestoMax = null;
-      estado.orden = "plazo";
       elTexto.value = "";
       elCategoria.value = "";
       elPais.value = "";
-      elPresupuestoMin.value = "0";
-      elPresupuestoMax.value = "";
-      elOrden.value = "plazo";
+      construirControlesDePestana();  // importe y orden, a sus valores por defecto
       elBotonRevisar.classList.remove("activo");
       Array.prototype.forEach.call(elSegmentedFuente.children, function (b, i) {
         b.setAttribute("aria-pressed", i === 0 ? "true" : "false");

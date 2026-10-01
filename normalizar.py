@@ -171,6 +171,13 @@ def _limpiar_fecha(valor: str | None) -> str:
     un solo crudo de TED."""
     if not valor:
         return NO_PUBLICADO
+    # Huso negativo ("2026-10-23-04:00", caso real de TED del 2026-10-01): ni
+    # el "+" ni la "T" ni la "Z" de abajo lo cazaban, y en el dashboard esa
+    # licitación salía "sin fecha límite" y al final de la lista. Si el valor
+    # empieza por una fecha, se toma la fecha y se ignora cualquier sufijo.
+    con_fecha = re.match(r"\s*(\d{4}-\d{2}-\d{2})", valor)
+    if con_fecha:
+        return con_fecha.group(1)
     limpio = valor.split("+")[0].split("T")[0].strip()
     if limpio.endswith("Z"):
         limpio = limpio[:-1]

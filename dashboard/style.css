@@ -190,7 +190,16 @@ main {
   border-radius: var(--radius-sm);
   padding: 3px;
   flex: 0 0 auto;
+  /* Si las opciones no caben (móvil, cifras largas), se desplazan dentro
+     del propio control en vez de ensanchar la página. */
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.segmented::-webkit-scrollbar { display: none; }
+
+/* "display:flex" de arriba gana al display:none del navegador para [hidden]. */
+.segmented[hidden] { display: none; }
 
 .segmented__opcion {
   border: none;
@@ -595,7 +604,14 @@ main {
 }
 
 .badge-empresa {
-  flex: 0 0 auto;
+  /* Un nombre de empresa largo ("UTE ... - ..., S.L.U.") no se recortaba y
+     en móvil empujaba la tarjeta hasta ~480 px de ancho: se trunca con "…"
+     (el nombre completo está en el detalle de la tarjeta). */
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: .7rem;
   font-weight: 600;
   padding: .18rem .5rem;
@@ -743,11 +759,14 @@ main {
   .tarjeta__resumen-fila { flex-wrap: wrap; row-gap: .35rem; padding: .75rem .85rem; }
   .tarjeta__titulo-compacto { font-size: 1rem; -webkit-line-clamp: 3; }
   .tarjeta__lado-derecho {
-    flex: 1 0 100%;
+    flex: 1 1 100%;
+    min-width: 0;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: .5rem;
     padding-left: calc(16px + .7rem);
   }
+  .badge-empresa { max-width: 100%; }
 }
