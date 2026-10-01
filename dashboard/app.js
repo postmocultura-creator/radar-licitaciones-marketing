@@ -68,7 +68,8 @@
   var PAISES_POR_TIPO = {
     recientes: ["España", "País Vasco"],
     licitacion: PAISES_TED,
-    adjudicacion: PAISES_TED,
+    // Solo adjudicatarias españolas: en la práctica, contratos en España.
+    adjudicacion: ["España", "País Vasco"],
     contrato_menor_venciendo: ["España", "País Vasco"],
     convocatoria_ue: ["UE"],
   };
@@ -94,7 +95,7 @@
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
     adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Permite ver qué empresas y consultoras se están llevando cada tipo de contrato.",
+      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia.",
     contrato_menor_venciendo:
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:

@@ -498,6 +498,45 @@ def _from_euskadi(registro: dict) -> dict:
 # necesitan un camino aparte.
 # ---------------------------------------------------------------------------
 
+# Solo interesan adjudicaciones ganadas por empresas españolas (vascas
+# incluidas): la agencia quiere ver a sus competidores en Euskadi y España,
+# no a una empresa francesa que gana un contrato en Francia. Se decide por el
+# NIF del ganador (formato español) o, en TED, por el país del adjudicatario.
+# N y W son NIF de entidades EXTRANJERAS (no residentes / sucursales): fuera.
+_NIF_ESPANOL = re.compile(
+    # Sociedades, entidades y UTE (U). Se tolera un dígito de más o que
+    # falte el de control: errores de tecleo reales en PLACSP (Correos con
+    # "A083052407", una UTE con "U0002056").
+    r"^(?:[ABCDEFGHJPQRSUV]\d{7,9}[0-9A-J]?"
+    r"|[0-9X]{8}[A-Z]"   # DNI (Euskadi enmascara así: XXXXX155F)
+    r"|[XYZ]\d{7}[A-Z])$"  # NIE (residente en España)
+)
+
+
+def es_empresa_espanola(nif: str | None, paises_ganador: list[str] | None = None,
+                        comprador_espanol: bool = False) -> bool:
+    """paises_ganador (TED, ISO3) manda si viene: española si alguna es ESP.
+    Si no, el NIF. Sin NIF utilizable, se acepta solo si el contrato es de
+    un organismo español (en PLACSP/Euskadi casi siempre hay NIF).
+
+    Verificado contra adjudicaciones reales: lo que queda fuera son IVA
+    extranjeros (IE..., FR..., DE..., GB...: Google Ireland, Meta, Ryanair,
+    Digimind...), números extranjeros sin letra y NIF N/W."""
+    if paises_ganador:
+        return "ESP" in paises_ganador
+    limpio = re.sub(r"[^A-Z0-9*]", "", (nif or "").upper())
+    # NIF de relleno ("Varias empresas", X00000000, "NOCONSTITUIDO"): no dice nada.
+    if not limpio or re.fullmatch(r"X?0+", limpio) or limpio.startswith("NOCONSTITU"):
+        return comprador_espanol
+    # PLACSP enmascara por protección de datos los NIF de personas físicas y
+    # de algunas empresas ("***1032**"); solo enmascara NIF españoles.
+    if "*" in limpio:
+        return len(limpio) == 9
+    if limpio.startswith("ES") and _NIF_ESPANOL.match(limpio[2:]):
+        return True
+    return bool(_NIF_ESPANOL.match(limpio))
+
+
 def _from_ted_adjudicacion(registro: dict) -> dict:
     item = registro["original"]
 
@@ -562,6 +601,7 @@ def _from_ted_adjudicacion(registro: dict) -> dict:
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
         "importe_adjudicado_display": importe_display,
+        "_empresa_espanola": es_empresa_espanola(None, item.get("winner-country"), codigo_pais == "ESP"),
         "_clave_dedup": "adjudicacion|" + _normalizar_clave(_titulo_ted_sin_prefijo(titulo)) + "|" + _normalizar_clave(organismo),
     }
 
@@ -600,6 +640,7 @@ def _from_placsp_adjudicacion(registro: dict) -> dict:
         "fecha_fin_estimada": NO_PUBLICADO,
         "importe_adjudicado_valor": importe_valor,
         "importe_adjudicado_display": importe_display,
+        "_empresa_espanola": es_empresa_espanola(item.get("empresa_nif"), comprador_espanol=True),
         "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
     }
 
@@ -639,6 +680,7 @@ def _from_euskadi_adjudicacion(registro: dict) -> dict:
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
         "importe_adjudicado_display": importe_display,
+        "_empresa_espanola": es_empresa_espanola(item.get("CIF"), comprador_espanol=True),
         "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
     }
 
@@ -878,6 +920,12 @@ def main() -> None:
         "contrato_menor_venciendo": _contrato_menor_por_vencer,
         "convocatoria_ue": _dentro_de_ventana_temporal,
     }
+    # Adjudicaciones: solo las ganadas por empresas españolas (ver
+    # es_empresa_espanola).
+    antes_nacionalidad = len(normalizados)
+    normalizados = [r for r in normalizados if r.pop("_empresa_espanola", True)]
+    print(f"[normalizar] {antes_nacionalidad - len(normalizados)} adjudicaciones descartadas por ser de empresas no españolas")
+
     antes_ventana = len(normalizados)
     normalizados = [r for r in normalizados if _FILTROS_VENTANA[r["tipo_registro"]](r)]
     fuera_de_ventana = antes_ventana - len(normalizados)
