@@ -60,9 +60,12 @@ jobs:
   pieza:
     needs: preparar
     runs-on: ubuntu-latest
-    # Con el prefiltro sobre el texto en bruto, el anual más grande (2,2 GB)
-    # tarda minutos; antes no cabía en 3 horas.
-    timeout-minutes: 120
+    # El límite lo marca la DESCARGA, no el procesado: PLACSP sirve unos
+    # 0,8 MB/s en total, repartidos entre las conexiones abiertas (medido el
+    # 2026-10-01: 605 MB en ~50 min con 4 descargas a la vez). El anual más
+    # grande (2,2 GB) necesita unas 3 horas; con 180 min se cortó. 350 es
+    # casi el máximo que permite GitHub por trabajo (360).
+    timeout-minutes: 350
     strategy:
       fail-fast: false
       # 4 descargas a la vez como máximo, por respeto al servidor de PLACSP.
