@@ -6,18 +6,6 @@
   --color-barra-bg: var(--color-tab-adjudicaciones-bg);
 }
 
-.enlace-cabecera {
-  color: #fff;
-  font-size: .85rem;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, .3);
-  border-radius: var(--radius-sm);
-  padding: .45rem .8rem;
-  transition: background var(--motion-base) var(--ease-premium);
-}
-.enlace-cabecera:hover { background: rgba(255, 255, 255, .1); }
-.enlace-cabecera:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
 .selector {
   height: 38px;
   padding: 0 1.8rem 0 .7rem;
@@ -289,5 +277,6 @@
   .barras__fila:not(:has(.barras__boton)) { grid-template-columns: minmax(0, 1fr) auto; }
   .barras__pista { grid-column: 1 / -1; grid-row: 2; }
   .columnas { gap: .3rem; }
+  .ficha__tabla { min-width: 560px; }
   .columnas__valor { font-size: .62rem; }
 }
