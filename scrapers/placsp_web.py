@@ -108,10 +108,28 @@ _JS_FILAS = """
 """
 
 
+ESPERA_MS = 180_000  # PLACSP puede tardar más de un minuto por página de madrugada
+
+
 def _buscar_dia(page, dia: date) -> list[dict]:
-    page.goto(URL_BUSCADOR, wait_until="domcontentloaded", timeout=90_000)
+    """Devuelve lo leído aunque falle a mitad: mejor 10 páginas de 15 que
+    nada (pasó en la primera ejecución en GitHub Actions: la página 5 del
+    29/09 no cargó en 60 s y se perdieron también los otros dos días)."""
+    filas: list[dict] = []
+    try:
+        _recorrer_resultados(page, dia, filas)
+    except Exception as exc:  # Playwright lanza varios tipos de timeout/error
+        print(f"[placsp_web] AVISO {dia.isoformat()}: búsqueda interrumpida tras {len(filas)} filas ({exc})",
+              file=sys.stderr)
+    for f in filas:
+        f["fecha_publicacion"] = dia.isoformat()
+    return filas
+
+
+def _recorrer_resultados(page, dia: date, filas: list[dict]) -> None:
+    page.goto(URL_BUSCADOR, wait_until="domcontentloaded", timeout=ESPERA_MS)
     page.click(SEL("linkFormularioBusqueda"))
-    page.wait_for_selector(SEL("combo1MAQ"), timeout=60_000)
+    page.wait_for_selector(SEL("combo1MAQ"), timeout=ESPERA_MS)
 
     texto_dia = dia.strftime("%d-%m-%Y")
     page.select_option(SEL("combo1MAQ"), "2")  # Servicios
@@ -120,30 +138,33 @@ def _buscar_dia(page, dia: date) -> list[dict]:
     page.fill(SEL("textMaxFecAnuncioMAQ"), texto_dia)
     page.click(SEL("button1"))
 
-    filas: list[dict] = []
     for _ in range(MAX_PAGINAS_POR_DIA):
         try:
-            page.wait_for_selector("#myTablaBusquedaCustom tbody tr", timeout=60_000)
+            page.wait_for_selector("#myTablaBusquedaCustom tbody tr", timeout=ESPERA_MS)
         except Exception:
-            break  # sin resultados ese día (p. ej. domingo)
+            return  # sin resultados ese día (p. ej. domingo)
         primera = page.locator("#myTablaBusquedaCustom tbody tr").first.inner_text()
         filas.extend(page.evaluate(_JS_FILAS))
         siguiente = page.locator('input[id*=":form1:bt_"][value^="Siguiente"]')
         if siguiente.count() == 0 or not siguiente.first.is_enabled():
-            break
-        siguiente.first.click()
+            return
         # Espera a que cambie el contenido de la tabla (la navegación JSF
-        # recarga la página entera, pero sin evento fiable que esperar).
-        page.wait_for_function(
-            """(prev) => { const tr = document.querySelector('#myTablaBusquedaCustom tbody tr');
-                           return tr && tr.innerText !== prev; }""",
-            arg=primera,
-            timeout=60_000,
-        )
-
-    for f in filas:
-        f["fecha_publicacion"] = dia.isoformat()
-    return filas
+        # recarga la página entera, pero sin evento fiable que esperar). Un
+        # reintento del clic si la primera vez no avanza.
+        for intento in range(2):
+            siguiente.first.click()
+            try:
+                page.wait_for_function(
+                    """(prev) => { const tr = document.querySelector('#myTablaBusquedaCustom tbody tr');
+                                   return tr && tr.innerText !== prev; }""",
+                    arg=primera,
+                    timeout=ESPERA_MS,
+                )
+                break
+            except Exception:
+                if intento == 1:
+                    raise
+                siguiente = page.locator('input[id*=":form1:bt_"][value^="Siguiente"]')
 
 
 def extraer() -> list[dict]:

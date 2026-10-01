@@ -102,7 +102,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          git reset --soft origin/main
+          git reset origin/main  # no --soft: revertiría código subido mientras corría
           git add dashboard/historico-data.js
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Histórico de adjudicaciones $(date -u +%Y-%m-%d)"
           git push origin HEAD:main
