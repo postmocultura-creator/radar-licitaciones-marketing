@@ -145,7 +145,11 @@ def _recorrer_resultados(page, dia: date, filas: list[dict]) -> None:
     # 2026-10-01 por la tarde: 0 filas donde por la mañana había 78). Si no
     # llega ninguna, es un fallo y salta como tal.
     estado = page.wait_for_function(
+        # document.body es null mientras la página navega tras pulsar
+        # "Buscar": sin la comprobación, la espera reventaba con un TypeError
+        # y el día se quedaba en 0 (pasó en la primera ejecución en Actions).
         """() => {
+          if (!document.body) return false;
           if (document.querySelector('#myTablaBusquedaCustom tbody tr')) return 'filas';
           if (document.body.innerText.includes('No se han encontrado resultados')) return 'vacio';
           return false;
