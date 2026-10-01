@@ -20,14 +20,20 @@
   var TOP_ORGANISMOS = 12;
   var MAX_CONTRATOS_FICHA = 150;
 
-  var fmtNumero = new Intl.NumberFormat("es-ES");
-  var fmtEuros = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  // Con punto de millar siempre: Intl en "es-ES" no agrupa los números de
+  // cuatro cifras ("6014 organismos", "6471,3 M€").
+  function miles(n, decimales) {
+    var partes = n.toFixed(decimales || 0).split(".");
+    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return partes.join(",").replace(/,0+$/, "");
+  }
+  var fmtNumero = { format: function (n) { return miles(n); } };
 
   function euros(v) {
     if (!v) return "—";
-    if (v >= 1e6) return (v / 1e6).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " M€";
-    if (v >= 1e4) return Math.round(v / 1e3).toLocaleString("es-ES") + " k€";
-    return fmtEuros.format(v);
+    if (v >= 1e6) return miles(v / 1e6, 1) + " M€";
+    if (v >= 1e4) return miles(v / 1e3) + " k€";
+    return miles(v) + " €";
   }
 
   function escaparHtml(str) {
