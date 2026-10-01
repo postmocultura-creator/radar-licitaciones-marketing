@@ -2,10 +2,12 @@
   "use strict";
 
   // Formato compacto generado por scrapers/historico_adjudicaciones.py
-  // (_compactar): diccionarios + filas por columnas.
-  //   exp:   [id, titulo, organismo, euskadi, tipo, procedimiento, menor,
-  //           mascara_categorias, enlace, es_ted, actualizado, presupuesto]
+  // (_publicar): diccionarios + filas por columnas.
+  //   exp:   [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias]
   //   lotes: [exp, empresa, fecha, importe, ofertas, pyme]
+  // El título y el enlace de cada expediente no vienen aquí (son el 75% del
+  // peso): están en historico-detalle/NN.js, repartidos por empresa, y se
+  // cargan al abrir una ficha.
   var H = window.HISTORICO;
   if (!H || !H.exp || !H.exp.length) {
     document.getElementById("sin-datos").hidden = false;
@@ -34,10 +36,26 @@
     return div.innerHTML;
   }
 
-  function enlaceExpediente(e) {
-    var enlace = e[8];
+  function enlaceCompleto(enlace) {
     if (!enlace) return null;
     return enlace.indexOf("http") === 0 ? enlace : H.prefijo_enlace + enlace;
+  }
+
+  // Fragmento de detalle (títulos y enlaces) de una empresa: se descarga una
+  // sola vez, la primera vez que se abre una ficha de ese fragmento.
+  var cargasDetalle = {};
+  function cargarDetalle(idEmpresa) {
+    var n = idEmpresa % H.fragmentos;
+    if (!cargasDetalle[n]) {
+      cargasDetalle[n] = new Promise(function (resolver, rechazar) {
+        var s = document.createElement("script");
+        s.src = "historico-detalle/" + (n < 10 ? "0" : "") + n + ".js?v=" + encodeURIComponent(H.actualizado);
+        s.onload = function () { resolver(window.HISTORICO_DETALLE[n]); };
+        s.onerror = function () { delete cargasDetalle[n]; rechazar(new Error("sin detalle")); };
+        document.head.appendChild(s);
+      });
+    }
+    return cargasDetalle[n];
   }
 
   // Una fila por lote con lo necesario para filtrar y agregar, calculada
@@ -47,7 +65,7 @@
     return {
       exp: l[0], empresa: l[1], anio: l[2] ? l[2].slice(0, 4) : "", fecha: l[2] || "",
       importe: l[3] || 0, ofertas: l[4], pyme: l[5],
-      organismo: e[2], euskadi: e[3] === 1, procedimiento: e[5], menor: e[6] === 1, mascara: e[7],
+      organismo: e[0], euskadi: e[1] === 1, procedimiento: e[3], menor: e[4] === 1, mascara: e[5],
     };
   });
   // Texto buscable por empresa (nombre + NIF) y organismo, en minúsculas.
@@ -294,19 +312,29 @@
         function (x) { return x.clave; }) +
       "</div>" +
       '<section class="ficha__bloque"><h3>Adjudicaciones' + (filas.length > MAX_CONTRATOS_FICHA ? " (las " + MAX_CONTRATOS_FICHA + " más recientes)" : "") + "</h3>" +
-      '<div class="ficha__tabla-envoltorio"><table class="ficha__tabla"><thead><tr><th>Fecha</th><th>Contrato</th><th>Organismo</th><th class="num">Importe</th></tr></thead><tbody>' +
-      contratos.map(function (f) {
-        var e = H.exp[f.exp];
-        var enlace = enlaceExpediente(e);
-        var titulo = escaparHtml(e[1]) + (f.menor ? ' <span class="ficha__etiqueta">menor</span>' : "");
-        return "<tr><td class=\"num\">" + escaparHtml(f.fecha) + "</td><td>" +
-          (enlace ? '<a href="' + escaparHtml(enlace) + '" target="_blank" rel="noopener">' + titulo + "</a>" : titulo) +
-          "</td><td>" + escaparHtml(D.organismo[f.organismo]) + '</td><td class="num">' + euros(f.importe) + "</td></tr>";
-      }).join("") +
-      "</tbody></table></div></section>";
+      '<div class="ficha__tabla-envoltorio" id="ficha-contratos" aria-live="polite"><p class="panel__nota">Cargando contratos…</p></div></section>';
     document.getElementById("ficha-cuerpo").innerHTML = html;
     elFicha.showModal();
     document.getElementById("ficha-cuerpo").scrollTop = 0;
+
+    cargarDetalle(idEmpresa).then(function (detalle) {
+      // Si entretanto se ha abierto la ficha de otra empresa, no se pinta.
+      var destino = document.getElementById("ficha-contratos");
+      if (!destino || document.getElementById("ficha-titulo").textContent !== empresa[1]) return;
+      destino.innerHTML =
+        '<table class="ficha__tabla"><thead><tr><th>Fecha</th><th>Contrato</th><th>Organismo</th><th class="num">Importe</th></tr></thead><tbody>' +
+        contratos.map(function (f) {
+          var d = detalle[f.exp] || ["(título no disponible)", ""];
+          var enlace = enlaceCompleto(d[1]);
+          var titulo = escaparHtml(d[0]) + (f.menor ? ' <span class="ficha__etiqueta">menor</span>' : "");
+          return "<tr><td class=\"num\">" + escaparHtml(f.fecha) + "</td><td>" +
+            (enlace ? '<a href="' + escaparHtml(enlace) + '" target="_blank" rel="noopener">' + titulo + "</a>" : titulo) +
+            "</td><td>" + escaparHtml(D.organismo[f.organismo]) + '</td><td class="num">' + euros(f.importe) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    }).catch(function () {
+      var destino = document.getElementById("ficha-contratos");
+      if (destino) destino.innerHTML = '<p class="panel__nota">No se ha podido cargar el detalle de los contratos. Cierra la ficha y vuelve a abrirla para reintentar.</p>';
+    });
   }
 
   document.getElementById("fecha-generacion").textContent = "Histórico actualizado el " + H.actualizado + ".";

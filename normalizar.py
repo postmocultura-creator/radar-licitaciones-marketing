@@ -411,9 +411,10 @@ def _organismos_vascos(registros: list[dict]) -> set[str]:
             texto = HISTORICO_DASHBOARD.read_text(encoding="utf-8")
             datos = json.loads(texto[texto.index("{"):].rstrip().rstrip(";"))
             nombres = datos["dic"]["organismo"]
-            vascos |= {_normalizar_clave(nombres[e[2]]) for e in datos["exp"] if e[3] == 1}
-        except (ValueError, KeyError, IndexError, OSError):
-            pass
+            # exp: [organismo, euskadi, ...] (ver historico_adjudicaciones._publicar)
+            vascos |= {_normalizar_clave(nombres[e[0]]) for e in datos["exp"] if e[1] == 1}
+        except (ValueError, KeyError, IndexError, TypeError, OSError):
+            pass  # fichero ausente, a medias o de un formato anterior: sin él
     vascos.discard("")
     return vascos
 

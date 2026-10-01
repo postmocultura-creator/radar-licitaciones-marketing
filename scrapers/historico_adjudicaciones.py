@@ -39,7 +39,9 @@ from __future__ import annotations
 import argparse
 import glob
 import hashlib
+import html
 import json
+import re
 import sys
 import tempfile
 import time
@@ -54,9 +56,12 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE))
 sys.path.append(str(BASE / "scrapers"))
 import config  # noqa: E402
-from clasificar import clasificar_texto, _titulo_ted  # noqa: E402
+from clasificar import clasificar_texto, _normalizar_texto, _titulo_ted  # noqa: E402
 from placsp import NS  # noqa: E402
 
+SALIDA = BASE / "data" / "historico_adjudicaciones.json"
+SALIDA_DETALLE = BASE / "dashboard" / "historico-detalle"
+FRAGMENTOS = 32
 SALIDA_DASHBOARD = BASE / "dashboard" / "historico-data.js"
 
 URL_SINDICACION = "https://contrataciondelsectorpublico.gob.es/sindicacion/"
@@ -212,21 +217,70 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
     }
 
 
-def _descargar(url: str, destino: Path) -> None:
+def _descargar(url: str, destino: Path) -> bool:
     ultimo = None
     for intento in range(4):
         try:
             with requests.get(url, stream=True, timeout=120,
                               headers={"User-Agent": "licitaciones-marketing-radar/1.0"}) as resp:
+                if resp.status_code == 404:
+                    # El ZIP del mes en curso no existe los primeros días
+                    # (pasó el 2026-10-01): no es un error, aún no hay datos.
+                    return False
                 resp.raise_for_status()
                 with destino.open("wb") as f:
                     for trozo in resp.iter_content(chunk_size=1 << 20):
                         f.write(trozo)
-            return
+            return True
         except requests.RequestException as exc:
             ultimo = exc
             time.sleep(30 * (intento + 1))
     raise ultimo
+
+
+# Prefiltro sobre el texto en bruto. Parsear todo el XML y clasificar cada
+# título palabra clave a palabra clave tardaba ~2 min por cada 10 MB de ZIP
+# (medido: 7 min el mensual de 294 MB; los anuales de 1,7-2,2 GB no cabían
+# en 3 h de GitHub Actions). El 98% de los expedientes no interesa, así que
+# antes de parsear nada se descarta lo que no tiene adjudicatario y lo que
+# no contiene NINGUNA palabra clave de la taxonomía (una sola búsqueda con
+# todas las palabras, misma semántica de palabra completa que
+# clasificar._contiene_keyword). clasificar_texto decide después con las
+# reglas completas (exclusiones, servicios no ofrecidos...).
+_ALGUNA_KEYWORD = re.compile(
+    r"\b(?:" + "|".join(
+        re.escape(kw) for kw in sorted({k for kws in config.CATEGORIAS.values() for k in kws}, key=len, reverse=True)
+    ) + r")\b"
+)
+_TITULOS_VISTOS: dict[str, bool] = {}
+_RE_TITULOS =re.compile(r"<title>(.*?)</title>|<cac:ProcurementProject>\s*<cbc:Name>(.*?)</cbc:Name>", re.S)
+
+
+def _entries(texto: str):
+    """Trocea un .atom en sus <entry>...</entry> con búsquedas directas (una
+    expresión regular perezosa sobre 15 MB era lo más lento del proceso)."""
+    pos = texto.find("<entry")
+    while pos != -1:
+        fin = texto.find("</entry>", pos)
+        if fin == -1:
+            return
+        yield texto[pos:fin + 8]
+        pos = texto.find("<entry", fin)
+
+
+def _puede_interesar(entry_xml: str) -> bool:
+    if "<cac:WinningParty>" not in entry_xml:
+        return False
+    for m in _RE_TITULOS.finditer(entry_xml):
+        titulo = m.group(1) or m.group(2) or ""
+        # El mismo expediente se repite con cada cambio de estado.
+        relevante = _TITULOS_VISTOS.get(titulo)
+        if relevante is None:
+            relevante = bool(_ALGUNA_KEYWORD.search(_normalizar_texto(html.unescape(titulo))))
+            _TITULOS_VISTOS[titulo] = relevante
+        if relevante:
+            return True
+    return False
 
 
 def procesar_zip(ruta: Path, es_menor: bool) -> dict[str, dict]:
@@ -236,11 +290,18 @@ def procesar_zip(ruta: Path, es_menor: bool) -> dict[str, dict]:
     registros: dict[str, dict] = {}
     with zipfile.ZipFile(ruta) as z:
         for nombre in z.namelist():
-            try:
-                root = ET.fromstring(z.read(nombre))
-            except ET.ParseError:
+            texto = z.read(nombre).decode("utf-8", "replace")
+            apertura = re.search(r"<feed[^>]*>", texto)
+            if apertura is None:
                 continue
-            for entry in root.findall("atom:entry", NS):
+            for entry_xml in _entries(texto):
+                if not _puede_interesar(entry_xml):
+                    continue
+                try:
+                    # La apertura de <feed> lleva las declaraciones de namespaces.
+                    entry = ET.fromstring(apertura.group(0) + entry_xml + "</feed>").find("atom:entry", NS)
+                except ET.ParseError:
+                    continue
                 r = _parsear_entry(entry, es_menor)
                 if r is None:
                     continue
@@ -254,8 +315,14 @@ def pieza_placsp(feed: str, periodo: str) -> list[dict]:
     url = URL_SINDICACION + FEEDS[feed].format(periodo=periodo)
     with tempfile.TemporaryDirectory() as tmp:
         destino = Path(tmp) / "feed.zip"
-        _descargar(url, destino)
-        return list(procesar_zip(destino, es_menor=(feed == "menores")).values())
+        if not _descargar(url, destino):
+            print(f"[historico] {feed} {periodo}: el fichero todavía no existe en PLACSP, sin datos")
+            return []
+        try:
+            return list(procesar_zip(destino, es_menor=(feed == "menores")).values())
+        except zipfile.BadZipFile:
+            print(f"[historico] {feed} {periodo}: PLACSP no ha devuelto un ZIP válido, sin datos", file=sys.stderr)
+            return []
 
 
 def pieza_ted(anio: str) -> list[dict]:
@@ -318,16 +385,18 @@ def pieza_ted(anio: str) -> list[dict]:
 def _clave_titulo(r: dict) -> str:
     from normalizar import _normalizar_clave, _titulo_ted_sin_prefijo
     titulo = _titulo_ted_sin_prefijo(r["titulo"]) if r["fuente"] == "TED" else r["titulo"]
-    return _normalizar_clave(titulo)
+    # Recortado: lo ya publicado guarda el título a MAX_TITULO caracteres, y
+    # sin recortar aquí un título largo dejaba de coincidir con su copia.
+    return _normalizar_clave(titulo)[:100]
 
 
 # ---------------------------------------------------------------------------
-# Formato compacto (el que se guarda y lee el dashboard). Con 5 años y los
-# contratos menores son ~70.000-80.000 expedientes: como lista de objetos
-# serían ~70 MB. Por columnas, con diccionarios para lo que se repite
-# (empresas, organismos...), máscara de bits para las categorías, título
-# recortado y solo el identificador del enlace de PLACSP, se queda en ~12 MB
-# (~3 MB comprimido, que es lo que viaja al navegador).
+# Formato compacto. Con 5 años y los contratos menores (~20.000 al año) son
+# más de 110.000 expedientes: como lista de objetos serían ~100 MB. Por
+# columnas, con diccionarios para lo que se repite (empresas, organismos...),
+# máscara de bits para las categorías, título recortado y solo el
+# identificador del enlace de PLACSP, el completo se queda en ~31 MB; lo que
+# viaja al navegador es bastante menos (ver _publicar).
 # ---------------------------------------------------------------------------
 PREFIJO_DEEPLINK = "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl="
 MAX_TITULO = 160
@@ -395,11 +464,46 @@ def _expandir(c: dict) -> list[dict]:
 
 
 def _leer_publicado() -> list[dict]:
-    if not SALIDA_DASHBOARD.exists():
+    if not SALIDA.exists():
         return []
-    texto = SALIDA_DASHBOARD.read_text(encoding="utf-8")
-    inicio = texto.index(CABECERA_JS) + len(CABECERA_JS)
-    return _expandir(json.loads(texto[inicio:].rstrip().rstrip(";")))
+    return _expandir(json.loads(SALIDA.read_text(encoding="utf-8")))
+
+
+def _publicar(c: dict) -> None:
+    """Escribe el fichero completo (data/, no se sirve al navegador: lo usa
+    la siguiente actualización) y lo que lee el dashboard, partido en dos
+    porque el completo pesa >30 MB y el 75% son títulos y enlaces, que solo
+    hacen falta al abrir la ficha de una empresa (medido el 2026-10-01):
+
+    - historico-data.js: diccionarios, atributos por expediente y lotes. Lo
+      que necesitan los gráficos y los filtros (~7 MB, ~2 MB comprimido).
+    - historico-detalle/NN.js: título y enlace de cada expediente, repartidos
+      en FRAGMENTOS ficheros según la empresa adjudicataria. La ficha de una
+      empresa descarga solo su fragmento."""
+    SALIDA.parent.mkdir(parents=True, exist_ok=True)
+    SALIDA.write_text(json.dumps(c, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    nucleo = {k: c[k] for k in ("v", "actualizado", "categorias", "prefijo_enlace", "dic", "lotes")}
+    nucleo["fragmentos"] = FRAGMENTOS
+    # [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias]
+    nucleo["exp"] = [e[2:8] for e in c["exp"]]
+    SALIDA_DASHBOARD.write_text(
+        "// Generado por scrapers/historico_adjudicaciones.py (ver _publicar). No editar a mano.\n"
+        + CABECERA_JS + json.dumps(nucleo, ensure_ascii=False, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    fragmentos: list[dict] = [{} for _ in range(FRAGMENTOS)]
+    for l in c["lotes"]:
+        e = c["exp"][l[0]]
+        fragmentos[l[1] % FRAGMENTOS][l[0]] = [e[1], e[8]]
+    SALIDA_DETALLE.mkdir(parents=True, exist_ok=True)
+    for n, contenido in enumerate(fragmentos):
+        (SALIDA_DETALLE / f"{n:02d}.js").write_text(
+            f"(window.HISTORICO_DETALLE=window.HISTORICO_DETALLE||{{}})[{n}]="
+            + json.dumps(contenido, ensure_ascii=False, separators=(",", ":")) + ";\n",
+            encoding="utf-8",
+        )
 
 
 def combinar(rutas: list[str]) -> None:
@@ -455,14 +559,11 @@ def combinar(rutas: list[str]) -> None:
                if any((l["fecha"] or "") >= f"{ANIO_INICIO}-01-01" for l in r["lotes"])]
     finales.sort(key=lambda r: max(l["fecha"] or "" for l in r["lotes"]), reverse=True)
 
-    SALIDA_DASHBOARD.write_text(
-        "// Generado por scrapers/historico_adjudicaciones.py (formato en _compactar). No editar a mano.\n"
-        + CABECERA_JS + json.dumps(_compactar(finales), ensure_ascii=False, separators=(",", ":")) + ";\n",
-        encoding="utf-8",
-    )
+    _publicar(_compactar(finales))
     n_lotes = sum(len(r["lotes"]) for r in finales)
-    mb = SALIDA_DASHBOARD.stat().st_size / 1e6
-    print(f"[historico] {len(finales)} expedientes, {n_lotes} lotes adjudicados ({solo_ted} solo en TED) -> {SALIDA_DASHBOARD} ({mb:.1f} MB)")
+    print(f"[historico] {len(finales)} expedientes, {n_lotes} lotes adjudicados ({solo_ted} solo en TED) -> "
+          f"{SALIDA} ({SALIDA.stat().st_size / 1e6:.1f} MB), {SALIDA_DASHBOARD.name} "
+          f"({SALIDA_DASHBOARD.stat().st_size / 1e6:.1f} MB) + {FRAGMENTOS} fragmentos de detalle")
 
 
 def main() -> None:
