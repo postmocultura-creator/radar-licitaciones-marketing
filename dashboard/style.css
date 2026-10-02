@@ -958,6 +958,19 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__bloque h4 { margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--color-ink); }
 .tarjeta__resumen-texto { max-width: 90ch; font-size: 13.5px; line-height: 1.6; color: var(--color-foreground); }
 
+/* Empresas que más han ganado en el organismo (resumen del histórico). */
+.tarjeta__principales {
+  display: grid;
+  gap: 6px;
+  max-width: 90ch;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+.tarjeta__principales li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
+.tarjeta__principales span { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
 .tarjeta__categorias { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .etiqueta-categoria {
@@ -1138,6 +1151,17 @@ a.kpi:active { transform: scale(.99); }
   .listado { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .filtros { position: static; }
   .inicio__columnas { grid-template-columns: minmax(0, 1fr); }
+  /* Tres pestañas no caben en una línea a este ancho: reparten el espacio
+     y el texto parte en dos líneas si hace falta. */
+  .pestana {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 40px;
+    padding: 6px 10px;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1148,8 +1172,10 @@ a.kpi:active { transform: scale(.99); }
   /* Con un número impar de cifras, la primera ocupa la fila entera. */
   .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
 
+  /* En móvil, dos pestañas por fila; la tercera ocupa la suya entera. */
+  .pestanas { flex-wrap: wrap; overflow-x: visible; }
   .pestana {
-    flex: 1 1 0;
+    flex: 1 1 40%;
     height: auto;
     min-height: 44px;
     padding: 6px 8px;

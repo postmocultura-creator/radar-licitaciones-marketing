@@ -169,6 +169,49 @@ resuelve con un filtro por provincia, sin zona destacada.
 | Afinidad: orden por interés | No | Medio |
 | Licitaciones parecidas | No | Bajo |
 
+## Qué se ha hecho con esto (2026-10-02)
+
+| De la tabla anterior | Estado |
+|---|---|
+| Sistemas dinámicos, homologaciones y acuerdos marco abiertos | Hecho: pestaña "Sistemas dinámicos y plazo largo". `placsp_web.py` pide una vez a la semana lo publicado con más de 60 días de plazo y los sistemas dinámicos |
+| Lugar de ejecución y filtro por provincia | Hecho: `territorio.py`, filtro "Provincia" y lugar en la tarjeta |
+| Resumen del organismo y del adjudicatario dentro de la ficha | Hecho: bloques "Este organismo en el histórico" y "La adjudicataria en el histórico", calculados sobre el histórico propio (solo servicios de agencia, sin el ruido de sus resúmenes) |
+| Títulos en catalán, gallego y euskera | Hecho: `config.TERMINOS_OTRAS_LENGUAS` |
+| Alertas por correo | Aplazado por decisión del usuario |
+| Plataformas autonómicas completas | Hecho: `placsp.py` lee también el feed `sindicacion_1044` (ver README) |
+| Hora del fin de plazo, favoritos, afinidad, licitaciones parecidas, pliegos | Sin hacer |
+
+Efecto de la taxonomía nueva sobre las 320 alertas: reconoce 46 en lugar de 23.
+Las 23 nuevas son las 13 relevantes que se escapaban, 9 inserciones de
+publicidad en prensa y radio de un mismo ayuntamiento (contratos menores) y un
+servicio de fotografía.
+
+Pero reconocerlas no basta: de las 46, el radar tiene 22 y otras 3 están ya
+descargadas y entrarán en la siguiente pasada. Las otras 21 no están
+descargadas:
+
+- 9 son las inserciones en medios, contratos menores que el radar no trata
+  como licitación abierta por diseño.
+- 4 se dieron de alta entre el 25 y el 28 de septiembre, antes de que el
+  buscador web empezara a acumular (29 de septiembre).
+- 1 sí está descargada, pero en PLACSP lleva otro título ("Servicio de
+  administración de sistemas y monitorización de la web...") que la taxonomía
+  no reconoce.
+- 7 se dieron de alta en Infoconcurso en días que el buscador ya cubría. Las
+  dos que se han podido localizar en el feed de plataformas autonómicas se
+  publicaron en PLACSP el 28 de septiembre, un día antes del alta en
+  Infoconcurso y del arranque del buscador: no las perdió el buscador,
+  todavía no existía.
+
+La muestra, por tanto, no sirve para medir la cobertura del buscador web: casi
+toda es anterior a él. Lo que sí salió al investigarlo es el hueco de fondo:
+el radar no leía el feed de plataformas autonómicas para lo abierto. Solo el
+ZIP de septiembre tenía 49 licitaciones de marketing en plazo, y el radar no
+tenía 40.
+
+Corrección a la conclusión 2 de arriba: en lo reciente faltaban palabras y
+faltaba una fuente.
+
 ## Qué tiene el radar que ellos no
 
 - Selección ya hecha para una agencia (22 categorías de servicio propias) en vez

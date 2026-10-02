@@ -1,7 +1,7 @@
 # Arquitectura de información
 
-Fecha: 2026-10-02. Estado: **implementada en local, pendiente de aprobación** antes
-de publicarla.
+Fecha: 2026-10-02. Estado: **publicada** el 2026-10-02, igual que la segunda
+ronda ("Ampliación de información", al final).
 
 ## Qué había y qué problema tenía
 
@@ -120,12 +120,50 @@ siguiente ejecución del pipeline).
 - Los recuentos de la barra lateral se calculan en `index.html` y se recuerdan en
   el navegador para mostrarlos también en `historico.html`.
 
+## Ampliación de información (segunda ronda, 2026-10-02)
+
+Sale de comparar el radar con un servicio comercial de alertas
+(`ANALISIS-INFOCONCURSO.md`). No cambia la estructura: añade una pestaña y
+datos a lo que ya había.
+
+- **Tercera pestaña en Licitaciones: "Sistemas dinámicos y plazo largo"**
+  (`index.html#/licitaciones/plazo-largo`). Licitaciones abiertas a las que les
+  quedan más de 60 días de plazo: sistemas dinámicos de adquisición,
+  homologaciones y acuerdos marco que admiten solicitudes durante meses o años.
+  Es un subconjunto de "Licitaciones abiertas", igual que "Publicadas
+  recientemente". El radar no las veía: se publicaron hace mucho y no se
+  actualizan, así que ni el feed ni la búsqueda diaria las traen. Ahora
+  `placsp_web.py` las pide una vez a la semana. Su urgencia se rotula "Abierta
+  hasta 2030" en lugar de "Quedan 1.365 días", y no cuentan como publicadas
+  recientemente aunque el radar las vea por primera vez.
+- **Provincia.** La tarjeta dice "Bizkaia · País Vasco" donde antes decía
+  "España", y hay un filtro "Provincia" agrupado por comunidad en todas las
+  vistas con registros españoles. La elección se conserva al cambiar de vista.
+  Sin zona destacada: se decidió filtro simple.
+- **Resumen del histórico dentro de la tarjeta.** Dos bloques nuevos en el
+  detalle: "Este organismo en el histórico" (adjudicaciones de servicios de
+  agencia desde 2021, a cuántas empresas, por qué importe y las tres que más
+  suman, enlazadas a su ficha) y, en adjudicaciones y contratos menores, lo
+  mismo de la empresa más cuántas veces ha ganado en ese organismo. En
+  prospección es el dato que faltaba: se ve de un vistazo si quien tiene el
+  contrato menor es un proveedor habitual de ese organismo.
+- **Taxonomía en catalán, gallego y euskera**, y expresiones en castellano que
+  faltaban (ver README).
+- **Plataformas autonómicas.** Las licitaciones y adjudicaciones que los
+  organismos publican en la plataforma de su comunidad (Cataluña, Andalucía,
+  Madrid, Galicia, Navarra, La Rioja) entran ahora también por el feed de
+  PLACSP que las agrega. No añade ninguna vista: aparecen en las de siempre,
+  con su provincia.
+
+No se ha quitado ningún dato.
+
 ## Ideas para más adelante (no implementadas)
 
 Tomadas de la referencia; cada una necesita algo que hoy la plataforma no tiene
 (guardar estado por usuario, o un servicio que envíe correos):
 
-- **Alertas** por correo con las licitaciones nuevas del día.
+- **Alertas** por correo con las licitaciones nuevas del día (aplazado por
+  decisión del 2026-10-02; se retomará más adelante).
 - **Seguimiento**: marcar una licitación como "interesa / descartada / en
   preparación / presentada", con responsable.
 - **Ficha de licitación con pliegos** y análisis del pliego (enlaza con la fase

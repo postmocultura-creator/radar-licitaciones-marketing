@@ -64,8 +64,12 @@ licitaciones_marketing/
 ├── scrapers/
 │   ├── ted.py         API REST v3 de TED (UE) — licitaciones + adjudicaciones
 │   ├── placsp.py      ZIP mensual/CODICE de PLACSP (Estado) — licitaciones y
-│   │                  adjudicaciones (sindicacion_643) y contratos menores
-│   │                  (sindicacion_1143), ambos como ZIP mensual
+│   │                  adjudicaciones (sindicacion_643), plataformas
+│   │                  autonómicas agregadas (sindicacion_1044) y contratos
+│   │                  menores (sindicacion_1143), los tres como ZIP mensual
+│   ├── placsp_web.py  buscador web de PLACSP (Playwright) — lo publicado en
+│   │                  los tres últimos días y, una vez a la semana, las
+│   │                  convocatorias de plazo largo
 │   ├── euskadi.py     API REST de KontratazioA (Euskadi) — avisos,
 │   │                  adjudicaciones y contratos menores (endpoint /contracts)
 │   └── eu_grants.py   API SEDIA del EU F&T Portal (Fase 3) — calls for proposals
@@ -73,6 +77,7 @@ licitaciones_marketing/
 │                      (incluye CATEGORIAS_CALLS_UE, la versión en inglés)
 ├── clasificar.py      aplica las dos capas de clasificación, por tipo_registro
 ├── normalizar.py      unifica los 4 tipos de registro en un esquema común
+├── territorio.py      traduce códigos NUTS y postales a provincia y comunidad
 ├── data/
 │   ├── raw/          respuesta cruda de cada ejecución, con timestamp
 │   │                 (ted_adjudicaciones_*, euskadi_adjudicaciones_*,
@@ -99,6 +104,9 @@ Todo vive en `config.py`:
   código ya normaliza el texto antes de comparar). También puedes ampliar
   la lista de una categoría existente con sinónimos que veas en los datos
   reales.
+- **`TERMINOS_OTRAS_LENGUAS`**: los mismos términos en catalán, gallego y
+  euskera, por categoría. Se suman a `CATEGORIAS` al cargar el módulo. Se
+  escriben como quedan tras quitar acentos (`comunicacio`, `deseno grafico`).
 - **`EXCLUSIONES`** y **`TERMINOS_MEZCLA`**: si el título ya tiene una
   categoría confirmada por texto pero además contiene uno de estos
   términos, la licitación se incluye igualmente pero marcada
@@ -629,6 +637,122 @@ Añadidas también `gabinete de comunicacion` y `plan integral de
 comunicacion` como frases seguras, y el CPV `79822500` ("Servicios de
 diseño gráfico", verificado en TED) a `CPV_RANGOS`.
 
+## Taxonomía en catalán, gallego y euskera (octubre de 2026)
+
+El buscador web de PLACSP trae también las plataformas autonómicas, y sus
+resultados llegan sin CPV: una licitación titulada en catalán, gallego o
+euskera solo entra si el título contiene un término de la taxonomía, y
+hasta ahora todos estaban en castellano. Se comprobó con una muestra
+externa: 320 convocatorias que un servicio comercial de alertas envió en
+cinco días. La taxonomía reconocía 23 y descartaba 13 que eran trabajo de
+agencia, entre ellas "Serveis comunicació, màrqueting, fotografia i
+gravació vídeos" y "Servei de disseny gràfic, maquetació...".
+
+Qué se añadió:
+
+- **`config.TERMINOS_OTRAS_LENGUAS`**: traducción directa de términos que
+  ya existían en castellano (`publicitat`, `comunicacio`, `marqueting`,
+  `disseny grafic`, `xarxes socials`, `publicidade`, `deseno grafico`,
+  `publizitatea`, `iragarki kanpaina`...). En euskera cada forma declinada
+  va por separado.
+- **Expresiones en castellano que faltaban**: `presencia digital`,
+  `landing`, `streaming`, `seguimiento de noticias`, `realizacion de un
+  audiovisual`, `piezas audiovisuales`, `podcast`, `reportaje fotografico`,
+  `paginas web`, `portales web`, `community manager` y las campañas con
+  apellido (`campana informativa`, `campana de concienciacion`...).
+- **`SERVICIOS_NO_OFRECIDOS` en las otras lenguas** (`impressio`,
+  `impremta`, `retolacio`...), para que la imprenta siga fuera.
+- **Jerga de procedimiento**: `clasificar._RUIDO_PROCEDIMENTAL` ya no exige
+  la palabra "procedimiento" delante ("contrato negociado sin publicidad
+  con..." se colaba como publicidad) y cubre "negociat sense publicitat" y
+  "negociado sen publicidade".
+
+Cada término se midió antes de entrar contra 35.000 títulos reales (feed
+de PLACSP, buscador web, Euskadi y la muestra de alertas). Se quedaron
+fuera, con sus cifras:
+
+| Término suelto | Títulos que añadía | Por qué no |
+|---|---|---|
+| `promocion` | 243 | promoción de empleo, de viviendas, de la salud |
+| `campana` | 147 | campaña de Navidad, asfáltica, de saneamiento ganadero |
+| `audiovisual` / `audiovisuales` | 150 | alquiler y mantenimiento de equipos de sala |
+| `difusion` | 78 | actividades de difusión cultural y científica |
+| `sensibilizacion` | 45 | talleres y programas educativos |
+| `material promocional` | 21 | suministro de objetos |
+| `merchandising` | 17 | suministro de objetos |
+| `promocion turistica` | 17 | acierta 3; el resto, nombres de organismo y stands de feria |
+
+Resultado sobre los 35.000 títulos: entran 110 y salen 6. De los 110,
+revisados uno a uno, unos 98 son trabajo de agencia; el ruido son casos
+como dos cortafuegos "para portales web" o un hilo musical "por
+streaming". Los 6 que salen eran falsos positivos por "negociado sin
+publicidad". Sobre la muestra de alertas, las reconocidas pasan de 23 a
+46: las 13 relevantes, 9 inserciones de publicidad en prensa y radio (en
+castellano ya entraban por `publicidad`) y un servicio de fotografía.
+
+No se crean categorías nuevas: el histórico de adjudicaciones guarda las
+categorías como bits según el orden de `config.CATEGORIAS`. El histórico
+ya construido se clasificó con la taxonomía anterior; los términos nuevos
+solo se aplican a lo que entre a partir de ahora, salvo que se
+reconstruya.
+
+## Plataformas autonómicas: el feed que faltaba (octubre de 2026)
+
+PLACSP publica tres feeds y el radar solo usaba dos para lo abierto: el de
+perfiles propios (`sindicacion_643`) y el de contratos menores (`1143`). El
+tercero, `sindicacion_1044`, trae lo que los organismos publican en la
+plataforma de su comunidad (Cataluña, Euskadi, Andalucía, Madrid, Galicia,
+Navarra, La Rioja) y PLACSP agrega. El histórico de adjudicaciones sí lo leía;
+las licitaciones abiertas y las adjudicaciones recientes, no: esas
+plataformas solo entraban por el buscador web, y solo lo de los tres últimos
+días.
+
+Medido con el ZIP de septiembre de 2026 (19 MB, 15.000 expedientes, frente a
+los 300 MB del feed general):
+
+| | Nº |
+|---|---|
+| Licitaciones de marketing con plazo abierto | 49 |
+| De ellas, las que el radar no tenía | 40 |
+| Adjudicaciones de marketing que el radar no tenía | 89 |
+
+De las 40, 29 son de Cataluña. Ejemplos: agencia de medios para el Patronat de
+Turisme Costa Brava, gabinete de prensa de Loteries de Catalunya, comunicación
+institucional y redes sociales del Ayuntamiento de Aoiz.
+
+Cómo entra:
+
+- `scrapers/placsp.py` lo descarga como tercer ZIP mensual
+  (`extraer_agregadas()`, crudo `placsp_agregadas_*.json`). Si falla, el resto
+  sigue.
+- `clasificar.py` lo trata como el feed general pero con la etiqueta
+  `Estado-agregadas`, y **deja fuera lo de la plataforma de Euskadi**: ya
+  llega por su API, con más datos, y aquí vendría duplicado con el organismo
+  escrito de otra forma. Se acumula entre ejecuciones como los otros dos
+  feeds (el ZIP solo trae lo actualizado ese mes).
+- `normalizar.py` lo convierte igual que el feed general. Al deduplicar
+  pierde frente a TED, al feed general y a la API de Euskadi, y gana al
+  buscador web (`PRIORIDAD_AGREGADAS`). En el dashboard sale con fuente
+  "Estado", como todo lo que viene de PLACSP, y con su provincia.
+- Estas plataformas no rellenan la fecha ni el importe de adjudicación del
+  feed general. `_parsear_entry` usa como respaldo la fecha del anuncio de
+  adjudicación y el importe sin impuestos.
+- El histórico (`diario()`) reutiliza el ZIP ya descargado en vez de bajarlo
+  otra vez.
+
+De paso se corrigió cómo se decide que un organismo que solo llega por el
+buscador web es vasco (`normalizar._es_organismo_vasco`): bastaba con que su
+nombre empezara igual que el de un organismo vasco conocido, y entre ellos
+hay nombres genéricos como "Dirección General". Los dos sistemas dinámicos de
+publicidad de Turismo de Navarra salían como "Euskadi". Ahora hace falta un
+topónimo vasco o el nombre exacto.
+
+Al añadirlo aparecieron duplicados con TED (2 de 42): TED publica el título
+corto y la plataforma autonómica le añade detalle, así que el título exacto
+no coincidía. `normalizar.py` fusiona ahora también dos licitaciones cuando
+tienen la misma fecha límite, organismo compatible y un título que es el
+comienzo del otro (con un mínimo de 40 caracteres, `MIN_TITULO_PREFIJO`).
+
 ## El feed de PLACSP iba desfasado ~3 semanas — hallazgo crítico (RESUELTO)
 
 Investigando por qué el radar recogía pocas licitaciones (el usuario
@@ -817,7 +941,7 @@ para que cada una tenga su dirección y funcione el botón "atrás":
 | Sección | Vista | Dirección |
 |---|---|---|
 | — | Inicio (resumen del día) | `index.html#/inicio` |
-| Oportunidades | Licitaciones: pestañas "Publicadas recientemente" y "Licitaciones abiertas" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas` |
+| Oportunidades | Licitaciones: pestañas "Publicadas recientemente", "Licitaciones abiertas" y "Sistemas dinámicos y plazo largo" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas`, `#/licitaciones/plazo-largo` |
 | Oportunidades | Calls for proposals UE | `index.html#/calls` |
 | Prospección comercial | Contratos menores por vencer | `index.html#/menores` |
 | Competencia | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
@@ -855,6 +979,16 @@ Cómo funciona cada pieza:
   vista calculada en `app.js` (`esPublicacionReciente()`, `ambitoReciente()`).
   Las fuentes solo dan fecha, no hora, así que la ventana se cuenta en días
   naturales. Sus tarjetas salen ya desplegadas, porque normalmente hay pocas.
+- **"Sistemas dinámicos y plazo largo"**: licitaciones abiertas a las que les
+  quedan más de 60 días de plazo (`esPlazoLargo()`, vista calculada como la
+  anterior). Son sistemas dinámicos de adquisición, homologaciones y acuerdos
+  marco que admiten solicitudes durante meses o años. No las traía ninguna
+  fuente: se publicaron hace mucho (la búsqueda diaria no las ve) y no se
+  actualizan (no vienen en el ZIP mensual). `scrapers/placsp_web.py` las pide
+  una vez a la semana con dos búsquedas sin fecha de publicación
+  (`_buscar_plazo_largo`): el 2026-10-02 devolvían 186 expedientes de
+  servicios, 7 de ellos de agencia. El listado no da la fecha de publicación,
+  así que la tarjeta la omite y no cuentan como "publicadas recientemente".
 - **Texto explicativo de cada vista** (`EXPLICACION_TIPO` en `app.js`, bajo el
   título): qué aparece y con qué criterio, para que alguien de la agencia
   entienda la vista sin leer este README. Solo criterio, nunca el razonamiento
@@ -881,7 +1015,29 @@ Cómo funciona cada pieza:
   búsquedas ignoran tildes y puntuación.
 - **Enlaces del radar al histórico**: por NIF (`empresa_nif`, que `normalizar.py`
   añade a adjudicaciones y contratos menores) y, si no, por nombre exacto; si no
-  hay una única coincidencia, se abre el directorio filtrado.
+  hay una única coincidencia, se abre el directorio filtrado. Cuando
+  `normalizar.py` ya encontró al organismo o a la empresa en el histórico, el
+  enlace va directo a su ficha.
+- **Provincia** (`provincia` y `comunidad`, de `normalizar._lugar()` y
+  `territorio.py`): salen del código de lugar que publica cada fuente, nunca
+  del nombre del organismo. PLACSP da el lugar de ejecución del contrato (NUTS)
+  y el código postal del organismo; Euskadi y TED, la región del organismo.
+  Lo que solo llega por el buscador web de PLACSP no trae ninguno, y un
+  contrato de ámbito estatal ("ES") se queda sin provincia a propósito: no es
+  "de Madrid" porque el ministerio tenga allí la sede. La tarjeta muestra
+  "Bizkaia · País Vasco" en lugar de "España" y el filtro "Provincia" agrupa por
+  comunidad las que tienen registros en la vista; "Sin provincia publicada"
+  reúne las españolas sin código. La provincia elegida se conserva al cambiar
+  de vista.
+- **Resumen del histórico en la tarjeta** (`historial_organismo` e
+  `historial_empresa`, de `normalizar._historiales()`): cuántas adjudicaciones
+  de servicios de agencia suma el organismo desde 2021, a cuántas empresas, por
+  qué importe y cuáles son las tres que más importe acumulan; y, en
+  adjudicaciones y contratos menores, lo mismo de la empresa y cuántas veces ha
+  ganado en ese organismo. Se calcula en el pipeline a partir de
+  `historico-data.js` (el histórico se actualiza justo antes), para que la
+  tarjeta no tenga que cargar sus 8 MB. Hereda sus límites: los importes
+  incluyen algún contrato enorme que no es de agencia.
 
 Sin dependencias: HTML, CSS y JavaScript sin librerías ni compilación. El único
 recurso externo es la tipografía Inter (Google Fonts). `localStorage` se usa
