@@ -85,9 +85,13 @@ reales de la referencia y se han aplicado.
 
 ## Pendiente
 
-- Reconstruir el histórico con la taxonomía nueva (aprobado, como paso aparte):
-  el actual se clasificó con la anterior y los términos nuevos solo se aplican
-  a lo que entre desde ahora.
+- Reconstruir el histórico con la taxonomía nueva (aprobado). Hecho el
+  2026-10-02 para las plataformas autonómicas (`fuentes=agregadas`): de
+  127.996 a 134.576 expedientes. Faltan los feeds pesados (`licitaciones` y
+  `menores`, unos 12 GB): hay que lanzarlos de noche o en fin de semana, sin
+  que coincidan con la actualización diaria. De día PLACSP sirve a GitHub a
+  0,1 MB/s (la actualización manual del 2026-10-02 tardó 55 minutos solo en
+  descargar y llegó al límite de 90).
 - Unos 230 registros de PLACSP acumulados de agosto no tienen provincia: el
   pipeline solo relee el mes anterior los tres primeros días de cada mes.
 - Revisión visual independiente (`impeccable`) sobre la versión publicada.

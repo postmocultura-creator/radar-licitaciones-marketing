@@ -694,7 +694,10 @@ No se crean categorías nuevas: el histórico de adjudicaciones guarda las
 categorías como bits según el orden de `config.CATEGORIAS`. El histórico
 ya construido se clasificó con la taxonomía anterior; los términos nuevos
 solo se aplican a lo que entre a partir de ahora, salvo que se
-reconstruya.
+reconstruya. El 2026-10-02 se reconstruyó la parte de plataformas
+autonómicas (`historico-adjudicaciones.yml`, `modo=completo`,
+`fuentes=agregadas`): 6.580 expedientes más. Los feeds `licitaciones` y
+`menores` siguen con la clasificación anterior.
 
 ## Plataformas autonómicas: el feed que faltaba (octubre de 2026)
 
