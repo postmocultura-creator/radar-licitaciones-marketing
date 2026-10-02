@@ -521,6 +521,13 @@ _NIF_ESPANOL = re.compile(
 )
 
 
+def _nif_limpio(nif) -> str | None:
+    """NIF de la adjudicataria con el formato que usa el histórico
+    (scrapers/historico_adjudicaciones.py): el dashboard enlaza por él cada
+    adjudicación del radar con la ficha de la empresa."""
+    return (nif or "").upper().replace("-", "").replace(" ", "") or None
+
+
 def es_empresa_espanola(nif: str | None, paises_ganador: list[str] | None = None,
                         comprador_espanol: bool = False) -> bool:
     """paises_ganador (TED, ISO3) manda si viene: española si alguna es ESP.
@@ -644,6 +651,7 @@ def _from_placsp_adjudicacion(registro: dict) -> dict:
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "adjudicacion",
         "empresa_adjudicataria": empresa,
+        "empresa_nif": _nif_limpio(item.get("empresa_nif")),
         "fecha_adjudicacion": fecha_adjudicacion,
         "fecha_fin_estimada": NO_PUBLICADO,
         "importe_adjudicado_valor": importe_valor,
@@ -684,6 +692,7 @@ def _from_euskadi_adjudicacion(registro: dict) -> dict:
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "adjudicacion",
         "empresa_adjudicataria": empresa,
+        "empresa_nif": _nif_limpio(item.get("CIF")),
         "fecha_adjudicacion": fecha_adjudicacion,
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
@@ -749,6 +758,7 @@ def _from_placsp_contrato_menor(registro: dict) -> dict:
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "contrato_menor_venciendo",
         "empresa_adjudicataria": empresa,
+        "empresa_nif": _nif_limpio(item.get("empresa_nif")),
         "fecha_adjudicacion": fecha_adjudicacion,
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
@@ -788,6 +798,7 @@ def _from_euskadi_contrato_menor(registro: dict) -> dict:
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "contrato_menor_venciendo",
         "empresa_adjudicataria": empresa,
+        "empresa_nif": _nif_limpio(item.get("CIF")),
         "fecha_adjudicacion": fecha_adjudicacion,
         "fecha_fin_estimada": fecha_fin_estimada,
         "importe_adjudicado_valor": importe_valor,
