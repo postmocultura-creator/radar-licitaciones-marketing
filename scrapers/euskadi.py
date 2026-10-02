@@ -92,6 +92,7 @@ BASE_URL_CONTRATOS = "https://api.euskadi.eus/procurements/contracts"
 
 BASE_URL_AUTORIDADES = "https://api.euskadi.eus/procurements/contracting-authorities"
 _CACHE_ORGANISMO: dict[str, str] = {}
+_CACHE_NUTS: dict[str, str | None] = {}
 
 
 def _resolver_organismo(href: str | None) -> str | None:
@@ -111,16 +112,22 @@ def _resolver_organismo(href: str | None) -> str | None:
     # 3 intentos con backoff lo hace resiliente sin depender de la causa
     # exacta.
     nombre = None
+    nuts = None
     for intento in range(3):
         try:
             resp = requests.get(href, timeout=15, headers={"Accept": "application/json"})
             resp.raise_for_status()
-            nombre = resp.json().get("name")
+            autoridad = resp.json()
+            nombre = autoridad.get("name")
+            # Región del organismo ("ES213" = Bizkaia): la misma respuesta
+            # la trae, y es el único dato de lugar de un contrato vasco.
+            nuts = autoridad.get("codNUTS")
             break
         except requests.RequestException:
             if intento < 2:
                 time.sleep(2 * (intento + 1))
     _CACHE_ORGANISMO[href] = nombre
+    _CACHE_NUTS[href] = nuts
     time.sleep(1 / PETICIONES_POR_SEGUNDO)
     return nombre
 
@@ -155,6 +162,7 @@ def extraer_contratos(dias_atras: int, solo_menores: bool = False) -> list[dict]
     for item in resultados:
         href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
         item["organismo_resuelto"] = _resolver_organismo(href)
+        item["organismo_nuts"] = _CACHE_NUTS.get(href)
 
     return resultados
 

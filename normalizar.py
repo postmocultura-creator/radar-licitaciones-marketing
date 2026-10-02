@@ -32,7 +32,15 @@ Esquema final por licitación:
     porque se comprobó que el CPV real de una licitación de marketing a
     veces cae en un grupo genérico ajeno, p. ej. 50000000 "Servicios de
     reparación y mantenimiento", y filtrar por él dejaría fuera casos
-    reales)
+    reales),
+    provincia y comunidad (str|None: lugar del contrato en España, ver
+    _lugar; None cuando la fuente no da código de lugar, como en lo que
+    solo llega por el buscador web de PLACSP, o cuando el ámbito es todo el
+    territorio),
+    historial_organismo e historial_empresa (dict, solo si el organismo o
+    la empresa están en el histórico de adjudicaciones: cuántas
+    adjudicaciones de servicios de agencia suman, a cuántas empresas u
+    organismos, por qué importe y desde qué año; ver _historiales)
 
 Ningún campo se inventa: cuando la fuente no publica un dato (presupuesto,
 fecha límite...), el valor es exactamente el texto "no publicado", nunca un
@@ -82,6 +90,7 @@ from pathlib import Path
 from deep_translator import MyMemoryTranslator
 
 import config
+import territorio
 
 CLASIFICADO = Path(__file__).resolve().parent / "data" / "clasificado.json"
 SALIDA = Path(__file__).resolve().parent / "data" / "tenders.json"
@@ -409,28 +418,153 @@ TOPONIMOS_VASCOS = (
 HISTORICO_DASHBOARD = Path(__file__).resolve().parent / "dashboard" / "historico-data.js"
 
 
+_HISTORICO: dict | None | bool = False  # False = todavía no se ha intentado leer
+
+
+def _historico() -> dict | None:
+    """El histórico de adjudicaciones tal como lo publica el dashboard
+    (dashboard/historico-data.js, ver historico_adjudicaciones._publicar), o
+    None si no existe, está a medias o es de un formato anterior. Se lee una
+    sola vez: son 8 MB."""
+    global _HISTORICO
+    if _HISTORICO is False:
+        _HISTORICO = None
+        if HISTORICO_DASHBOARD.exists():
+            try:
+                texto = HISTORICO_DASHBOARD.read_text(encoding="utf-8")
+                datos = json.loads(texto[texto.index("{"):].rstrip().rstrip(";"))
+                if datos["dic"]["organismo"] is not None and datos["exp"] is not None and datos["lotes"] is not None:
+                    _HISTORICO = datos
+            except (ValueError, KeyError, TypeError, OSError):
+                pass
+    return _HISTORICO
+
+
 def _organismos_vascos(registros: list[dict]) -> set[str]:
     """Organismos ya conocidos como vascos: los de la API de Euskadi en los
     datos actuales y los de ámbito Euskadi del histórico de adjudicaciones."""
     vascos = {_normalizar_clave(r["organismo"]) for r in registros if r["fuente"] == "Euskadi"}
-    if HISTORICO_DASHBOARD.exists():
+    datos = _historico()
+    if datos:
         try:
-            texto = HISTORICO_DASHBOARD.read_text(encoding="utf-8")
-            datos = json.loads(texto[texto.index("{"):].rstrip().rstrip(";"))
             nombres = datos["dic"]["organismo"]
             # exp: [organismo, euskadi, ...] (ver historico_adjudicaciones._publicar)
             vascos |= {_normalizar_clave(nombres[e[0]]) for e in datos["exp"] if e[1] == 1}
-        except (ValueError, KeyError, IndexError, TypeError, OSError):
-            pass  # fichero ausente, a medias o de un formato anterior: sin él
+        except (KeyError, IndexError, TypeError):
+            pass
     vascos.discard("")
     return vascos
 
 
+PRINCIPALES_POR_ORGANISMO = 3
+
+
+def _historiales(registros: list[dict]) -> None:
+    """Añade a cada registro español lo que el histórico sabe de su
+    organismo y, en adjudicaciones y contratos menores, de su empresa:
+
+      historial_organismo: {id, adjudicaciones, empresas, importe, desde,
+          principales: [{id, nombre, adjudicaciones, importe}, ...]}
+      historial_empresa: {id, adjudicaciones, organismos, importe, desde,
+          en_este_organismo}
+
+    Así la tarjeta puede decir quién ha ganado antes en ese organismo sin
+    cargar los 8 MB del histórico. El organismo se busca por nombre
+    normalizado; la empresa, por NIF y, si no hay, por nombre. Son los datos
+    del histórico tal cual: mismas adjudicaciones de servicios de agencia y
+    mismos importes que muestra la sección Competencia (con sus mismos
+    contratos enormes que no son de agencia, ver README)."""
+    datos = _historico()
+    if not datos:
+        return
+    try:
+        organismos = datos["dic"]["organismo"]
+        empresas = datos["dic"]["empresa"]  # [nif, nombre]
+        exp = datos["exp"]                  # [organismo, euskadi, tipo, procedimiento, menor, mascara]
+        lotes = datos["lotes"]              # [exp, empresa, fecha, importe, ofertas, pyme]
+        por_organismo: dict[int, dict] = {}
+        por_empresa: dict[int, dict] = {}
+        for i_exp, i_emp, fecha, importe, *_ in lotes:
+            i_org = exp[i_exp][0]
+            anio = (fecha or "")[:4]
+            o = por_organismo.setdefault(i_org, {"n": 0, "importe": 0.0, "desde": anio, "empresas": {}})
+            o["n"] += 1
+            o["importe"] += importe or 0
+            if anio and (not o["desde"] or anio < o["desde"]):
+                o["desde"] = anio
+            par = o["empresas"].setdefault(i_emp, [0, 0.0])
+            par[0] += 1
+            par[1] += importe or 0
+            e = por_empresa.setdefault(i_emp, {"n": 0, "importe": 0.0, "desde": anio, "organismos": set()})
+            e["n"] += 1
+            e["importe"] += importe or 0
+            e["organismos"].add(i_org)
+            if anio and (not e["desde"] or anio < e["desde"]):
+                e["desde"] = anio
+    except (KeyError, IndexError, TypeError, ValueError):
+        return  # formato inesperado: las tarjetas salen sin resumen
+
+    id_organismo = {}
+    for i, nombre in enumerate(organismos):
+        id_organismo.setdefault(_normalizar_clave(nombre), i)
+    id_por_nif = {}
+    id_por_nombre = {}
+    for i, (nif, nombre) in enumerate(empresas):
+        if nif:
+            id_por_nif.setdefault(nif, i)
+        id_por_nombre.setdefault(_normalizar_clave(nombre), i)
+    id_organismo.pop("", None)
+    id_por_nombre.pop("", None)
+
+    for r in registros:
+        if r["tipo_registro"] == "convocatoria_ue":
+            continue
+        # "no publicado" también existe como nombre en el histórico: no es
+        # un organismo ni una empresa, no se cruza.
+        i_org = None if r["organismo"] == NO_PUBLICADO else id_organismo.get(_normalizar_clave(r["organismo"]))
+        o = por_organismo.get(i_org) if i_org is not None else None
+        if o:
+            principales = sorted(o["empresas"].items(), key=lambda par: (-par[1][1], -par[1][0]))[:PRINCIPALES_POR_ORGANISMO]
+            r["historial_organismo"] = {
+                "id": i_org,
+                "adjudicaciones": o["n"],
+                "empresas": len(o["empresas"]),
+                "importe": round(o["importe"]),
+                "desde": o["desde"] or None,
+                "principales": [
+                    {"id": i_emp, "nombre": empresas[i_emp][1], "adjudicaciones": n, "importe": round(importe)}
+                    for i_emp, (n, importe) in principales
+                ],
+            }
+        if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo"):
+            continue
+        nombre_empresa = r.get("empresa_adjudicataria") or NO_PUBLICADO
+        i_emp = id_por_nif.get(r.get("empresa_nif") or "")
+        if i_emp is None and nombre_empresa != NO_PUBLICADO:
+            i_emp = id_por_nombre.get(_normalizar_clave(nombre_empresa))
+        e = por_empresa.get(i_emp) if i_emp is not None else None
+        if e:
+            r["historial_empresa"] = {
+                "id": i_emp,
+                "adjudicaciones": e["n"],
+                "organismos": len(e["organismos"]),
+                "importe": round(e["importe"]),
+                "desde": e["desde"] or None,
+                "en_este_organismo": o["empresas"][i_emp][0] if o and i_emp in o["empresas"] else 0,
+            }
+
+
 def _es_organismo_vasco(organismo: str, vascos: set[str]) -> bool:
+    """Por topónimo, o porque el nombre es exactamente el de un organismo
+    vasco conocido. Antes bastaba con que el nombre EMPEZARA igual
+    (_organismos_compatibles), y entre los conocidos hay nombres genéricos
+    como "Dirección General": la "Dirección General de Comunicación y
+    Proyección Institucional" del Gobierno de Navarra salía como Euskadi
+    (visto el 2026-10-02 al traer sus sistemas dinámicos)."""
     clave = _normalizar_clave(organismo)
     if any(re.search(r"\b" + t + r"\b", clave) for t in TOPONIMOS_VASCOS):
         return True
-    return any(_organismos_compatibles(clave, v) for v in vascos)
+    return clave in vascos
 
 
 EUSKADI_BUSQUEDA_ANUNCIOS = "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es"
@@ -659,6 +793,27 @@ def _from_placsp_adjudicacion(registro: dict) -> dict:
         "_empresa_espanola": es_empresa_espanola(item.get("empresa_nif"), comprador_espanol=True),
         "_clave_dedup": "adjudicacion|" + _normalizar_clave(titulo) + "|" + _normalizar_clave(organismo),
     }
+
+
+# Plataformas autonómicas agregadas en PLACSP (sindicacion_1044): mismos
+# campos que el feed general, así que se convierten igual. Al deduplicar
+# pierden frente a TED, al feed general y a la API de Euskadi, y ganan al
+# buscador web (que no trae CPV ni lugar). Llevan la marca de origen web para
+# que un organismo vasco que se colara salga como "Euskadi".
+PRIORIDAD_AGREGADAS = 2.5
+
+
+def _from_placsp_agregada(registro: dict) -> dict:
+    salida = _from_placsp(registro)
+    salida["_prioridad_dedup"] = PRIORIDAD_AGREGADAS
+    salida["_origen_web"] = True
+    return salida
+
+
+def _from_placsp_agregada_adjudicacion(registro: dict) -> dict:
+    salida = _from_placsp_adjudicacion(registro)
+    salida["_prioridad_dedup"] = PRIORIDAD_AGREGADAS
+    return salida
 
 
 def _from_euskadi_adjudicacion(registro: dict) -> dict:
@@ -904,18 +1059,53 @@ def _from_eu_grant(registro: dict) -> dict:
     }
 
 
+def _lugar(registro: dict) -> tuple[str | None, str | None]:
+    """(provincia, comunidad) de un registro clasificado, con el código de
+    lugar que publique su fuente (territorio.py hace la traducción):
+
+      - PLACSP: lugar de ejecución del contrato (NUTS) y, si no lo hay,
+        código postal del organismo. Las plataformas agregadas solo dan el
+        primero; el buscador web, ninguno.
+      - Euskadi: región del organismo (codNUTS de la autoridad contratante).
+      - TED: región del organismo, solo si es español.
+
+    No se deduce nada del nombre del organismo ni del título."""
+    item = registro["original"]
+    fuente = registro["fuente"]
+    if fuente in ("Estado", "Estado-agregadas", "Estado-web"):
+        return territorio.lugar(item.get("lugar_nuts"), None, item.get("organismo_cp"))
+    if fuente == "Euskadi":
+        autoridad = item.get("contractingAuthority") or {}
+        provincia, comunidad = territorio.lugar(None, autoridad.get("codNUTS") or item.get("organismo_nuts"))
+        return provincia, comunidad or "País Vasco"
+    if fuente == "UE":
+        if "ESP" not in (item.get("buyer-country") or []):
+            return None, None
+        regiones = item.get("buyer-country-sub") or []
+        return territorio.lugar(None, regiones[0] if regiones else None)
+    return None, None
+
+
 CONVERSORES = {
     ("UE", "licitacion"): _from_ted,
     ("Estado", "licitacion"): _from_placsp,
+    ("Estado-agregadas", "licitacion"): _from_placsp_agregada,
     ("Estado-web", "licitacion"): _from_placsp_web,
     ("Euskadi", "licitacion"): _from_euskadi,
     ("UE", "adjudicacion"): _from_ted_adjudicacion,
     ("Estado", "adjudicacion"): _from_placsp_adjudicacion,
+    ("Estado-agregadas", "adjudicacion"): _from_placsp_agregada_adjudicacion,
     ("Euskadi", "adjudicacion"): _from_euskadi_adjudicacion,
     ("Estado", "contrato_menor_venciendo"): _from_placsp_contrato_menor,
     ("Euskadi", "contrato_menor_venciendo"): _from_euskadi_contrato_menor,
     ("UE-subvenciones", "convocatoria_ue"): _from_eu_grant,
 }
+
+
+# Longitud mínima (ya normalizado) para fusionar dos licitaciones porque un
+# título empieza igual que el otro: por debajo, "Servicio de comunicación"
+# sería el comienzo de demasiados contratos distintos del mismo organismo.
+MIN_TITULO_PREFIJO = 40
 
 
 def main() -> None:
@@ -931,7 +1121,9 @@ def main() -> None:
         conversor = CONVERSORES.get((registro["fuente"], tipo_registro))
         if conversor is None:
             continue
-        normalizados.append(conversor(registro))
+        salida = conversor(registro)
+        salida["provincia"], salida["comunidad"] = _lugar(registro)
+        normalizados.append(salida)
 
     _FILTROS_VENTANA = {
         "licitacion": _dentro_de_ventana_temporal,
@@ -958,6 +1150,13 @@ def main() -> None:
     # registro que se queda guarda los ids de sus duplicados para heredar
     # abajo la fecha_primera_aparicion más antigua del grupo.
     vistos = {}  # "tipo|titulo" -> [(registro superviviente, organismo)]
+    # Segunda regla, solo para licitaciones con fecha límite: mismo plazo,
+    # organismo compatible y un título que es el comienzo del otro. TED
+    # publica el título corto y la plataforma autonómica le añade detalle
+    # ("...del Ayuntamiento de Viladecans" frente a "...del Ayuntamiento de
+    # Viladecans, mediante el fomento de la contratación de..."): con título
+    # exacto no se fusionaban (2 de 42 al añadir sindicacion_1044).
+    por_plazo = {}  # fecha límite -> [(registro superviviente, título, organismo)]
     finales = []
     duplicados = 0
     ids_vistos = set()
@@ -973,11 +1172,20 @@ def main() -> None:
             tipo, titulo_clave, organismo_clave = clave.split("|")
             grupo = vistos.setdefault(tipo + "|" + titulo_clave, [])
             superviviente = next((s for s, o in grupo if _organismos_compatibles(o, organismo_clave)), None)
+            plazo = r["fecha_limite"][:10] if tipo == "licitacion" and r["fecha_limite"] != NO_PUBLICADO else None
+            if superviviente is None and plazo and len(titulo_clave) >= MIN_TITULO_PREFIJO:
+                for s, titulo_s, organismo_s in por_plazo.get(plazo, []):
+                    corto, largo = sorted((titulo_s, titulo_clave), key=len)
+                    if largo.startswith(corto) and _organismos_compatibles(organismo_s, organismo_clave):
+                        superviviente = s
+                        break
             if superviviente is not None:
                 duplicados += 1
                 superviviente.setdefault("_ids_equivalentes", []).append(r["id"])
                 continue
             grupo.append((r, organismo_clave))
+            if plazo and len(titulo_clave) >= MIN_TITULO_PREFIJO:
+                por_plazo.setdefault(plazo, []).append((r, titulo_clave, organismo_clave))
         finales.append(r)
 
     # fecha_primera_aparicion: cuándo vio ESTE radar el registro por primera
@@ -1019,6 +1227,9 @@ def main() -> None:
     for r in finales:
         if r.pop("_origen_web", False) and _es_organismo_vasco(r["organismo"], vascos):
             r["fuente"] = "Euskadi"
+            r["comunidad"] = r["comunidad"] or "País Vasco"
+
+    _historiales(finales)
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna

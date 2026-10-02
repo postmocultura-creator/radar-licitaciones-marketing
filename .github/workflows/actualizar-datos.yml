@@ -71,7 +71,10 @@ jobs:
         # Límite propio: si la web de PLACSP va muy lenta no puede comerse
         # el tiempo del job y dejar el día sin publicar. Si se corta, el
         # radar sigue con el feed y con lo acumulado de días anteriores.
-        timeout-minutes: 20
+        # Los lunes hace además la pasada de convocatorias de plazo largo
+        # (unas 15 páginas más), después de guardar lo diario: de ahí los 30
+        # minutos, y si esa pasada se corta no se pierde la búsqueda del día.
+        timeout-minutes: 30
         run: |
           python -m playwright install --with-deps chromium
           python scrapers/placsp_web.py

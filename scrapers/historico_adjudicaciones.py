@@ -706,6 +706,10 @@ def diario() -> None:
         es_menor = ruta.name.startswith("menores")
         sumar(f"PLACSP {ruta.stem}", lambda: list(procesar_zip(ruta, es_menor).values()))
     for mes in placsp._meses_a_leer():
+        # Desde octubre de 2026 placsp.py también descarga este ZIP para las
+        # licitaciones abiertas: si está en disco, ya se ha leído arriba.
+        if (placsp.DIR_ZIPS / f"agregadas_{mes}.zip").exists():
+            continue
         sumar(f"agregadas {mes}", lambda: pieza_placsp("agregadas", mes))
     sumar(f"TED {hoy.year}", lambda: pieza_ted(str(hoy.year)))
     indice_mes = hoy.year * 12 + hoy.month - 1 - hoy.toordinal() % MESES_ROTACION_EUSKADI

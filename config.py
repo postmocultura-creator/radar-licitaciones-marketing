@@ -162,7 +162,7 @@ CATEGORIAS = {
         "plan de social media", "gestion de instagram", "gestion de facebook",
         "gestion de tiktok", "gestion de linkedin", "gestion de twitter",
         "dinamizacion de redes sociales", "dinamizacion de redes",
-        "gestion de comunidad digital",
+        "gestion de comunidad digital", "community manager",
     ],
     "Producción de vídeo / contenido audiovisual": [
         "produccion audiovisual", "produccion de video",
@@ -175,6 +175,17 @@ CATEGORIAS = {
         "video institucional", "produccion de spots", "motion graphics",
         "animacion audiovisual", "video para redes sociales",
         "contenido para youtube", "edicion de video",
+        # Ronda de octubre de 2026, medida contra 35.000 títulos reales:
+        # "audiovisual"/"audiovisuales" sueltos siguen fuera (150 títulos,
+        # casi todos alquiler y mantenimiento de equipos de sala), pero
+        # estas frases solo aparecen cuando se encarga la pieza.
+        "realizacion de un audiovisual", "realizacion de audiovisuales",
+        "produccion de un audiovisual", "pieza audiovisual",
+        "piezas audiovisuales", "realizacion de video",
+        "realizacion de videos", "realizacion de un video",
+        "grabacion de videos", "podcast", "podcasts",
+        "servicio de fotografia", "servicios de fotografia",
+        "reportaje fotografico", "reportajes fotograficos",
     ],
     "Diseño y desarrollo web": [
         "diseno web", "desarrollo web", "diseno y desarrollo de pagina web",
@@ -188,6 +199,9 @@ CATEGORIAS = {
         "experiencia de usuario", "diseno responsive",
         "desarrollo de plataforma web", "actualizacion de pagina web",
         "migracion web", "diseno de interfaz web",
+        "paginas web", "sitios web", "portales web", "web municipal",
+        "web corporativa", "web institucional",
+        "landing", "landing page", "landing pages",
     ],
     "Diseño y desarrollo de apps": [
         "aplicacion movil", "app movil", "desarrollo de app",
@@ -204,6 +218,7 @@ CATEGORIAS = {
         "monitorizacion de redes sociales", "analisis de sentimiento",
         "gestion de comentarios", "social listening", "escucha social",
         "gestion de crisis de comunicacion",
+        "seguimiento de noticias", "seguimiento de prensa", "press clipping",
     ],
     "Atención al cliente / soporte": [
         "atencion al cliente", "centro de llamadas", "call center",
@@ -236,6 +251,20 @@ CATEGORIAS = {
         "gestion de prensa", "agencia creativa", "campana de sensibilizacion",
         "campana de divulgacion", "gabinete de comunicacion",
         "plan integral de comunicacion",
+        # "campana" a secas da 147 títulos de ruido (campaña de Navidad,
+        # asfáltica, de saneamiento ganadero...), así que solo entran las
+        # campañas con apellido. "promocion turistica" a secas tampoco:
+        # acierta 3 de 17, el resto son nombres de organismo ("Sociedad de
+        # Promoción Turística") y stands de feria.
+        "campana de informacion", "campanas de informacion",
+        "campana informativa", "campanas informativas",
+        "campana de difusion", "campana de concienciacion",
+        "campanas de concienciacion", "campanas de sensibilizacion",
+        "campana de promocion", "campana turistica",
+        "informacion y sensibilizacion", "difusion y sensibilizacion",
+        "servicio de promocion turistica", "servicios de promocion turistica",
+        "campana de promocion turistica", "plan de promocion turistica",
+        "presencia digital",
         # "comunicacion" a secas: se verificó con datos reales de Euskadi
         # (muestra de 23 títulos discartados) que ronda el 55-60% de
         # precisión -"Servicio de gabinete de comunicacion", "Servicio de
@@ -266,7 +295,8 @@ CATEGORIAS = {
         "evento online", "streaming de eventos",
         "gestion de eventos online", "plataforma de eventos virtuales",
         "produccion de webinars", "eventos hibridos",
-        "retransmision de eventos",
+        "retransmision de eventos", "streaming",
+        "retransmision audiovisual", "retransmision en directo",
     ],
     "Analítica / medición de marketing": [
         "analitica web", "analitica digital", "medicion de campanas",
@@ -351,6 +381,96 @@ CATEGORIAS = {
         "plataforma de gestion de campanas",
     ],
 }
+
+# ---------------------------------------------------------------------------
+# Capa 2 en catalán, gallego y euskera
+# ---------------------------------------------------------------------------
+# El buscador web de PLACSP trae también las plataformas autonómicas, sin
+# CPV, así que una licitación titulada en otra lengua solo entra si el
+# título contiene un término de esta lista. Comparando con las alertas que
+# un servicio comercial envió en cinco días (320 convocatorias), el radar
+# tenía el 91 % de lo que su taxonomía reconocía, pero se le escapaban
+# títulos como "Serveis comunicació, màrqueting, fotografia i gravació
+# vídeos" o "Servei de disseny gràfic, maquetació...". Faltaban palabras,
+# no fuentes.
+#
+# Criterio: traducción directa de términos que ya están en castellano, con
+# las mismas líneas rojas ("campanya", "difusió", "premsa" o "kanpaina"
+# sueltas se probaron y son ruido). Se escriben como quedan tras quitar
+# acentos: "comunicació" -> "comunicacio", "deseño" -> "deseno",
+# "comerç" -> "comerc". En euskera la palabra cambia con el caso, así que
+# cada forma va por separado ("publizitate", "publizitatea"...).
+#
+# Las claves son las de CATEGORIAS: no se crean categorías nuevas (el
+# histórico guarda las categorías como bits según el orden del diccionario).
+TERMINOS_OTRAS_LENGUAS = {
+    "SEO / posicionamiento en buscadores": [
+        "posicionament web", "posicionament en cercadors",
+        "posicionamento web", "posicionamento en buscadores",
+    ],
+    "Redes sociales / community management": [
+        "xarxes socials", "redes sociais",
+        "sare sozial", "sare sozialak", "sare sozialen", "sare sozialetan",
+    ],
+    "Producción de vídeo / contenido audiovisual": [
+        "produccio audiovisual", "produccio de videos", "postproduccio",
+        "realitzacio audiovisual", "continguts audiovisuals",
+        "gravacio de videos",
+        "realizacion dun audiovisual", "contidos audiovisuais",
+        "ikus-entzunezko ekoizpena",
+    ],
+    "Diseño y desarrollo web": [
+        "disseny web", "desenvolupament web", "lloc web", "llocs web",
+        "manteniment web",
+        "deseno web", "desenvolvemento web", "paxina web", "paxinas web",
+        "webgune", "webgunea", "webgunearen",
+        "web orri", "web orria", "web orriaren",
+    ],
+    "Diseño y desarrollo de apps": [
+        "aplicacio mobil", "aplicacion mobil",
+    ],
+    "Reputación online / gestión de crisis": [
+        "reputacio online", "seguiment de mitjans",
+    ],
+    "Atención al cliente / soporte": [
+        "atencio al client", "atencio telefonica", "atencion ao cliente",
+    ],
+    "Publicidad y comunicación (general)": [
+        # Equivalentes de "publicidad", "comunicacion" y "marketing".
+        # "publicitaria" y "comunicacion" ya valen para el gallego.
+        "publicitat", "publicitari", "publicitaris", "publicitaries",
+        "comunicacio", "marqueting",
+        "gabinet de premsa", "notes de premsa", "relacions publiques",
+        "estudi de mercat", "estudis de mercat",
+        "campanya de sensibilitzacio", "campanya de difusio",
+        "campanya informativa",
+        "publicidade", "relacions publicas", "estudo de mercado",
+        "difusion e sensibilizacion",
+        "publizitate", "publizitatea", "publizitateko",
+        "komunikazio", "komunikazioa", "komunikazioko",
+        "marketin", "marketina", "iragarki kanpaina",
+    ],
+    "Planificación de medios": [
+        "pla de mitjans", "planificacio de mitjans", "compra de mitjans",
+    ],
+    "Diseño gráfico / branding": [
+        "disseny grafic", "identitat visual", "imatge corporativa",
+        "identitat corporativa", "maquetacio",
+        "deseno grafico", "identidade visual", "imaxe corporativa",
+        "identidade corporativa",
+        "diseinu grafiko", "diseinu grafikoa",
+    ],
+    "Creación de contenidos": [
+        "creacio de continguts", "creacion de contidos",
+    ],
+    "E-commerce": [
+        "comerc electronic", "botiga online", "botiga en linia",
+        "tenda en lina",
+    ],
+}
+
+for _categoria, _terminos in TERMINOS_OTRAS_LENGUAS.items():
+    CATEGORIAS[_categoria].extend(_terminos)
 
 # ---------------------------------------------------------------------------
 # Capa 2 en inglés — Fase 3, calls for proposals de la UE (EU Funding &
@@ -443,4 +563,10 @@ SERVICIOS_NO_OFRECIDOS = [
     "senaletica", "cartelera exterior", "material de oficina",
     "encuadernacion", "impresion", "impresora", "impresoras",
     "servicios de impresion", "trabajos de imprenta",
+    # Los mismos servicios en catalán, gallego y euskera: sin ellos, al
+    # entrar "comunicacio" o "maquetacio" se colarían encargos de imprenta
+    # ("impressió i distribució dels elements de comunicació...").
+    "impressio", "impremta", "retolacio", "senyaletica", "enquadernacio",
+    "papereria", "sinaletica", "encadernacion", "papelaria",
+    "inprimaketa", "inprenta",
 ]

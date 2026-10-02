@@ -25,11 +25,33 @@ Actualizado: 2026-10-02.
 | Fase | Estado | Artefacto |
 |---|---|---|
 | Análisis de la referencia | Hecho | `REFERENCE-AUDIT.md` |
-| Arquitectura de información | Implementada, pendiente de aprobación | `INFORMATION-ARCHITECTURE.md` |
-| Sistema de diseño | Implementado, pendiente de aprobación | `DESIGN-SYSTEM.md` |
-| Construcción | Hecha en local | `dashboard/` |
+| Arquitectura de información | Aprobada y publicada | `INFORMATION-ARCHITECTURE.md` |
+| Sistema de diseño | Aprobado y publicado | `DESIGN-SYSTEM.md` |
+| Construcción | Hecha | `dashboard/` |
 | Comprobación funcional | Hecha (escritorio y móvil) | ver abajo |
-| Publicación | **Pendiente de la aprobación del usuario** | — |
+| Publicación | Hecha el 2026-10-02 | https://licitacionesmarketing.vercel.app |
+| Segunda ronda: ampliación de información | Aprobada y publicada el 2026-10-02 | `INFORMATION-ARCHITECTURE.md`, `ANALISIS-INFOCONCURSO.md` |
+
+## Segunda ronda: ampliación de información
+
+Esta ronda sí cambia qué registros entran en el radar (la primera no lo hacía).
+Cinco piezas:
+
+1. Taxonomía en catalán, gallego y euskera, y expresiones en castellano que
+   faltaban.
+2. Provincia y comunidad en cada registro español, con filtro.
+3. Resumen del organismo y de la empresa (histórico) dentro de cada tarjeta.
+4. Pestaña "Sistemas dinámicos y plazo largo", con una búsqueda semanal nueva en
+   el buscador de PLACSP.
+5. Plataformas autonómicas agregadas en PLACSP (`sindicacion_1044`) para las
+   licitaciones abiertas y las adjudicaciones recientes.
+
+Probada con el pipeline real sobre una copia: de 812 a 995 registros; las
+licitaciones de organismos españoles pasan de 102 a 154.
+
+Decisiones del usuario (2026-10-02): filtro por provincia sin zona destacada;
+no se añaden materias nuevas (actividades culturales, concursos de ideas) hasta
+preguntar a la agencia; las alertas por correo se aplazan.
 
 ## Decisiones tomadas (para revisar)
 
@@ -63,7 +85,11 @@ reales de la referencia y se han aplicado.
 
 ## Pendiente
 
-- Aprobación del usuario y publicación.
+- Reconstruir el histórico con la taxonomía nueva (aprobado, como paso aparte):
+  el actual se clasificó con la anterior y los términos nuevos solo se aplican
+  a lo que entre desde ahora.
+- Unos 230 registros de PLACSP acumulados de agosto no tienen provincia: el
+  pipeline solo relee el mes anterior los tres primeros días de cada mes.
 - Revisión visual independiente (`impeccable`) sobre la versión publicada.
 - Detectado al construir, sin tocar: en el histórico hay empresas duplicadas por
   variantes del mismo NIF (por ejemplo con y sin el prefijo "ES"), lo que reparte

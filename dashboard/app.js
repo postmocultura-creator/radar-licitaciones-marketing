@@ -4,13 +4,15 @@
   var Nav = window.RadarNav;
   var DATOS = (window.TENDERS_DATA || []).slice();
 
-  // Vistas de listado de esta página, por ruta de hash. "recientes" y
-  // "licitacion" son dos pestañas de la misma sección (Licitaciones): la
-  // primera es un subconjunto de la segunda (españolas, vistas por primera
-  // vez en los últimos tres días).
+  // Vistas de listado de esta página, por ruta de hash. "recientes",
+  // "licitacion" y "plazo_largo" son tres pestañas de la misma sección
+  // (Licitaciones): la primera y la tercera son subconjuntos de la segunda
+  // (españolas vistas por primera vez en los últimos tres días; abiertas a
+  // las que les quedan más de DIAS_PLAZO_LARGO días).
   var VISTAS = {
     "licitaciones/recientes": { tipo: "recientes", nav: "licitaciones", titulo: "Licitaciones" },
     "licitaciones/abiertas": { tipo: "licitacion", nav: "licitaciones", titulo: "Licitaciones" },
+    "licitaciones/plazo-largo": { tipo: "plazo_largo", nav: "licitaciones", titulo: "Licitaciones" },
     "calls": { tipo: "convocatoria_ue", nav: "calls", titulo: "Calls for proposals UE" },
     "menores": { tipo: "contrato_menor_venciendo", nav: "menores", titulo: "Contratos menores por vencer" },
     "adjudicaciones": { tipo: "adjudicacion", nav: "adjudicaciones", titulo: "Adjudicaciones recientes" },
@@ -21,6 +23,7 @@
   var PESTANAS_LICITACIONES = [
     ["licitaciones/recientes", "Publicadas recientemente", "recientes"],
     ["licitaciones/abiertas", "Licitaciones abiertas", "licitacion"],
+    ["licitaciones/plazo-largo", "Sistemas dinámicos y plazo largo", "plazo_largo"],
   ];
 
   // Lista completa de categorías de la taxonomía (debe reflejar las claves
@@ -62,6 +65,7 @@
   var FUENTES_POR_TIPO = {
     recientes: ["Estado", "Euskadi"],
     licitacion: ["Estado", "Euskadi", "UE"],
+    plazo_largo: ["Estado", "Euskadi", "UE"],
     adjudicacion: ["Estado", "Euskadi", "UE"],
     contrato_menor_venciendo: ["Estado", "Euskadi"],
     convocatoria_ue: ["UE-subvenciones"],
@@ -77,12 +81,14 @@
     "Noruega", "País Vasco", "Países Bajos", "Polonia", "Portugal", "Reino Unido", "Rumanía",
     "Suecia", "Suiza",
   ];
-  // El filtro de país solo existe en "Licitaciones abiertas", la única
-  // vista con licitaciones de otros países. En las demás solo ofrecía
-  // "España / País Vasco" (o "UE"), que duplica el filtro Estado/Euskadi -y
-  // mal: una licitación vasca que llega por TED figura como "España"-.
+  // El filtro de país solo existe en "Licitaciones abiertas" y en su
+  // subconjunto de plazo largo, las únicas vistas con licitaciones de otros
+  // países. En las demás solo ofrecía "España / País Vasco" (o "UE"), que
+  // duplica el filtro Estado/Euskadi -y mal: una licitación vasca que llega
+  // por TED figura como "España"-.
   var PAISES_POR_TIPO = {
     licitacion: PAISES_TED,
+    plazo_largo: PAISES_TED,
   };
 
   // Filtro de importe (mínimo/máximo) por vista: qué campo se filtra, cómo
@@ -94,6 +100,7 @@
   var IMPORTE_POR_TIPO = {
     recientes: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     licitacion: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
+    plazo_largo: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     adjudicacion: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
     contrato_menor_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: [3000, 5000, 10000, 15000] },
   };
@@ -111,6 +118,10 @@
     licitacion: [
       ["plazo", "Fecha límite (más próxima)"],
       ["fecha-desc", "Publicación (más reciente)"],
+      ["importe-desc", "Presupuesto (mayor primero)"],
+    ],
+    plazo_largo: [
+      ["plazo", "Fecha límite (más próxima)"],
       ["importe-desc", "Presupuesto (mayor primero)"],
     ],
     contrato_menor_venciendo: [
@@ -142,11 +153,18 @@
   // lo que publican las fuentes.
   var DIAS_VENTANA_RECIENTES = 2;
 
+  // "Plazo largo": más de este número de días hasta la fecha límite. Debe
+  // coincidir con DIAS_PLAZO_LARGO de scrapers/placsp_web.py, que es quien
+  // trae de PLACSP las convocatorias que cumplen esto.
+  var DIAS_PLAZO_LARGO = 60;
+
   var EXPLICACION_TIPO = {
     recientes:
       "Licitaciones de organismos públicos españoles (Estado y Euskadi) que han aparecido por primera vez en el radar en los últimos tres días, ordenadas por fecha de publicación de la más reciente a la más antigua. Incluye las publicadas en PLACSP, en el portal de contratación de Euskadi y las de organismos españoles publicadas en TED.",
     licitacion:
       "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
+    plazo_largo:
+      "Licitaciones abiertas a las que les quedan más de 60 días de plazo: sistemas dinámicos de adquisición, homologaciones de proveedores y acuerdos marco que admiten solicitudes durante meses o años. Son parte de \"Licitaciones abiertas\". Las de PLACSP se leen de su buscador una vez a la semana, sin límite de antigüedad, y por eso no tienen fecha de publicación.",
     adjudicacion:
       "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia.",
     contrato_menor_venciendo:
@@ -158,6 +176,7 @@
   var ETIQUETAS_CONTEO = {
     recientes: "publicadas recientemente",
     licitacion: "licitaciones",
+    plazo_largo: "de plazo largo",
     adjudicacion: "adjudicaciones",
     contrato_menor_venciendo: "contratos menores",
     convocatoria_ue: "calls for proposals",
@@ -169,6 +188,8 @@
     fuente: "",
     categoria: "",
     pais: "",
+    // "" | "c:<comunidad>" | "p:<provincia>" | "sin" (española sin lugar publicado)
+    lugar: "",
     soloRevisarManual: false,
     presupuestoMin: 0,
     presupuestoMax: null,
@@ -195,6 +216,8 @@
   var elCategoria = document.getElementById("filtro-categoria");
   var elCampoPais = document.getElementById("campo-pais");
   var elPais = document.getElementById("filtro-pais");
+  var elCampoLugar = document.getElementById("campo-lugar");
+  var elLugar = document.getElementById("filtro-lugar");
   var elCampoImporte = document.getElementById("campo-importe");
   var elPresupuestoMin = document.getElementById("filtro-presupuesto-min");
   var elPresupuestoMax = document.getElementById("filtro-presupuesto-max");
@@ -252,6 +275,10 @@
     if (dias <= 21) {
       return { clase: "urgencia-ambar", texto: "Quedan " + dias + " días" };
     }
+    // Sistemas dinámicos y homologaciones: "Quedan 1.365 días" no dice nada.
+    if (dias > 365) {
+      return { clase: "urgencia-verde", texto: "Abierta hasta " + parsearFecha(fechaLimiteStr).getFullYear() };
+    }
     return { clase: "urgencia-verde", texto: "Quedan " + dias + " días" };
   }
 
@@ -296,6 +323,11 @@
     return miles(valor) + " €";
   }
 
+  // "1 empresa", "16 empresas".
+  function cuantos(n, uno, varios) {
+    return miles(n) + " " + (n === 1 ? uno : varios);
+  }
+
   // Los importes llegan ya formateados desde normalizar.py, a la inglesa y
   // con el código de moneda ("865,200 EUR", "8,000,000 SEK": TED publica
   // cada licitación en su moneda). Se pasan a formato español sin tocar la
@@ -323,6 +355,11 @@
 
   function esPublicacionReciente(t) {
     if (t.tipo_registro !== "licitacion" || ambitoReciente(t) === null) return false;
+    // Sin fecha de publicación son las convocatorias de plazo largo leídas
+    // del buscador de PLACSP (ver placsp_web.py): pueden llevar años
+    // publicadas; que el radar las vea hoy por primera vez no las hace
+    // recientes.
+    if (t.fecha_publicacion === NO_PUBLICADO) return false;
     // Se usa fecha_primera_aparicion (cuándo lo vio el radar por primera
     // vez), no fecha_publicacion (la fecha oficial que da la fuente): los
     // lotes de exportación de PLACSP llegan con días de retraso y, para
@@ -334,8 +371,15 @@
     return dias !== null && dias <= 0 && dias >= -DIAS_VENTANA_RECIENTES;
   }
 
+  function esPlazoLargo(t) {
+    if (t.tipo_registro !== "licitacion") return false;
+    var dias = diasRestantes(t.fecha_limite);
+    return dias !== null && dias > DIAS_PLAZO_LARGO;
+  }
+
   function deTipo(tipo) {
     if (tipo === "recientes") return DATOS.filter(esPublicacionReciente);
+    if (tipo === "plazo_largo") return DATOS.filter(esPlazoLargo);
     return DATOS.filter(function (t) { return t.tipo_registro === tipo; });
   }
 
@@ -391,6 +435,8 @@
     var categorias = {};
     var totalRevisar = 0;
     var paises = {};
+    var comunidades = {};  // comunidad -> { total, provincias: { provincia: n } }
+    var sinLugar = 0;
 
     subconjunto.forEach(function (t) {
       var f = esRecientes ? ambitoReciente(t) : t.fuente;
@@ -399,6 +445,13 @@
         categorias[c] = (categorias[c] || 0) + 1;
       });
       paises[t.pais_territorio] = (paises[t.pais_territorio] || 0) + 1;
+      if (t.comunidad) {
+        var com = comunidades[t.comunidad] || (comunidades[t.comunidad] = { total: 0, provincias: {} });
+        com.total++;
+        if (t.provincia) com.provincias[t.provincia] = (com.provincias[t.provincia] || 0) + 1;
+      } else if (esOrganismoEspanol(t)) {
+        sinLugar++;
+      }
       if (t.revisar_manual) totalRevisar++;
     });
 
@@ -462,6 +515,44 @@
       elPais.appendChild(opt);
     });
 
+    // Desplegable de provincia: las comunidades con registros en la vista y,
+    // dentro de cada una, sus provincias. Una comunidad de una sola
+    // provincia (Madrid, Navarra...) es una opción suelta. No hay lista fija:
+    // solo tienen provincia los registros españoles cuya fuente publica el
+    // código de lugar, y en las calls de la UE no la tiene ninguno.
+    var opcionLugar = function (valor, texto, padre) {
+      var opt = document.createElement("option");
+      opt.value = valor;
+      opt.textContent = texto;
+      padre.appendChild(opt);
+    };
+    var nombresComunidad = Object.keys(comunidades).sort(function (a, b) { return a.localeCompare(b, "es"); });
+    elCampoLugar.hidden = nombresComunidad.length === 0;
+    elLugar.innerHTML = "";
+    opcionLugar("", "Todas (" + subconjunto.length + ")", elLugar);
+    nombresComunidad.forEach(function (nombre) {
+      var com = comunidades[nombre];
+      var provincias = Object.keys(com.provincias).sort(function (a, b) { return a.localeCompare(b, "es"); });
+      if (provincias.length === 0 || (provincias.length === 1 && provincias[0] === nombre)) {
+        opcionLugar("c:" + nombre, nombre + " (" + com.total + ")", elLugar);
+        return;
+      }
+      var grupoComunidad = document.createElement("optgroup");
+      grupoComunidad.label = nombre;
+      opcionLugar("c:" + nombre, nombre + ": todas (" + com.total + ")", grupoComunidad);
+      provincias.forEach(function (p) {
+        opcionLugar("p:" + p, p + " (" + com.provincias[p] + ")", grupoComunidad);
+      });
+      elLugar.appendChild(grupoComunidad);
+    });
+    if (sinLugar && nombresComunidad.length) opcionLugar("sin", "Sin provincia publicada (" + sinLugar + ")", elLugar);
+    elLugar.value = estado.lugar;
+    if (elLugar.value !== estado.lugar) {
+      // La provincia elegida no existe en esta vista.
+      estado.lugar = "";
+      elLugar.value = "";
+    }
+
     elBotonRevisar.hidden = totalRevisar === 0;
     elBotonRevisar.textContent = "Solo pendientes de revisar (" + totalRevisar + ")";
     elBotonRevisar.setAttribute("aria-pressed", estado.soloRevisarManual ? "true" : "false");
@@ -481,12 +572,22 @@
     }
     if (estado.categoria && (t.categorias || []).indexOf(estado.categoria) === -1) return false;
     if (estado.pais && t.pais_territorio !== estado.pais) return false;
+    if (estado.lugar) {
+      if (estado.lugar === "sin") {
+        if (t.comunidad || !esOrganismoEspanol(t)) return false;
+      } else if (estado.lugar.charAt(0) === "c") {
+        if (t.comunidad !== estado.lugar.slice(2)) return false;
+      } else if (t.provincia !== estado.lugar.slice(2)) {
+        return false;
+      }
+    }
 
     if (estado.texto) {
       // Se incluye empresa_adjudicataria (undefined en licitaciones/calls for
       // proposals, de ahí el || "") para poder buscar por el nombre de la
       // empresa ganadora en Adjudicaciones y Contratos menores.
-      var pajar = sinTildes(t.titulo + " " + t.organismo + " " + t.resumen + " " + (t.empresa_adjudicataria || "") + " " + (t.codigo_expediente || ""));
+      var pajar = sinTildes(t.titulo + " " + t.organismo + " " + t.resumen + " " + (t.empresa_adjudicataria || "") + " " + (t.codigo_expediente || "") +
+        " " + (t.provincia || "") + " " + (t.comunidad || ""));
       if (pajar.indexOf(estado.texto) === -1) return false;
     }
 
@@ -568,6 +669,14 @@
     return t.fuente === "Estado" || t.fuente === "Euskadi" || t.pais_territorio === "España" || t.pais_territorio === "País Vasco";
   }
 
+  // "Bizkaia · País Vasco", "Madrid" (provincia y comunidad se llaman igual),
+  // "Andalucía" (la fuente solo da la comunidad) o, si no hay código de
+  // lugar, el país o territorio de siempre.
+  function textoLugar(t) {
+    if (t.provincia) return t.provincia === t.comunidad ? t.provincia : t.provincia + " · " + t.comunidad;
+    return t.comunidad || t.pais_territorio;
+  }
+
   function plantillaTarjeta(t, abierta) {
     var tipo = t.tipo_registro;
     var esAdjudicacion = tipo === "adjudicacion";
@@ -601,8 +710,11 @@
       pie = "<span>Fecha límite de solicitud: <strong>" + fechaLarga(t.fecha_limite) + "</strong></span>" +
         "<span>Apertura: <strong>" + fechaLarga(t.fecha_publicacion) + "</strong></span>";
     } else {
+      // Las convocatorias de plazo largo leídas del buscador de PLACSP no
+      // traen fecha de publicación: el dato se omite, no se da por "no
+      // publicada".
       pie = "<span>Fin de presentación: <strong>" + fechaLarga(t.fecha_limite) + "</strong></span>" +
-        "<span>Publicada: <strong>" + fechaLarga(t.fecha_publicacion) + "</strong></span>";
+        (t.fecha_publicacion === NO_PUBLICADO ? "" : "<span>Publicada: <strong>" + fechaLarga(t.fecha_publicacion) + "</strong></span>");
     }
 
     // --- Detalle ---
@@ -610,9 +722,12 @@
     var general = [
       par("Organismo", escaparHtml(t.organismo)),
       par("Territorio", escaparHtml(t.pais_territorio)),
+    ];
+    if (t.comunidad) general.push(par(t.provincia ? "Provincia" : "Comunidad", escaparHtml(textoLugar(t))));
+    general = general.concat([
       par("Fuente", escaparHtml(t.fuente)),
       par("Tipo de contrato", escaparHtml(t.tipo_contrato === NO_PUBLICADO ? "No publicado" : t.tipo_contrato)),
-    ];
+    ]);
     if (t.codigo_expediente) general.push(par("Expediente", escaparHtml(t.codigo_expediente)));
     if (t.programa) general.push(par("Programa", escaparHtml(t.programa)));
     if (cpv.length) general.push(par("CPV", escaparHtml(cpv.join(", ")), true));
@@ -625,7 +740,7 @@
     } else if (esCall) {
       fechas = [par("Apertura", fechaLarga(t.fecha_publicacion), true), par("Fecha límite de solicitud", fechaLarga(t.fecha_limite), true)];
     } else {
-      fechas = [par("Publicada", fechaLarga(t.fecha_publicacion), true), par("Fecha límite", fechaLarga(t.fecha_limite), true)];
+      fechas = [par("Publicada", fechaLarga(t.fecha_publicacion, "Sin fecha en la fuente"), true), par("Fecha límite", fechaLarga(t.fecha_limite), true)];
     }
     fechas.push(par("En el radar desde", fechaLarga(t.fecha_primera_aparicion, "—"), true));
 
@@ -646,6 +761,31 @@
       ? '<span class="etiqueta-revisar">Revisar: mezcla con otros servicios no propios de agencia</span>'
       : "";
 
+    // Lo que el histórico de adjudicaciones sabe del organismo y de la
+    // empresa (lo calcula normalizar.py; no está si no aparecen allí).
+    var ho = t.historial_organismo;
+    var he = t.historial_empresa;
+    var historialHtml = "";
+    if (he) {
+      historialHtml += '<div class="tarjeta__bloque"><h4>' + (esMenor ? "La empresa que lo tiene, en el histórico" : "La adjudicataria en el histórico") + "</h4>" +
+        '<p class="tarjeta__resumen-texto">' + cuantos(he.adjudicaciones, "adjudicación", "adjudicaciones") + " de servicios de agencia" +
+        (he.desde ? " desde " + he.desde : "") + ", en " + cuantos(he.organismos, "organismo", "organismos") + ", por " + euros(he.importe) + "." +
+        (he.en_este_organismo ? " En este organismo: " + he.en_este_organismo + "." : "") + "</p></div>";
+    }
+    if (ho) {
+      historialHtml += '<div class="tarjeta__bloque"><h4>Este organismo en el histórico</h4>' +
+        '<p class="tarjeta__resumen-texto">' + cuantos(ho.adjudicaciones, "adjudicación", "adjudicaciones") + " de servicios de agencia" +
+        (ho.desde ? " desde " + ho.desde : "") + ", a " + cuantos(ho.empresas, "empresa", "empresas") + ", por " + euros(ho.importe) + "." +
+        (ho.empresas > 1 ? " Las que más importe suman:" : "") + "</p>" +
+        (ho.empresas > 1
+          ? '<ol class="tarjeta__principales">' + ho.principales.map(function (e) {
+              return '<li><a class="enlace" href="historico.html#/empresa/' + e.id + '">' + escaparHtml(e.nombre) + "</a>" +
+                "<span>" + euros(e.importe) + " · " + cuantos(e.adjudicaciones, "adjudicación", "adjudicaciones") + "</span></li>";
+            }).join("") + "</ol>"
+          : "") +
+        "</div>";
+    }
+
     var esDirecto = t.enlace_directo !== false;
     var acciones = "";
     if (t.enlace && t.enlace !== NO_PUBLICADO) {
@@ -657,11 +797,14 @@
     if (conEmpresa && t.empresa_adjudicataria !== NO_PUBLICADO) {
       // Por NIF si el registro lo trae (es como identifica a cada empresa el
       // histórico); el nombre va siempre, por si el NIF no está allí.
-      acciones += '<a class="enlace" href="historico.html#/empresas?' + (t.empresa_nif ? "nif=" + encodeURIComponent(t.empresa_nif) + "&" : "") +
-        "q=" + encodeURIComponent(t.empresa_adjudicataria) + '">Historial de la empresa' + Nav.icono("flecha") + "</a>";
+      // Si normalizar.py ya la encontró en el histórico, directo a su ficha.
+      acciones += '<a class="enlace" href="historico.html#/' + (he ? "empresa/" + he.id : "empresas?" +
+        (t.empresa_nif ? "nif=" + encodeURIComponent(t.empresa_nif) + "&" : "") + "q=" + encodeURIComponent(t.empresa_adjudicataria)) +
+        '">Historial de la empresa' + Nav.icono("flecha") + "</a>";
     }
     if (!esCall && esOrganismoEspanol(t)) {
-      acciones += '<a class="enlace" href="historico.html#/organismos?q=' + encodeURIComponent(t.organismo) + '">Quién gana en este organismo' + Nav.icono("flecha") + "</a>";
+      acciones += '<a class="enlace" href="historico.html#/' + (ho ? "organismo/" + ho.id : "organismos?q=" + encodeURIComponent(t.organismo)) +
+        '">Quién gana en este organismo' + Nav.icono("flecha") + "</a>";
     }
 
     var codigoHtml = "";
@@ -681,7 +824,7 @@
             '<span class="tarjeta__chips">' + chips + "</span>" +
             '<h3 class="tarjeta__titulo">' + escaparHtml(t.titulo) + "</h3>" +
             '<span class="tarjeta__organismo">' + escaparHtml(t.organismo) + "</span>" +
-            '<span class="tarjeta__lugar">' + Nav.icono("lugar") + escaparHtml(t.pais_territorio) + "</span>" +
+            '<span class="tarjeta__lugar">' + Nav.icono("lugar") + escaparHtml(textoLugar(t)) + "</span>" +
             '<span class="tarjeta__pie">' + pie + "</span>" +
           "</span>" +
           '<span class="tarjeta__lateral">' +
@@ -699,6 +842,7 @@
             "</div>" +
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
+          historialHtml +
           '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div></div>" +
           codigoHtml +
           '<div class="tarjeta__acciones">' + acciones + "</div>" +
@@ -712,6 +856,7 @@
     if (estado.fuente) n++;
     if (estado.categoria) n++;
     if (estado.pais) n++;
+    if (estado.lugar) n++;
     if (estado.presupuestoMin > 0) n++;
     if (estado.presupuestoMax !== null && estado.presupuestoMax !== "") n++;
     if (estado.soloRevisarManual) n++;
@@ -921,6 +1066,9 @@
       estado.fuente = p.fuente || "";
       estado.categoria = CATEGORIAS_CONOCIDAS.indexOf(p.cat) !== -1 ? p.cat : "";
       estado.pais = "";
+      // La provincia elegida se conserva al cambiar de vista: quien mira
+      // Bizkaia en licitaciones quiere seguir en Bizkaia en adjudicaciones.
+      // construirControles la descarta si en la vista nueva no existe.
       estado.soloRevisarManual = false;
       elTexto.value = p.q || "";
 
@@ -982,6 +1130,10 @@
       estado.pais = elPais.value;
       aplicarFiltros();
     });
+    elLugar.addEventListener("change", function () {
+      estado.lugar = elLugar.value;
+      aplicarFiltros();
+    });
     elPresupuestoMin.addEventListener("change", function () {
       estado.presupuestoMin = Number(elPresupuestoMin.value) || 0;
       aplicarFiltros();
@@ -1004,10 +1156,12 @@
       estado.fuente = "";
       estado.categoria = "";
       estado.pais = "";
+      estado.lugar = "";
       estado.soloRevisarManual = false;
       elTexto.value = "";
       elCategoria.value = "";
       elPais.value = "";
+      elLugar.value = "";
       construirControlesDeVista();  // importe y orden, a sus valores por defecto
       elBotonRevisar.setAttribute("aria-pressed", "false");
       marcarFuente();

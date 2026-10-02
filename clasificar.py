@@ -79,8 +79,16 @@ _CACHE_PATRONES: dict[str, re.Pattern] = {}
 # positivos en seguros de vehículos, obra civil (vía ciclista)... cualquier
 # cosa tramitada con publicidad obligatoria del anuncio. Se limpia antes de
 # comparar contra las keywords.
+#
+# No siempre va precedido de "procedimiento": "contrato negociado sin
+# publicidad con..." se colaba como publicidad (5 casos en una muestra de
+# 35.000 títulos). Y al añadir "publicitat"/"publicidade" a la taxonomía
+# hace falta la misma limpieza en catalán y gallego ("negociat sense
+# publicitat", "negociado sen publicidade").
 _RUIDO_PROCEDIMENTAL = re.compile(
-    r"\b(procedimiento|proceso) (negociado|abierto|restringido) (con|sin) publicidad\b"
+    r"\b(negociado|abierto|restringido|simplificado"
+    r"|negociat|obert|restringit|simplificat|aberto|restrinxido)"
+    r" (con|sin|amb|sense|sen) (publicidad|publicitat|publicidade)\b"
     r"|\bpublicidad obligatoria\b"
 )
 
@@ -88,8 +96,18 @@ _RUIDO_PROCEDIMENTAL = re.compile(
 def _normalizar_texto(texto: str) -> str:
     if not texto:
         return ""
-    sin_acentos = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
-    minusculas = sin_acentos.lower()
+    # Los acentos se quitan (la marca que deja NFKD tras la letra); el resto
+    # de caracteres no ASCII pasa a ser un espacio. Antes se borraban sin
+    # más, y un apóstrofo tipográfico pegaba dos palabras: "servei
+    # d’impressió" quedaba "dimpressio" y la exclusión de imprenta no
+    # saltaba (caso real: un sistema dinámico de la Diputació de Girona). El
+    # punt volat catalán sí se borra: "instal·lació" es una sola palabra.
+    letras = []
+    for c in unicodedata.normalize("NFKD", texto):
+        if unicodedata.combining(c) or c == "·":
+            continue
+        letras.append(c if ord(c) < 128 else " ")
+    minusculas = "".join(letras).lower()
     return _RUIDO_PROCEDIMENTAL.sub(" ", minusculas)
 
 
@@ -266,6 +284,32 @@ def clasificar_placsp_adjudicaciones(items: list[dict]) -> list[dict]:
     return salida
 
 
+# ---------------------------------------------------------------------------
+# Plataformas autonómicas agregadas en PLACSP (sindicacion_1044). Mismo
+# esquema y mismos criterios que el feed general; solo cambia la etiqueta
+# ("Estado-agregadas") para que normalizar.py les dé menos prioridad al
+# deduplicar que a la fuente propia de cada comunidad.
+#
+# Lo de la plataforma de Euskadi se deja fuera: el radar ya la lee por su
+# API (scrapers/euskadi.py), que trae más datos, y aquí llegaría duplicado
+# con el organismo escrito de otra forma ("Ayuntamiento de Getxo-Junta de
+# Gobierno").
+# ---------------------------------------------------------------------------
+PLATAFORMA_EUSKADI = "contratacion.euskadi.eus"
+
+
+def _sin_plataforma_euskadi(items: list[dict]) -> list[dict]:
+    return [it for it in items if PLATAFORMA_EUSKADI not in (it.get("enlace") or "")]
+
+
+def clasificar_placsp_agregadas(items: list[dict]) -> list[dict]:
+    return [dict(r, fuente="Estado-agregadas") for r in clasificar_placsp(_sin_plataforma_euskadi(items))]
+
+
+def clasificar_placsp_agregadas_adjudicaciones(items: list[dict]) -> list[dict]:
+    return [dict(r, fuente="Estado-agregadas") for r in clasificar_placsp_adjudicaciones(_sin_plataforma_euskadi(items))]
+
+
 def clasificar_euskadi_adjudicaciones(items: list[dict]) -> list[dict]:
     salida = []
     for item in items:
@@ -364,7 +408,7 @@ def _cargar_resultados(ruta: Path | None) -> list[dict]:
 # y, si sustituyera sin más al resultado anterior, desaparecerían del radar
 # las licitaciones publicadas el mes pasado que siguen abiertas. Para estas
 # fuentes el resultado se acumula entre ejecuciones.
-FUENTES_ACUMULATIVAS = {"placsp", "placsp_menores"}
+FUENTES_ACUMULATIVAS = {"placsp", "placsp_agregadas", "placsp_menores"}
 DIAS_MAX_ACUMULADO = 400  # tope para que la caché no crezca sin fin
 
 
@@ -410,10 +454,12 @@ def main() -> None:
     fuentes = [
         ("ted", "licitacion", clasificar_ted),
         ("placsp", "licitacion", clasificar_placsp),
+        ("placsp_agregadas", "licitacion", clasificar_placsp_agregadas),
         ("placsp_web", "licitacion", clasificar_placsp_web),
         ("euskadi", "licitacion", clasificar_euskadi),
         ("ted_adjudicaciones", "adjudicacion", clasificar_ted_adjudicaciones),
         ("placsp", "adjudicacion", clasificar_placsp_adjudicaciones),
+        ("placsp_agregadas", "adjudicacion", clasificar_placsp_agregadas_adjudicaciones),
         ("euskadi_adjudicaciones", "adjudicacion", clasificar_euskadi_adjudicaciones),
         ("placsp_menores", "contrato_menor_venciendo", clasificar_placsp_contratos_menores),
         ("euskadi_menores", "contrato_menor_venciendo", clasificar_euskadi_contratos_menores),

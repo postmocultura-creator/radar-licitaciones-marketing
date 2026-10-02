@@ -48,6 +48,10 @@ adjudicado, nunca es una oportunidad a la que presentarse) y se ha vuelto
 a añadir con otro objetivo -prospección comercial sobre contratos que
 vencen pronto, ver extraer_contratos_menores() y el README-.
 
+Tercer feed, sindicacion_1044, con las PLATAFORMAS AUTONÓMICAS agregadas en
+PLACSP (ver FEED_AGREGADAS_ZIP): licitaciones y adjudicaciones de los
+organismos que publican en la plataforma de su comunidad y no en PLACSP.
+
 Ejecutar directamente para lanzar la extracción y guardar el crudo (desde
 la carpeta licitaciones_marketing/):
     python scrapers/placsp.py
@@ -83,6 +87,22 @@ def _texto(el, path) -> str | None:
     return nodo.text.strip() if nodo is not None and nodo.text else None
 
 
+def _fecha_anuncio(cfs, tipos: tuple[str, ...]) -> str | None:
+    """Fecha del primer anuncio publicado de alguno de estos tipos
+    (DOC_CAN_ADJ = adjudicación, DOC_FORM = formalización). Misma lógica que
+    scrapers/historico_adjudicaciones._fecha_anuncio."""
+    for tipo in tipos:
+        for info in cfs.findall("cac-place-ext:ValidNoticeInfo", NS):
+            if _texto(info, "cbc-place-ext:NoticeTypeCode") != tipo:
+                continue
+            fechas = [n.text.strip() for n in info.findall(
+                "cac-place-ext:AdditionalPublicationStatus/cac-place-ext:AdditionalPublicationDocumentReference/cbc:IssueDate", NS)
+                if n.text]
+            if fechas:
+                return min(fechas)[:10]
+    return None
+
+
 def _parsear_entry(entry) -> dict:
     cfs = entry.find("cac-place-ext:ContractFolderStatus", NS)
 
@@ -113,6 +133,16 @@ def _parsear_entry(entry) -> dict:
     ) if cfs is not None else None
     if party_nodo is not None and party_nodo.text:
         organismo = party_nodo.text.strip()
+
+    # Lugar: código NUTS y nombre del lugar de ejecución del contrato, y
+    # código postal del organismo como respaldo (territorio.py los traduce
+    # a provincia y comunidad). Las plataformas agregadas no publican la
+    # dirección del organismo, solo el lugar de ejecución.
+    lugar_nuts = _texto(proyecto, "cac:RealizedLocation/cbc:CountrySubentityCode") if proyecto is not None else None
+    lugar_nombre = _texto(proyecto, "cac:RealizedLocation/cbc:CountrySubentity") if proyecto is not None else None
+    organismo_cp = _texto(
+        cfs, "cac-place-ext:LocatedContractingParty/cac:Party/cac:PostalAddress/cbc:PostalZone"
+    ) if cfs is not None else None
 
     fecha_limite = None
     if cfs is not None:
@@ -150,6 +180,14 @@ def _parsear_entry(entry) -> dict:
         )
         if importe_nodo is not None and importe_nodo.text:
             importe_adjudicado = importe_nodo.text.strip()
+        # Las plataformas agregadas (sindicacion_1044) no rellenan ni la
+        # fecha ni el importe anteriores: publican el anuncio de adjudicación
+        # con su fecha y el importe sin impuestos. Se usan solo como respaldo.
+        if not fecha_adjudicacion:
+            fecha_adjudicacion = _fecha_anuncio(cfs, ("DOC_CAN_ADJ", "DOC_FORM"))
+        if not importe_adjudicado:
+            importe_adjudicado = _texto(
+                tender_result, "cac:AwardedTenderedProject/cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount")
 
     # Duración PLANEADA del contrato (no fecha fin directa: hay que sumarla
     # a fecha_adjudicacion). Solo relevante para contratos menores -única
@@ -169,6 +207,9 @@ def _parsear_entry(entry) -> dict:
         "estado": estado,
         "titulo": objeto or _texto(entry, "atom:title"),
         "organismo": organismo,
+        "lugar_nuts": lugar_nuts,
+        "lugar_nombre": lugar_nombre,
+        "organismo_cp": organismo_cp,
         "cpv": cpvs,
         "presupuesto": importe,
         "moneda": moneda,
@@ -205,6 +246,18 @@ FEED_GENERAL_ZIP = (
 FEED_MENORES_ZIP = (
     "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_1143/"
     "contratosMenoresPerfilesContratantes_{anio_mes}.zip"
+)
+# Plataformas autonómicas agregadas en PLACSP (Cataluña, Euskadi, Andalucía,
+# Madrid, Galicia, Navarra, La Rioja): no están en sindicacion_643, que solo
+# trae los organismos con perfil propio en PLACSP. Hasta octubre de 2026 el
+# radar solo las veía por el buscador web, y solo lo publicado en los tres
+# últimos días. Medido con el ZIP de septiembre de 2026 (19 MB, 15.000
+# expedientes): 49 licitaciones de marketing con plazo abierto, de las que
+# el radar no tenía 40. Mismo esquema CODICE que el feed general, salvo la
+# fecha y el importe de adjudicación (ver _parsear_entry).
+FEED_AGREGADAS_ZIP = (
+    "https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_1044/"
+    "PlataformasAgregadasSinMenores_{anio_mes}.zip"
 )
 
 
@@ -281,6 +334,10 @@ def extraer_contratos_menores() -> list[dict]:
     return _extraer_zip_mensual(FEED_MENORES_ZIP, "menores")
 
 
+def extraer_agregadas() -> list[dict]:
+    return _extraer_zip_mensual(FEED_AGREGADAS_ZIP, "agregadas")
+
+
 def guardar_crudo(items: list[dict], prefijo: str = "placsp") -> Path:
     ahora = datetime.now(timezone.utc)
     raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
@@ -324,6 +381,15 @@ def main() -> None:
     except (requests.RequestException, ET.ParseError, zipfile.BadZipFile) as exc:
         print(f"[placsp] ERROR al consultar el feed de PLACSP: {exc}", file=sys.stderr)
         _guardar_error("placsp", exc)
+        fallo = True
+
+    try:
+        agregadas = extraer_agregadas()
+        ruta = guardar_crudo(agregadas, "placsp_agregadas")
+        print(f"[placsp] {len(agregadas)} expedientes de plataformas agregadas guardados en {ruta}")
+    except (requests.RequestException, ET.ParseError, zipfile.BadZipFile) as exc:
+        print(f"[placsp] ERROR al consultar las plataformas agregadas: {exc}", file=sys.stderr)
+        _guardar_error("placsp_agregadas", exc)
         fallo = True
 
     try:

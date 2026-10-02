@@ -134,6 +134,7 @@ CAMPOS_ADJUDICACIONES = [
     "notice-title",
     "buyer-name",
     "buyer-country",
+    "buyer-country-sub",
     "classification-cpv",
     "publication-date",
     "winner-name",
