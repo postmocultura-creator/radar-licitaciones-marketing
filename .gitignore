@@ -14,3 +14,6 @@ data/_tmp_*
 
 .vercel
 .env*
+
+# Evidencia de la referencia de diseño (capturas de un producto de terceros).
+references/

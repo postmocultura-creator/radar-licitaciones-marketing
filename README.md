@@ -348,8 +348,8 @@ no necesiten un camino aparte.
 
 ## Histórico de adjudicaciones (desde 2021)
 
-Vista aparte, `dashboard/historico.html` (enlazada desde la cabecera del
-radar): qué empresas ganan los contratos de servicios de agencia, por cuánto,
+Sección "Competencia" de la barra lateral (`dashboard/historico.html`: análisis
+de mercado, directorios de empresas y organismos y sus fichas): qué empresas ganan los contratos de servicios de agencia, por cuánto,
 de qué tipo y a qué organismos. Ámbito decidido con el usuario: Estado +
 Euskadi + licitaciones españolas que solo llegan por TED, **incluidos
 contratos menores**.
@@ -806,84 +806,86 @@ agencia).
 
 ## Dashboard
 
-`dashboard/index.html` lee `dashboard/tenders-data.js` (no
-`data/tenders.json` directamente): al abrirse con doble clic bajo
-`file://`, Chrome/Edge bloquean `fetch()` de un `.json` por CORS, así que
-`normalizar.py` vuelca los mismos datos como
-`window.TENDERS_DATA = [...]` para que funcione sin servidor en cualquier
-navegador.
+Rediseñado en octubre de 2026 (estructura y sistema de diseño tomando como
+referencia la aplicación de Tendios). El porqué de cada decisión está en
+`docs/diseno/`: `REFERENCE-AUDIT.md`, `INFORMATION-ARCHITECTURE.md`,
+`DESIGN-SYSTEM.md` y `PROJECT-STATE.md`.
 
-Incluye:
-- pestañas de nivel superior ("Publicadas recientemente" / "Licitaciones
-  abiertas" / "Adjudicaciones" / "Contratos menores por vencer" / "Calls
-  for proposals UE") — cada una reconstruye sus propios controles
-  (fuente/categoría/país) y su propia plantilla de tarjeta, porque cada
-  tipo de dato tiene una semántica de fecha distinta (una licitación
-  cuenta días hasta el cierre, una adjudicación no tiene plazo)
-- **"Publicadas recientemente"** (primera pestaña y la que se abre por
-  defecto, a petición del usuario): solo licitaciones de organismos
-  españoles -PLACSP (feed y buscador web), portal de Euskadi y las de
-  organismos españoles en TED, que se asignan a Euskadi por región NUTS
-  ES21x- que el radar vio por primera vez en los últimos 3 días
-  (`fecha_primera_aparicion`, no `fecha_publicacion`: ver normalizar.py),
-  ordenadas por `fecha_publicacion`. Desde la reunión del 2026-09-30 con la
-  agencia ya no entran licitaciones de otros países ni calls for proposals.
-  Filtro de fuente fijo: Estado / Euskadi. No es un `tipo_registro` real —
-  es una vista calculada en `app.js` (`esPublicacionReciente()`,
-  `ambitoReciente()`), porque en la lista general algo recién publicado con
-  plazo lejano puede quedar enterrado bajo cosas con plazo más urgente pero
-  publicadas hace semanas. Limitación real: las fuentes solo dan fecha, no
-  hora, así que la ventana se cuenta en días naturales. Esta pestaña se sigue mostrando aunque tenga 0 resultados (a
-  diferencia de las demás, que se ocultan en 0) — que desapareciera justo
-  el día que no hay nada nuevo parecería un fallo, no información útil.
-  Sus tarjetas se muestran más grandes y ya desplegadas (`tarjeta--grande`
-  en `style.css`), porque normalmente hay pocas. Aparece primera en la
-  barra, pero la pestaña seleccionada por defecto al abrir sigue siendo
-  "Licitaciones abiertas" (más segura si un día no hay nada reciente).
-- un texto explicativo corto debajo de las pestañas (`EXPLICACION_TIPO` en
-  `app.js`), que cambia al cambiar de pestaña: qué es esa categoría de
-  datos y de dónde/cómo se ha recogido — para que alguien de la agencia
-  que abra el dashboard sin contexto previo entienda cada vista sin tener
-  que preguntar ni leer este README
-- buscador de texto libre (título, organismo, resumen)
-- segmented control (Todas / UE / Estado / Euskadi) para la fuente
-- desplegable de categoría, ordenado por volumen
-- desplegable de país/territorio, alfabético (TED da el país del comprador
-  como ISO 3166-1 alfa-3 — `normalizar.py` lo traduce a español, y fusiona
-  el "ESP" de TED con el "España" de PLACSP en una sola opción)
-- tarjetas de tamaño intermedio (título en hasta 2 líneas sin truncar a lo
-  bruto + organismo/territorio en su propia línea) que se expanden al
-  hacer clic con el detalle completo — implementado con
-  `<details>/<summary>` nativo de HTML, así que es accesible por teclado
-  sin JS adicional
-- botón "⚠ N pendientes de revisar" que solo aparece si hay algo que
-  revisar (ver la sección de arriba); con 0 casos, no se muestra nada
-- filtro por rango de presupuesto y orden (fecha límite, presupuesto,
-  publicación), plegados bajo "Más filtros" para no saturar la barra —
-  el de presupuesto solo se muestra en "Licitaciones abiertas" (es el
-  único `tipo_registro` con `presupuesto_valor` poblado; ver auditoría
-  más abajo)
-- código de color por urgencia: rojo ≤7 días, ámbar ≤21 días, verde el
-  resto, gris si no hay fecha límite publicada — esto es señal funcional y
-  es igual en las 5 pestañas, nunca se usa para decoración
-- identidad de acento por pestaña (a petición del usuario: las 5 pestañas
-  compartiendo el mismo azul se sentía repetitivo). Se aplica solo al
-  control de pestaña activo y al banner de explicación — nunca dentro de
-  las tarjetas, para no interferir con el código de urgencia de arriba:
-  Licitaciones abiertas se queda con el azul primario de siempre (es la
-  pestaña por defecto), Publicadas recientemente en teal, Adjudicaciones
-  en violeta (también en el borde de sus tarjetas, que al no tener plazo
-  antes era gris neutro sin significado — aquí sí se podía usar sin pisar
-  nada), Contratos menores por vencer en granate, Calls for proposals UE
-  en índigo. Paleta elegida con la skill `ui-ux-pro-max` (búsqueda de
-  color por dominio, no a ojo).
+Dos páginas, una barra lateral común (`nav.js`) y una ruta de hash por vista,
+para que cada una tenga su dirección y funcione el botón "atrás":
 
-Paleta y tipografía (`Fira Sans` para texto, `Fira Code` para cifras/fechas)
-generadas con la skill `ui-ux-pro-max`, pensadas para un panel denso de
-datos, no para una landing.
+| Sección | Vista | Dirección |
+|---|---|---|
+| — | Inicio (resumen del día) | `index.html#/inicio` |
+| Oportunidades | Licitaciones: pestañas "Publicadas recientemente" y "Licitaciones abiertas" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas` |
+| Oportunidades | Calls for proposals UE | `index.html#/calls` |
+| Prospección comercial | Contratos menores por vencer | `index.html#/menores` |
+| Competencia | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
+| Competencia | Análisis de mercado (histórico desde 2021) | `historico.html#/mercado` |
+| Competencia | Empresas y ficha de empresa | `historico.html#/empresas`, `#/empresa/<id>` |
+| Competencia | Organismos y ficha de organismo | `historico.html#/organismos`, `#/organismo/<id>` |
 
-No usa `localStorage` ni dependencias externas de pago: solo HTML/CSS/JS
-vanilla (las dos fuentes de Google Fonts son el único recurso externo).
+`index.html` lee `dashboard/tenders-data.js` (no `data/tenders.json`
+directamente): al abrirse con doble clic bajo `file://`, Chrome/Edge bloquean
+`fetch()` de un `.json` por CORS, así que `normalizar.py` vuelca los mismos
+datos como `window.TENDERS_DATA = [...]` para que funcione sin servidor.
+`historico.html` lee `historico-data.js` y, al abrir la ficha de una empresa,
+el fragmento de `historico-detalle/` que le toca.
+
+Cómo funciona cada pieza:
+
+- **Inicio** (`pintarInicio()` en `app.js`): cinco cifras enlazadas a su vista,
+  las últimas publicadas recientemente, lo que cierra en 7 días, los contratos
+  menores que vencen antes, las últimas adjudicaciones y el reparto de las
+  licitaciones en plazo por categoría. Todo sale de `tenders-data.js`.
+- **Listados** (una sola vista en `index.html` para los cinco tipos; `VISTAS`
+  en `app.js` asocia cada ruta a su `tipo_registro`). Cada vista reconstruye sus
+  controles: `FUENTES_POR_TIPO`, `PAISES_POR_TIPO` (el país solo existe en
+  "Licitaciones abiertas"), `IMPORTE_POR_TIPO` y `ORDENES_POR_TIPO`
+  ("Adjudicaciones recientes" no tiene selector de orden: siempre de la más
+  reciente a la más antigua). Los filtros muestran siempre todas sus opciones,
+  con "(0)" si ese día no hay nada.
+- **"Publicadas recientemente"**: solo licitaciones de organismos españoles
+  -PLACSP (feed y buscador web), portal de Euskadi y las de organismos españoles
+  en TED, que se asignan a Euskadi por región NUTS ES21x- que el radar vio por
+  primera vez en los últimos 3 días (`fecha_primera_aparicion`, no
+  `fecha_publicacion`: ver normalizar.py), ordenadas por `fecha_publicacion`.
+  Desde la reunión del 2026-09-30 con la agencia ya no entran licitaciones de
+  otros países ni calls for proposals. No es un `tipo_registro` real: es una
+  vista calculada en `app.js` (`esPublicacionReciente()`, `ambitoReciente()`).
+  Las fuentes solo dan fecha, no hora, así que la ventana se cuenta en días
+  naturales. Sus tarjetas salen ya desplegadas, porque normalmente hay pocas.
+- **Texto explicativo de cada vista** (`EXPLICACION_TIPO` en `app.js`, bajo el
+  título): qué aparece y con qué criterio, para que alguien de la agencia
+  entienda la vista sin leer este README. Solo criterio, nunca el razonamiento
+  interno.
+- **Tarjeta** (`plantillaTarjeta()`): código de expediente, fuente, chip "Nuevo
+  hoy/ayer" y urgencia; título, organismo y territorio; pie con las fechas o la
+  adjudicataria; columna de importe. Se despliega (`<details>/<summary>` nativo,
+  accesible por teclado) con el detalle en pares dato/valor: información
+  general (incluidos expediente y CPV), fechas (incluida la de entrada en el
+  radar) e importes, la descripción, las categorías y los enlaces: anuncio
+  original, "Historial de la empresa" y "Quién gana en este organismo" (estos
+  dos llevan al histórico).
+- **Código de color por urgencia**: rojo ≤7 días, ámbar ≤21 días, verde el
+  resto, gris si no hay fecha límite publicada (en contratos menores: rojo ≤30,
+  ámbar ≤60). Es señal funcional, igual en todas las vistas y siempre con
+  texto. Al ordenar por fecha, lo ya vencido va al final.
+- **"Solo pendientes de revisar (N)"**: solo aparece si hay algo que revisar.
+- **Importes**: `normalizar.py` los entrega como "865,200 EUR"; el dashboard los
+  pasa a "865.200 €" sin tocar la moneda (TED publica cada licitación en la
+  suya: SEK, PLN, RON...).
+- **Competencia** (`historico.js`): los filtros de ámbito, tipo, año y
+  categoría son comunes al análisis, a los directorios y a las fichas. Los
+  directorios se ordenan por cualquier columna y van paginados de 50 en 50. Las
+  búsquedas ignoran tildes y puntuación.
+- **Enlaces del radar al histórico**: por NIF (`empresa_nif`, que `normalizar.py`
+  añade a adjudicaciones y contratos menores) y, si no, por nombre exacto; si no
+  hay una única coincidencia, se abre el directorio filtrado.
+
+Sin dependencias: HTML, CSS y JavaScript sin librerías ni compilación. El único
+recurso externo es la tipografía Inter (Google Fonts). `localStorage` se usa
+solo para recordar los recuentos de la barra lateral entre las dos páginas.
 
 ## Auditoría completa (bugs y mejoras encontrados en septiembre 2026)
 

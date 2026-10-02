@@ -6,80 +6,120 @@
 <title>Radar de licitaciones — Marketing digital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="cabecera">
-  <div class="cabecera__titulo">
-    <h1>Radar de licitaciones públicas</h1>
-    <p>Servicios de agencia de marketing digital y publicidad · UE · Estado · Euskadi</p>
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+<div class="app">
+  <!-- La barra lateral la pinta nav.js (es la misma en historico.html). -->
+  <aside class="lateral" id="lateral" aria-label="Navegación principal"></aside>
+
+  <div class="app__principal">
+    <header class="barra-movil">
+      <button class="boton-icono" id="abrir-menu" type="button" aria-label="Abrir menú" aria-controls="lateral" aria-expanded="false"></button>
+      <span class="barra-movil__marca">Radar de licitaciones</span>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+
+      <!-- Inicio: resumen del día. Lo rellena app.js (pintarInicio). -->
+      <section id="vista-inicio" hidden>
+        <header class="pagina__cabecera">
+          <div class="pagina__titulo">
+            <h1>Inicio</h1>
+            <p class="pagina__descripcion">Qué hay nuevo y qué vence antes: licitaciones de organismos españoles aparecidas en los últimos tres días, plazos que cierran esta semana, contratos menores a punto de vencer y las últimas adjudicaciones.</p>
+          </div>
+        </header>
+        <div class="kpis" id="inicio-kpis"></div>
+        <div class="inicio__columnas">
+          <div class="inicio__columna" id="inicio-principal"></div>
+          <div class="inicio__columna" id="inicio-lateral"></div>
+        </div>
+      </section>
+
+      <!-- Listado: licitaciones, calls for proposals, contratos menores y
+           adjudicaciones recientes comparten esta vista. -->
+      <section id="vista-listado" hidden>
+        <header class="pagina__cabecera">
+          <div class="pagina__titulo">
+            <h1 id="titulo-pagina"></h1>
+            <p class="pagina__descripcion" id="explicacion-tipo"></p>
+          </div>
+          <div class="resumen" id="resumen-cabecera"></div>
+        </header>
+
+        <div class="campo-busqueda">
+          <svg class="icono-busqueda" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <input type="search" id="filtro-texto" placeholder="Buscar por título u organismo…" aria-label="Buscar">
+        </div>
+
+        <div class="listado">
+          <details class="filtros" id="filtros" open>
+            <summary><span id="filtros-icono"></span>Filtros <span class="filtros__activos" id="filtros-activos" hidden></span><svg class="tarjeta__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+
+            <div class="filtros__seccion" id="campo-fuente">
+              <span class="filtros__titulo" id="etiqueta-fuente">Fuente</span>
+              <div class="opciones" id="segmented-fuente" role="group" aria-labelledby="etiqueta-fuente"></div>
+            </div>
+
+            <div class="filtros__seccion">
+              <label>Categoría de servicio
+                <select id="filtro-categoria"></select>
+              </label>
+            </div>
+
+            <div class="filtros__seccion" id="campo-pais">
+              <label>País / territorio
+                <select id="filtro-pais"></select>
+              </label>
+            </div>
+
+            <!-- Nombre y tramos del filtro de importe los pone app.js según
+                 la vista (IMPORTE_POR_TIPO). -->
+            <div class="filtros__seccion" id="campo-importe">
+              <label><span id="etiqueta-importe-min">Presupuesto mínimo</span>
+                <select id="filtro-presupuesto-min"></select>
+              </label>
+              <label><span id="etiqueta-importe-max">Presupuesto máximo</span>
+                <select id="filtro-presupuesto-max"></select>
+              </label>
+            </div>
+
+            <div class="filtros__seccion">
+              <button class="boton boton--contorno boton--ancho" id="boton-revisar" type="button" aria-pressed="false" hidden></button>
+              <button class="boton boton--texto boton--ancho" id="boton-reset" type="button">Quitar todos los filtros</button>
+            </div>
+          </details>
+
+          <div class="listado__resultados">
+            <nav class="pestanas" id="pestanas-vista" aria-label="Vista de licitaciones" hidden></nav>
+
+            <div class="barra-estado">
+              <p class="conteo" id="conteo-resultados" aria-live="polite"></p>
+              <label class="orden" id="campo-orden">Ordenar por
+                <select id="filtro-orden"></select>
+              </label>
+            </div>
+
+            <section id="contenedor-tarjetas" class="lista-tarjetas" aria-label="Resultados"></section>
+
+            <p class="sin-resultados" id="sin-resultados" hidden>No hay resultados que coincidan con los filtros seleccionados.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="pie">
+      <p>Datos de TED (UE), PLACSP (Estado), el portal de contratación de Euskadi y EU Funding &amp; Tenders. Se actualizan automáticamente cada día.</p>
+      <p id="fecha-generacion"></p>
+    </footer>
   </div>
-  <div class="cabecera__resumen" id="resumen-cabecera"></div>
-  <a class="enlace-cabecera" href="historico.html">Histórico de adjudicaciones →</a>
-</header>
+</div>
 
-<main>
-  <div class="segmented segmented--tipo" id="segmented-tipo" role="radiogroup" aria-label="Tipo de dato"></div>
-  <p class="explicacion-tipo" id="explicacion-tipo"></p>
-
-  <section class="barra-filtros" aria-label="Filtros">
-    <div class="barra-filtros__principal">
-      <div class="campo-busqueda">
-        <svg class="icono-busqueda" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <input type="search" id="filtro-texto" placeholder="Buscar por título u organismo…" aria-label="Buscar">
-      </div>
-
-      <div class="segmented" id="segmented-fuente" role="radiogroup" aria-label="Fuente"></div>
-
-      <select id="filtro-categoria" aria-label="Categoría de servicio">
-        <option value="">Todas las categorías</option>
-      </select>
-
-      <select id="filtro-pais" aria-label="País / territorio">
-        <option value="">Todos los países</option>
-      </select>
-    </div>
-
-    <details class="filtros-avanzados">
-      <summary>Más filtros</summary>
-      <div class="filtros-avanzados__contenido">
-        <!-- Nombre, tramos y opciones de estos tres controles los pone app.js
-             según la pestaña (IMPORTE_POR_TIPO, ORDENES_POR_TIPO). -->
-        <label id="campo-presupuesto-min">
-          <span id="etiqueta-importe-min">Presupuesto mínimo</span>
-          <select id="filtro-presupuesto-min"></select>
-        </label>
-        <label id="campo-presupuesto-max">
-          <span id="etiqueta-importe-max">Presupuesto máximo</span>
-          <select id="filtro-presupuesto-max"></select>
-        </label>
-        <label id="campo-orden">
-          Ordenar por
-          <select id="filtro-orden"></select>
-        </label>
-        <button id="boton-reset" type="button">Limpiar filtros</button>
-      </div>
-    </details>
-  </section>
-
-  <div class="barra-estado">
-    <p class="conteo" id="conteo-resultados"></p>
-    <div class="barra-estado__acciones">
-      <button class="enlace-revisar" id="boton-revisar" type="button" hidden></button>
-    </div>
-  </div>
-
-  <section id="contenedor-tarjetas" class="lista-tarjetas"></section>
-
-  <p class="sin-resultados" id="sin-resultados" hidden>No hay licitaciones que coincidan con los filtros seleccionados.</p>
-</main>
-
-<footer class="pie">
-  <p>Datos generados por <code>normalizar.py</code> a partir de TED, PLACSP y el portal de contratación de Euskadi. Ver <code>README.md</code> para actualizar.</p>
-  <p id="fecha-generacion"></p>
-</footer>
-
+<script src="nav.js"></script>
 <script src="tenders-data.js"></script>
 <script src="app.js"></script>
 </body>
