@@ -509,9 +509,15 @@ def _historiales(registros: list[dict]) -> None:
         id_organismo.setdefault(_normalizar_clave(nombre), i)
     id_por_nif = {}
     id_por_nombre = {}
-    for i, (nif, nombre) in enumerate(empresas):
-        if nif:
-            id_por_nif.setdefault(nif, i)
+    por_nif_enmascarado: dict[str, list[tuple[int, set[str]]]] = {}
+    for i, empresa in enumerate(empresas):
+        if len(empresa) > 2:
+            continue  # ficha fusionada en otra (ver historico_adjudicaciones._compactar)
+        nif, nombre = empresa
+        if nif and nif_enmascarado(nif):
+            por_nif_enmascarado.setdefault(nif, []).append((i, set(_normalizar_clave(nombre).split())))
+        elif nif:
+            id_por_nif.setdefault(_nif_limpio(nif), i)
         id_por_nombre.setdefault(_normalizar_clave(nombre), i)
     id_organismo.pop("", None)
     id_por_nombre.pop("", None)
@@ -539,7 +545,15 @@ def _historiales(registros: list[dict]) -> None:
         if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo"):
             continue
         nombre_empresa = r.get("empresa_adjudicataria") or NO_PUBLICADO
-        i_emp = id_por_nif.get(r.get("empresa_nif") or "")
+        nif_empresa = r.get("empresa_nif") or ""
+        i_emp = id_por_nif.get(nif_empresa)
+        if i_emp is None and nif_enmascarado(nif_empresa):
+            # Un NIF enmascarado solo enseña tres o cuatro cifras y lo pueden
+            # compartir personas distintas: además tiene que coincidir el
+            # nombre en al menos dos palabras (tolera el orden cambiado y una
+            # errata: "Marta Sánchez Ruis" / "MARTA SANCHEZ RUIZ").
+            palabras = set(_normalizar_clave(nombre_empresa).split())
+            i_emp = next((i for i, nombre in por_nif_enmascarado.get(nif_empresa, []) if len(nombre & palabras) >= 2), None)
         if i_emp is None and nombre_empresa != NO_PUBLICADO:
             i_emp = id_por_nombre.get(_normalizar_clave(nombre_empresa))
         e = por_empresa.get(i_emp) if i_emp is not None else None
@@ -658,8 +672,26 @@ _NIF_ESPANOL = re.compile(
 def _nif_limpio(nif) -> str | None:
     """NIF de la adjudicataria con el formato que usa el histórico
     (scrapers/historico_adjudicaciones.py): el dashboard enlaza por él cada
-    adjudicación del radar con la ficha de la empresa."""
-    return (nif or "").upper().replace("-", "").replace(" ", "") or None
+    adjudicación del radar con la ficha de la empresa.
+
+    Sin separadores (cada fuente los pone a su manera: "B-12345678",
+    "B12.345.678", "B12345678,") y sin el prefijo de IVA "ES": el mismo NIF
+    llegaba como "B28016970" y como "ESB28016970" y la empresa salía dos
+    veces en el histórico (24 casos el 2026-10-02: Uniprex, Radio Popular,
+    Diario ABC...). El asterisco se conserva: PLACSP enmascara con él los
+    NIF de personas físicas."""
+    limpio = re.sub(r"[^A-Z0-9*]", "", (nif or "").upper())
+    if limpio.startswith("ES") and _NIF_ESPANOL.match(limpio[2:]):
+        limpio = limpio[2:]
+    return limpio or None
+
+
+def nif_enmascarado(nif: str | None) -> bool:
+    """PLACSP publica los NIF de personas físicas con asteriscos
+    ("***9688**") y Euskadi con equis ("XXXXX155F"): solo quedan a la vista
+    tres o cuatro cifras, así que dos personas distintas pueden compartir el
+    mismo NIF enmascarado."""
+    return bool(nif) and ("*" in nif or nif.startswith("XXX"))
 
 
 def es_empresa_espanola(nif: str | None, paises_ganador: list[str] | None = None,
@@ -1086,6 +1118,59 @@ def _lugar(registro: dict) -> tuple[str | None, str | None]:
     return None, None
 
 
+def _hora(valor) -> str | None:
+    """'14:00:00', '14:00:00+02:00' o '14:00:00Z' -> '14:00'."""
+    m = re.match(r"\s*(\d{2}):(\d{2})", valor or "")
+    return f"{m.group(1)}:{m.group(2)}" if m else None
+
+
+MAX_PLIEGOS = 6
+
+
+def _hora_y_pliegos(registro: dict) -> tuple[str | None, list[dict]]:
+    """Hora a la que cierra el plazo y enlaces a los pliegos de una
+    licitación, tal como los publica su fuente:
+
+      - PLACSP (perfiles propios y plataformas agregadas): hora peninsular y
+        los pliegos administrativo y técnico, con su dirección de descarga.
+      - TED: hora local del organismo y la dirección donde están los
+        documentos (suele ser la ficha en la plataforma nacional).
+      - Euskadi y buscador web de PLACSP: nada. La API de Euskadi da la
+        fecha límite con una hora que casi siempre es 00:00 y sin huso
+        fiable, así que no se enseña.
+
+    Cada pliego: {tipo: administrativo | tecnico | documentacion, nombre, url}."""
+    item = registro["original"]
+    fuente = registro["fuente"]
+    if fuente in ("Estado", "Estado-agregadas"):
+        pliegos = [p for p in (item.get("pliegos") or []) if (p.get("url") or "").startswith("http")]
+        return _hora(item.get("hora_limite")), pliegos[:MAX_PLIEGOS]
+    if fuente == "UE":
+        horas = item.get("deadline-receipt-tender-time-lot") or []
+        urls = []
+        for url in item.get("document-url-lot") or []:
+            if isinstance(url, str) and url.startswith("http") and url not in urls:
+                urls.append(url)
+        pliegos = [{"tipo": "documentacion", "nombre": None, "url": url} for url in urls[:MAX_PLIEGOS]]
+        return _hora(horas[0] if horas else None), pliegos
+    return None, []
+
+
+def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
+    """Al fusionar la misma licitación vista en dos fuentes, la que se
+    queda conserva la hora de cierre y los pliegos de la otra si le faltan:
+    TED (que gana al deduplicar) solo da la dirección general de los
+    documentos, y PLACSP da los pliegos uno a uno."""
+    if not superviviente.get("hora_limite") and duplicado.get("hora_limite"):
+        superviviente["hora_limite"] = duplicado["hora_limite"]
+    propios = superviviente.get("pliegos") or []
+    ajenos = [p for p in duplicado.get("pliegos") or [] if p["tipo"] != "documentacion"]
+    if ajenos and not any(p["tipo"] != "documentacion" for p in propios):
+        superviviente["pliegos"] = (ajenos + propios)[:MAX_PLIEGOS]
+    elif not propios and duplicado.get("pliegos"):
+        superviviente["pliegos"] = duplicado["pliegos"]
+
+
 CONVERSORES = {
     ("UE", "licitacion"): _from_ted,
     ("Estado", "licitacion"): _from_placsp,
@@ -1123,6 +1208,8 @@ def main() -> None:
             continue
         salida = conversor(registro)
         salida["provincia"], salida["comunidad"] = _lugar(registro)
+        if tipo_registro == "licitacion":
+            salida["hora_limite"], salida["pliegos"] = _hora_y_pliegos(registro)
         normalizados.append(salida)
 
     _FILTROS_VENTANA = {
@@ -1160,14 +1247,17 @@ def main() -> None:
     finales = []
     duplicados = 0
     ids_vistos = set()
+    por_id = {}  # id -> registro que se queda con él
     for r in normalizados:
         clave = r.pop("_clave_dedup")
         # Mismo id = mismo registro (p. ej. PLACSP por feed y por buscador
         # web aunque el organismo se escriba distinto): nunca dos veces.
         if r["id"] in ids_vistos:
             duplicados += 1
+            _heredar_hora_y_pliegos(por_id[r["id"]], r)
             continue
         ids_vistos.add(r["id"])
+        por_id[r["id"]] = r
         if clave:
             tipo, titulo_clave, organismo_clave = clave.split("|")
             grupo = vistos.setdefault(tipo + "|" + titulo_clave, [])
@@ -1182,6 +1272,10 @@ def main() -> None:
             if superviviente is not None:
                 duplicados += 1
                 superviviente.setdefault("_ids_equivalentes", []).append(r["id"])
+                _heredar_hora_y_pliegos(superviviente, r)
+                # Un tercer registro con el mismo id que este duplicado tiene
+                # que heredar sobre el que se queda.
+                por_id[r["id"]] = superviviente
                 continue
             grupo.append((r, organismo_clave))
             if plazo and len(titulo_clave) >= MIN_TITULO_PREFIJO:

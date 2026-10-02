@@ -17,3 +17,6 @@ data/_tmp_*
 
 # Evidencia de la referencia de diseño (capturas de un producto de terceros).
 references/
+
+# Cachés de los scrapers entre ejecuciones (en CI las conserva actions/cache).
+data/cache/

@@ -3,8 +3,11 @@
 
   // Formato compacto generado por scrapers/historico_adjudicaciones.py
   // (_publicar): diccionarios + filas por columnas.
-  //   exp:   [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias]
+  //   exp:   [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias, lugar]
   //   lotes: [exp, empresa, fecha, importe, ofertas, pyme]
+  //   dic.lugar:   [provincia, comunidad] (null si la fuente no lo publica)
+  //   dic.empresa: [nif, nombre] o, si la ficha se fusionó con otra por ser
+  //                la misma empresa, [null, nombre, id de la ficha buena]
   // El título y el enlace de cada expediente no vienen aquí (son el 75% del
   // peso): están en historico-detalle/NN.js, repartidos por empresa, y se
   // cargan al abrir la ficha de una empresa.
@@ -20,6 +23,7 @@
   var D = H.dic;
   var CATEGORIAS = H.categorias;
   var TOP_EMPRESAS = 20;
+  var UMBRAL_GRANDE = 1000000;
   var TOP_ORGANISMOS = 12;
   var TOP_FICHA = 10;
   var MAX_CONTRATOS_FICHA = 150;
@@ -31,19 +35,19 @@
     mercado: {
       nav: "mercado",
       titulo: "Análisis de mercado",
-      descripcion: "Adjudicaciones de organismos públicos españoles (Estado y Euskadi) desde 2021 ganadas por empresas españolas (incluidas las vascas), incluidos contratos menores, filtradas por categoría de servicio de agencia. Fuentes: PLACSP (perfiles propios y plataformas autonómicas agregadas), el portal de contratación de Euskadi para los contratos menores de organismos vascos y TED para lo que solo se publica allí. Importes sin IVA; en los acuerdos marco con varias empresas adjudicatarias, el importe se reparte a partes iguales entre ellas. Cada lote adjudicado cuenta como una adjudicación. Se actualiza cada día.",
+      descripcion: "Adjudicaciones de organismos públicos españoles (Estado y Euskadi) desde 2021 ganadas por empresas españolas (incluidas las vascas), incluidos contratos menores, filtradas por categoría de servicio de agencia. Fuentes: PLACSP (perfiles propios y plataformas autonómicas agregadas), el portal de contratación de Euskadi para los contratos menores de organismos vascos y TED para lo que solo se publica allí. Importes sin IVA; en los acuerdos marco con varias empresas adjudicatarias, el importe se reparte a partes iguales entre ellas. Cada lote adjudicado cuenta como una adjudicación. El filtro de importe se aplica al importe de cada adjudicación y deja fuera las que no lo publican. Se actualiza cada día.",
       buscar: "Buscar empresa, NIF u organismo…",
     },
     empresas: {
       nav: "empresas",
       titulo: "Empresas",
-      descripcion: "Todas las empresas españolas que han ganado contratos de servicios de agencia a organismos públicos españoles desde 2021. El ámbito, el tipo de adjudicación, el año y la categoría recalculan las cifras de cada empresa. Pulsa una empresa para ver su ficha.",
+      descripcion: "Todas las empresas españolas que han ganado contratos de servicios de agencia a organismos públicos españoles desde 2021. Los filtros (ámbito, tipo de adjudicación, año, categoría, provincia e importe) recalculan las cifras de cada empresa. Pulsa una empresa para ver su ficha.",
       buscar: "Buscar empresa o NIF…",
     },
     organismos: {
       nav: "organismos",
       titulo: "Organismos",
-      descripcion: "Todos los organismos públicos españoles que han adjudicado contratos de servicios de agencia desde 2021. El ámbito, el tipo de adjudicación, el año y la categoría recalculan las cifras de cada organismo. Pulsa un organismo para ver qué empresas ganan en él.",
+      descripcion: "Todos los organismos públicos españoles que han adjudicado contratos de servicios de agencia desde 2021. Los filtros (ámbito, tipo de adjudicación, año, categoría, provincia e importe) recalculan las cifras de cada organismo. Pulsa un organismo para ver qué empresas ganan en él.",
       buscar: "Buscar organismo…",
     },
     empresa: { nav: "empresas" },
@@ -101,12 +105,20 @@
 
   // Una fila por lote con lo necesario para filtrar y agregar, calculada
   // una sola vez (son decenas de miles; se recorren en cada cambio de filtro).
+  // Lugar de cada expediente (provincia y comunidad), con el mismo criterio
+  // que el radar: lugar de ejecución del contrato y, si no, sede del
+  // organismo. Los expedientes procesados antes de octubre de 2026 no lo
+  // traen hasta que se vuelve a leer su fichero.
+  var LUGARES = D.lugar || [];
+  var SIN_LUGAR = [null, null];
   var FILAS = H.lotes.map(function (l) {
     var e = H.exp[l[0]];
+    var lugar = LUGARES[e[6]] || SIN_LUGAR;
     return {
       exp: l[0], empresa: l[1], anio: l[2] ? l[2].slice(0, 4) : "", fecha: l[2] || "",
       importe: l[3] || 0, ofertas: l[4], pyme: l[5],
       organismo: e[0], euskadi: e[1] === 1, procedimiento: e[3], menor: e[4] === 1, mascara: e[5],
+      provincia: lugar[0], comunidad: lugar[1],
     };
   });
   // Texto en minúsculas, sin tildes ni puntuación, y con las siglas juntas:
@@ -123,6 +135,10 @@
 
   var estado = {
     texto: "", ambito: "", menor: "", anio: "", categoria: -1,
+    // "" | "c:<comunidad>" | "p:<provincia>" | "sin" (como en el radar)
+    lugar: "",
+    // Importe de cada adjudicación, en euros; 0 = sin límite.
+    importeMin: 0, importeMax: 0,
     metricaEvolucion: "importe", metricaEmpresas: "importe",
     vista: "mercado", id: null,
     ordenDirectorio: "importe", pagina: 0,
@@ -175,19 +191,85 @@
     .map(function (c, i) { return '<option value="' + i + '">' + escaparHtml(c) + "</option>"; }).join("");
   elCategoria.addEventListener("change", function () { estado.categoria = parseInt(elCategoria.value, 10); estado.pagina = 0; pintar(); });
 
+  // Provincia: comunidades con adjudicaciones y, dentro, sus provincias; una
+  // comunidad de una sola provincia es una opción suelta (igual que en el
+  // radar). El desplegable no se enseña mientras menos de la mitad de las
+  // adjudicaciones tengan lugar: filtraría sobre una parte pequeña de los
+  // datos sin que se notara.
+  var elLugar = document.getElementById("filtro-lugar");
+  (function () {
+    var comunidades = {};
+    var conLugar = 0;
+    FILAS.forEach(function (f) {
+      if (!f.comunidad) return;
+      conLugar++;
+      var com = comunidades[f.comunidad] || (comunidades[f.comunidad] = {});
+      if (f.provincia) com[f.provincia] = true;
+    });
+    if (conLugar < FILAS.length / 2) { elLugar.hidden = true; return; }
+    var opcion = function (valor, texto) { return '<option value="' + escaparHtml(valor) + '">' + escaparHtml(texto) + "</option>"; };
+    var html = opcion("", "Todas las provincias");
+    Object.keys(comunidades).sort(function (a, b) { return a.localeCompare(b, "es"); }).forEach(function (nombre) {
+      var provincias = Object.keys(comunidades[nombre]).sort(function (a, b) { return a.localeCompare(b, "es"); });
+      if (provincias.length === 0 || (provincias.length === 1 && provincias[0] === nombre)) {
+        html += opcion("c:" + nombre, nombre);
+        return;
+      }
+      html += '<optgroup label="' + escaparHtml(nombre) + '">' + opcion("c:" + nombre, nombre + ": todas") +
+        provincias.map(function (p) { return opcion("p:" + p, p); }).join("") + "</optgroup>";
+    });
+    if (conLugar < FILAS.length) html += opcion("sin", "Sin provincia publicada");
+    elLugar.innerHTML = html;
+    elLugar.addEventListener("change", function () { estado.lugar = elLugar.value; estado.pagina = 0; pintar(); });
+  })();
+
+  // Importe de cada adjudicación. Los tramos van de lo que cabe en un
+  // contrato menor de servicios (15.000 €) a los contratos de varios
+  // millones, que casi nunca son de agencia (ver README).
+  var TRAMOS_IMPORTE = [5000, 15000, 50000, 100000, 500000, 1000000, 5000000];
+  var elImporteMin = document.getElementById("filtro-importe-min");
+  var elImporteMax = document.getElementById("filtro-importe-max");
+  elImporteMin.innerHTML = '<option value="0">Importe mínimo</option>' + TRAMOS_IMPORTE
+    .map(function (v) { return '<option value="' + v + '">Desde ' + euros(v) + "</option>"; }).join("");
+  elImporteMax.innerHTML = '<option value="0">Importe máximo</option>' + TRAMOS_IMPORTE
+    .map(function (v) { return '<option value="' + v + '">Hasta ' + euros(v) + "</option>"; }).join("");
+  elImporteMin.addEventListener("change", function () { estado.importeMin = Number(elImporteMin.value); estado.pagina = 0; pintar(); });
+  elImporteMax.addEventListener("change", function () { estado.importeMax = Number(elImporteMax.value); estado.pagina = 0; pintar(); });
+  document.getElementById("boton-sin-grandes").addEventListener("click", function () {
+    estado.importeMax = UMBRAL_GRANDE;
+    elImporteMax.value = String(UMBRAL_GRANDE);
+    estado.pagina = 0;
+    pintar();
+  });
+
   var temporizador;
   elTexto.addEventListener("input", function () {
     clearTimeout(temporizador);
     temporizador = setTimeout(function () { estado.texto = normalizar(elTexto.value); estado.pagina = 0; pintar(); }, 180);
   });
 
-  // Filtros de ámbito, tipo, año y categoría (sin el texto).
+  // Filtros de ámbito, tipo, año, categoría, provincia e importe (sin el texto).
   function pasaFiltros(f) {
     if (estado.anio && f.anio !== estado.anio) return false;
     if (!estado.anio && f.anio < "2021") return false;
     if (estado.ambito && (estado.ambito === "Euskadi") !== f.euskadi) return false;
     if (estado.menor && (estado.menor === "menor") !== f.menor) return false;
     if (estado.categoria >= 0 && !(f.mascara & (1 << estado.categoria))) return false;
+    if (estado.lugar) {
+      if (estado.lugar === "sin") {
+        if (f.comunidad) return false;
+      } else if (estado.lugar.charAt(0) === "c") {
+        if (f.comunidad !== estado.lugar.slice(2)) return false;
+      } else if (f.provincia !== estado.lugar.slice(2)) {
+        return false;
+      }
+    }
+    if (estado.importeMin || estado.importeMax) {
+      // Sin importe publicado no se puede saber si entra en el rango: fuera.
+      if (!f.importe) return false;
+      if (estado.importeMin && f.importe < estado.importeMin) return false;
+      if (estado.importeMax && f.importe > estado.importeMax) return false;
+    }
     return true;
   }
 
@@ -320,6 +402,18 @@
       ? "Las 10 primeras se llevan el " + Math.round(100 * top10 / total) + " % del " +
         (m === "importe" ? "importe adjudicado" : "número de adjudicaciones") + " (" + miles(todas.length) + " empresas en total)."
       : "";
+    // Cuánto pesan las adjudicaciones de más de 1 M€ en lo que se está
+    // viendo: unas pocas suman buena parte del importe y deciden el orden
+    // por importe. El botón las deja fuera con el filtro de importe máximo.
+    var grandes = filas.filter(function (f) { return f.importe > UMBRAL_GRANDE; });
+    var elGrandes = document.getElementById("nota-grandes");
+    elGrandes.hidden = !grandes.length || !r.importe || estado.importeMin >= UMBRAL_GRANDE;
+    if (!elGrandes.hidden) {
+      var importeGrandes = grandes.reduce(function (s, f) { return s + f.importe; }, 0);
+      document.getElementById("nota-grandes-texto").textContent =
+        (grandes.length === 1 ? "1 adjudicación de más de " + euros(UMBRAL_GRANDE) + " suma" : miles(grandes.length) + " adjudicaciones de más de " + euros(UMBRAL_GRANDE) + " suman") +
+        " el " + Math.round(100 * importeGrandes / r.importe) + " % del importe adjudicado (" + euros(importeGrandes) + ").";
+    }
     barras(document.getElementById("grafico-empresas"), todas.slice(0, TOP_EMPRESAS), m,
       function (x) { return D.empresa[x.clave][1]; }, function (x) { return "#/empresa/" + x.clave; });
 
@@ -558,13 +652,13 @@
       var e = D.empresa[estado.id];
       html = '<nav class="migas" aria-label="Ruta"><a href="#/empresas">Empresas</a><span aria-hidden="true">›</span><span>Ficha de empresa</span></nav>' +
         '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(e[1]) + "</h1>" +
-        '<p class="pagina__descripcion">' + (e[0] ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con el ámbito, el tipo, el año y la categoría seleccionados.</p></div></header>";
+        '<p class="pagina__descripcion">' + (e[0] ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con los filtros seleccionados (ámbito, tipo, año, categoría, provincia e importe).</p></div></header>";
       document.title = e[1] + " — Radar de licitaciones";
     } else if (estado.vista === "organismo") {
       var nombre = D.organismo[estado.id];
       html = '<nav class="migas" aria-label="Ruta"><a href="#/organismos">Organismos</a><span aria-hidden="true">›</span><span>Ficha de organismo</span></nav>' +
         '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(nombre) + "</h1>" +
-        '<p class="pagina__descripcion">Contratos de servicios de agencia que este organismo ha adjudicado a empresas españolas desde 2021. Las cifras cambian con el tipo, el año y la categoría seleccionados.</p></div></header>';
+        '<p class="pagina__descripcion">Contratos de servicios de agencia que este organismo ha adjudicado a empresas españolas desde 2021. Las cifras cambian con los filtros seleccionados (tipo, año, categoría, provincia e importe).</p></div></header>';
       document.title = nombre + " — Radar de licitaciones";
     } else {
       html = '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + v.titulo + '</h1><p class="pagina__descripcion">' + v.descripcion + "</p></div></header>";
@@ -601,7 +695,11 @@
     return encontrado;
   }
 
+  // Mismo formato que guarda el histórico: sin separadores ni prefijo "ES".
   function idPorNif(nif) {
+    nif = String(nif).toUpperCase().replace(/[^A-Z0-9*]/g, "").replace(/^ES(?=[A-Z0-9]\d{7}[A-Z0-9]$)/, "");
+    // Un NIF enmascarado ("***9688**") lo comparten personas distintas.
+    if (!nif || nif.indexOf("*") !== -1 || nif.indexOf("XXX") === 0) return -1;
     for (var i = 0; i < D.empresa.length; i++) {
       if (D.empresa[i][0] === nif) return i;
     }
@@ -618,6 +716,11 @@
       id = parseInt(partes[1], 10);
       var diccionario = vista === "empresa" ? D.empresa : D.organismo;
       if (!(id >= 0 && id < diccionario.length)) { vista = vista + "s"; id = null; }
+      // Ficha fusionada con otra: un enlace antiguo lleva a la buena.
+      else if (vista === "empresa" && D.empresa[id].length > 2) {
+        location.replace("#/empresa/" + D.empresa[id][2]);
+        return;
+      }
     }
 
     var q = (leida.params.q || "").trim();

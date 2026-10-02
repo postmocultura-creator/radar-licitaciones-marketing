@@ -21,6 +21,22 @@
 .herramientas .campo-busqueda input { height: 36px; box-shadow: none; padding-left: 38px; }
 .herramientas .icono-busqueda { left: 12px; width: 16px; height: 16px; }
 .herramientas select { flex: 0 1 220px; box-shadow: none; }
+.herramientas select[hidden] { display: none; }
+/* Los dos de importe, más estrechos: "Hasta 500 k€" cabe de sobra. */
+.herramientas #filtro-importe-min,
+.herramientas #filtro-importe-max { flex-basis: 170px; }
+
+/* Botón con aspecto de enlace, dentro de una nota de panel. */
+.enlace-boton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.enlace-boton:hover { text-decoration: underline; text-underline-offset: 2px; }
 
 /* Ocho cifras en el análisis de mercado: dos filas de cuatro. */
 @media (min-width: 860px) {
@@ -166,6 +182,11 @@
   .herramientas .segmented { flex: 1 1 100%; }
   .herramientas .segmented__opcion { flex: 1 1 auto; }
   .herramientas select { flex: 1 1 100%; }
+  /* Mínimo y máximo, en la misma fila. */
+  .herramientas #filtro-importe-min,
+  .herramientas #filtro-importe-max { flex: 1 1 calc(50% - 4px); }
+  /* Zona táctil suficiente para el botón de la nota. */
+  .enlace-boton { display: block; padding: 12px 0; }
 
   .columnas { gap: 4px; height: 200px; }
   /* La cifra y su unidad, en dos líneas: en una no caben seis columnas. */

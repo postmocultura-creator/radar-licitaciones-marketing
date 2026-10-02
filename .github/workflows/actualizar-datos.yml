@@ -84,6 +84,19 @@ jobs:
         run: python scrapers/euskadi.py
         continue-on-error: true
 
+      # El scraper de la UE pide el detalle de cada convocatoria (unas 600
+      # peticiones, 15 minutos a una por segundo). Los detalles se conservan
+      # de una noche a otra y solo se piden los nuevos (ver eu_grants.py).
+      # La clave lleva el número de ejecución para que se guarde siempre una
+      # caché nueva; se restaura la más reciente.
+      - name: Caché de detalles de convocatorias UE
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: eu-grants-detalle-${{ github.run_id }}
+          restore-keys: |
+            eu-grants-detalle-
+
       - name: Scraper calls for proposals UE
         run: python scrapers/eu_grants.py
         continue-on-error: true

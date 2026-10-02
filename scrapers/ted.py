@@ -42,6 +42,13 @@ CAMPOS = [
     "publication-date",
     "deadline-date-lot",
     "deadline-receipt-tender-date-lot",
+    # Hora de cierre (BT-131, con el huso del organismo: "14:00:00+02:00") y
+    # dirección donde están los pliegos (BT-15). Verificado en vivo el
+    # 2026-10-02: 38 de 39 avisos españoles traen la hora y los 39 la
+    # dirección, que suele ser la ficha de la licitación en PLACSP o en la
+    # plataforma autonómica.
+    "deadline-receipt-tender-time-lot",
+    "document-url-lot",
     "estimated-value-proc",
     "estimated-value-cur-proc",
 ]

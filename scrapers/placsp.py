@@ -152,6 +152,25 @@ def _parsear_entry(entry) -> dict:
         if deadline_nodo is not None and deadline_nodo.text:
             fecha_limite = deadline_nodo.text.strip()
 
+    # Hora a la que cierra el plazo (hora peninsular) y pliegos. Medido con
+    # los ZIP de septiembre de 2026: la hora viene en todas las licitaciones
+    # abiertas de los dos feeds (la mitad cierra a las 23:59, el resto a las
+    # 14:00, 12:00, 13:00...), y los pliegos en el 98% de los perfiles
+    # propios y el 80% de las plataformas agregadas, con dirección de
+    # descarga directa. Los pliegos solo se guardan de lo que está en plazo:
+    # el feed trae decenas de miles de expedientes ya cerrados.
+    hora_limite = None
+    pliegos = []
+    if cfs is not None:
+        hora_limite = _texto(cfs, "cac:TenderingProcess/cac:TenderSubmissionDeadlinePeriod/cbc:EndTime")
+        if estado == "PUB":
+            for etiqueta, tipo in (("cac:LegalDocumentReference", "administrativo"),
+                                   ("cac:TechnicalDocumentReference", "tecnico")):
+                for doc in cfs.findall(etiqueta, NS):
+                    url = _texto(doc, "cac:Attachment/cac:ExternalReference/cbc:URI")
+                    if url:
+                        pliegos.append({"tipo": tipo, "nombre": _texto(doc, "cbc:ID"), "url": url})
+
     enlace = None
     link_nodo = entry.find("atom:link", NS)
     if link_nodo is not None:
@@ -215,6 +234,8 @@ def _parsear_entry(entry) -> dict:
         "moneda": moneda,
         "fecha_actualizacion": _texto(entry, "atom:updated"),
         "fecha_limite": fecha_limite,
+        "hora_limite": hora_limite,
+        "pliegos": pliegos,
         "enlace": enlace,
         "resumen_feed": _texto(entry, "atom:summary"),
         "empresa_adjudicataria": empresa_adjudicataria,
@@ -271,6 +292,17 @@ DIR_ZIPS = Path(__file__).resolve().parent.parent / "data" / "raw" / "zips"
 # en curso", el último lote del mes (el del día 30/31 a las 20:15) no se
 # leía nunca. Además esos días el ZIP del mes nuevo puede no existir aún.
 DIAS_LEER_MES_ANTERIOR = 3
+# Relectura puntual de meses ya pasados. clasificar.py acumula los registros
+# de PLACSP entre ejecuciones tal como se leyeron en su día, así que un campo
+# nuevo de este scraper solo llega a lo acumulado cuando se vuelve a leer el
+# ZIP de su mes. En octubre de 2026 se añadieron el lugar (provincia), la
+# hora de cierre y los pliegos: sin releer, unos 230 registros de agosto se
+# quedaban sin provincia y las licitaciones abiertas en septiembre, sin hora
+# ni pliegos, hasta que vencieran. Se releen esos dos meses hasta la fecha
+# indicada (varias noches, por si alguna ejecución falla; ~700 MB más por
+# noche) y después la regla deja de aplicarse sola.
+RELECTURA_PUNTUAL_MESES = ("202608", "202609")
+RELECTURA_PUNTUAL_HASTA = "2026-10-05"
 
 
 def _meses_a_leer() -> list[str]:
@@ -279,6 +311,8 @@ def _meses_a_leer() -> list[str]:
     if hoy.day <= DIAS_LEER_MES_ANTERIOR:
         anterior = hoy.replace(day=1) - timedelta(days=1)
         meses.insert(0, anterior.strftime("%Y%m"))
+    if hoy.isoformat() <= RELECTURA_PUNTUAL_HASTA:
+        meses = sorted(set(meses) | set(RELECTURA_PUNTUAL_MESES))
     return meses
 
 

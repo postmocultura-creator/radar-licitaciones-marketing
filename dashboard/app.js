@@ -261,13 +261,31 @@
     return Math.round((fecha.getTime() - hoy().getTime()) / MS_DIA);
   }
 
-  function infoUrgencia(fechaLimiteStr) {
+  // "19 oct 2026, 14:00" si la fuente publica la hora de cierre. En TED la
+  // hora es la local del organismo: fuera de España se dice.
+  function fechaLimiteTexto(t) {
+    var texto = fechaLarga(t.fecha_limite);
+    if (!t.hora_limite || !parsearFecha(t.fecha_limite)) return texto;
+    return texto + ", " + t.hora_limite + (esOrganismoEspanol(t) ? "" : " (hora local)");
+  }
+
+  // `t` (opcional): el registro, para afinar el día de cierre con la hora.
+  function infoUrgencia(fechaLimiteStr, t) {
     var dias = diasRestantes(fechaLimiteStr);
     if (dias === null) {
       return { clase: "urgencia-sin-fecha", texto: "Sin fecha límite" };
     }
     if (dias < 0) {
       return { clase: "urgencia-roja", texto: "Plazo cerrado" };
+    }
+    if (dias === 0 && t && t.hora_limite) {
+      // Solo se da por cerrado si el organismo es español: la hora es la
+      // peninsular y se compara con el reloj de quien mira el radar.
+      var ahora = new Date();
+      var partes = t.hora_limite.split(":");
+      var pasada = esOrganismoEspanol(t) &&
+        (ahora.getHours() > Number(partes[0]) || (ahora.getHours() === Number(partes[0]) && ahora.getMinutes() >= Number(partes[1])));
+      return { clase: "urgencia-roja", texto: (pasada ? "Cerró hoy a las " : "Cierra hoy a las ") + t.hora_limite };
     }
     if (dias <= 7) {
       return { clase: "urgencia-roja", texto: dias === 0 ? "Cierra hoy" : "Quedan " + dias + " día" + (dias === 1 ? "" : "s") };
@@ -684,7 +702,7 @@
     var esCall = tipo === "convocatoria_ue";
     var conEmpresa = esAdjudicacion || esMenor;
 
-    var urgencia = esMenor ? infoVencimiento(t.fecha_fin_estimada) : (esAdjudicacion ? null : infoUrgencia(t.fecha_limite));
+    var urgencia = esMenor ? infoVencimiento(t.fecha_fin_estimada) : (esAdjudicacion ? null : infoUrgencia(t.fecha_limite, t));
     var empresa = t.empresa_adjudicataria === NO_PUBLICADO ? "Empresa no publicada" : t.empresa_adjudicataria;
     var presupuesto = importeTexto(t.presupuesto_display);
     var adjudicado = importeTexto(t.importe_adjudicado_display);
@@ -713,7 +731,7 @@
       // Las convocatorias de plazo largo leídas del buscador de PLACSP no
       // traen fecha de publicación: el dato se omite, no se da por "no
       // publicada".
-      pie = "<span>Fin de presentación: <strong>" + fechaLarga(t.fecha_limite) + "</strong></span>" +
+      pie = "<span>Fin de presentación: <strong>" + fechaLimiteTexto(t) + "</strong></span>" +
         (t.fecha_publicacion === NO_PUBLICADO ? "" : "<span>Publicada: <strong>" + fechaLarga(t.fecha_publicacion) + "</strong></span>");
     }
 
@@ -740,7 +758,7 @@
     } else if (esCall) {
       fechas = [par("Apertura", fechaLarga(t.fecha_publicacion), true), par("Fecha límite de solicitud", fechaLarga(t.fecha_limite), true)];
     } else {
-      fechas = [par("Publicada", fechaLarga(t.fecha_publicacion, "Sin fecha en la fuente"), true), par("Fecha límite", fechaLarga(t.fecha_limite), true)];
+      fechas = [par("Publicada", fechaLarga(t.fecha_publicacion, "Sin fecha en la fuente"), true), par("Fecha límite", fechaLimiteTexto(t), true)];
     }
     fechas.push(par("En el radar desde", fechaLarga(t.fecha_primera_aparicion, "—"), true));
 
@@ -784,6 +802,22 @@
             }).join("") + "</ol>"
           : "") +
         "</div>";
+    }
+
+    // Pliegos: los que publica la fuente, con su enlace de descarga.
+    var NOMBRES_PLIEGO = {
+      administrativo: "Pliego de cláusulas administrativas",
+      tecnico: "Pliego de prescripciones técnicas",
+      documentacion: "Documentación de la licitación",
+    };
+    var pliegosHtml = "";
+    if (t.pliegos && t.pliegos.length) {
+      pliegosHtml = '<div class="tarjeta__bloque"><h4>Pliegos</h4><ul class="tarjeta__pliegos">' +
+        t.pliegos.map(function (p) {
+          return '<li><a class="enlace" href="' + escaparHtml(p.url) + '" target="_blank" rel="noopener noreferrer">' +
+            (NOMBRES_PLIEGO[p.tipo] || "Documento") + Nav.icono("externo") + "</a>" +
+            (p.nombre ? "<span>" + escaparHtml(p.nombre) + "</span>" : "") + "</li>";
+        }).join("") + "</ul></div>";
     }
 
     var esDirecto = t.enlace_directo !== false;
@@ -842,6 +876,7 @@
             "</div>" +
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
+          pliegosHtml +
           historialHtml +
           '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div></div>" +
           codigoHtml +
@@ -1013,7 +1048,7 @@
     document.getElementById("inicio-lateral").innerHTML =
       panelFilas("Cierran en los próximos 7 días", "#/licitaciones/abiertas", "Ver todas",
         cierranSemana.slice(0, MAX_FILAS_INICIO).map(function (t) {
-          var u = infoUrgencia(t.fecha_limite);
+          var u = infoUrgencia(t.fecha_limite, t);
           return filaCompacta(t, t.organismo, '<span class="insignia ' + u.clase + '">' + u.texto + "</span>");
         }), "Ninguna licitación cierra esta semana.") +
       panelFilas("Contratos menores que vencen antes", "#/menores", "Ver todos",

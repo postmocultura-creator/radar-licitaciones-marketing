@@ -18,7 +18,8 @@ name: Histórico de adjudicaciones (reparación manual)
 #
 # UNA EXCEPCIÓN AL "SOLO MANUAL": la reconstrucción completa de la madrugada
 # del domingo 2026-10-04, para que todo el histórico quede clasificado con
-# la taxonomía de octubre de 2026 (catalán, gallego y euskera). Aprobada con
+# la taxonomía de octubre de 2026 (catalán, gallego y euskera), con la
+# provincia de cada expediente y con los NIF unificados. Aprobada con
 # el repositorio en público, es decir, sin coste. Se programa en vez de
 # lanzarse a mano porque de día PLACSP sirve a 0,1 MB/s, y a las 03:23 UTC la
 # actualización diaria (cron de las 22:47, que suele arrancar hacia las
