@@ -38,6 +38,9 @@
         <div class="segmented" id="segmented-menor" role="group" aria-label="Tipo de adjudicación"></div>
         <select id="filtro-anio" aria-label="Año"></select>
         <select id="filtro-categoria" aria-label="Categoría de servicio"></select>
+        <select id="filtro-lugar" aria-label="Provincia"></select>
+        <select id="filtro-importe-min" aria-label="Importe mínimo de cada adjudicación"></select>
+        <select id="filtro-importe-max" aria-label="Importe máximo de cada adjudicación"></select>
       </section>
 
       <!-- Análisis de mercado -->
@@ -59,6 +62,7 @@
               <div class="segmented" id="metrica-empresas" role="group" aria-label="Métrica"></div>
             </div>
             <p class="panel__nota" id="nota-concentracion"></p>
+            <p class="panel__nota" id="nota-grandes" hidden><span id="nota-grandes-texto"></span> <button type="button" class="enlace-boton" id="boton-sin-grandes">Ver solo hasta 1 M€</button></p>
             <ol class="barras" id="grafico-empresas"></ol>
             <p class="panel__nota">Pulsa una empresa para ver su ficha: a quién vende, qué tipo de contratos gana y el detalle de cada adjudicación. <a class="enlace" href="#/empresas">Ver todas las empresas</a></p>
           </section>

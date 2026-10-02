@@ -971,6 +971,19 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__principales li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
 .tarjeta__principales span { color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
+.tarjeta__pliegos {
+  display: grid;
+  gap: 6px;
+  max-width: 90ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+.tarjeta__pliegos li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+/* Nombre del fichero tal como lo sube el organismo: puede ser largo y sin espacios. */
+.tarjeta__pliegos span { color: var(--color-muted); overflow-wrap: anywhere; }
+
 .tarjeta__categorias { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .etiqueta-categoria {
@@ -1219,4 +1232,7 @@ a.kpi:active { transform: scale(.99); }
   select, .boton { height: 44px; }
   .segmented__opcion { height: 38px; }
   .opciones__opcion { min-height: 44px; }
+  .tarjeta__pliegos { gap: 0; }
+  .tarjeta__pliegos li { padding: 6px 0; }
+  .tarjeta__pliegos a { min-height: 32px; }
 }

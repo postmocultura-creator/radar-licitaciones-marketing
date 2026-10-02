@@ -32,8 +32,12 @@ adicional por convocatoria al mismo endpoint, pidiendo el identificador
 exacto entre comillas (`text="<identifier>"`), que sí devuelve
 `descriptionByte` (pese al nombre, es el HTML completo de "Expected
 Outcome", no un tamaño en bytes) y `destinationDetails`/`destinationDescription`.
-Son ~500-600 peticiones adicionales por ejecución; se hace 1 en pt/segundo
-por respeto a la fuente, así que tarda varios minutos.
+Son ~500-600 peticiones adicionales; a 1 por segundo, por respeto a la
+fuente, eran 15 de los 37 minutos de la actualización diaria (medido el
+2026-10-02). El texto de una convocatoria casi nunca cambia, así que los
+detalles se guardan entre ejecuciones (CACHE_DETALLE) y cada noche solo se
+piden los de las convocatorias nuevas y un séptimo de las ya conocidas, en
+rotación.
 
 Ejecutar directamente para lanzar la extracción y guardar el crudo (desde
 la carpeta licitaciones_marketing/):
@@ -47,7 +51,8 @@ import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+import zlib
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import requests
@@ -83,6 +88,27 @@ DISPLAY_FIELDS = [
 SORT = {"order": "DESC", "field": "relevance"}
 PAGE_SIZE = 100  # confirmado en vivo: el servidor limita a 100 aunque se pida más
 PETICIONES_POR_SEGUNDO = 1
+
+# Detalles ya pedidos, por identificador de convocatoria. No se versiona
+# (data/cache/ está en .gitignore): en GitHub Actions lo conserva entre
+# ejecuciones el paso actions/cache del workflow; si falta, se piden todos
+# otra vez y ya está. Cada convocatoria se vuelve a pedir un día de cada
+# DIAS_REFRESCO_DETALLE, repartidas por su identificador para que no toquen
+# todas la misma noche, por si la Comisión corrige el texto.
+CACHE_DETALLE = Path(__file__).resolve().parent.parent / "data" / "cache" / "eu_grants_detalle.json"
+DIAS_REFRESCO_DETALLE = 7
+
+
+def _leer_cache_detalle() -> dict[str, dict]:
+    try:
+        cache = json.loads(CACHE_DETALLE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return cache if isinstance(cache, dict) else {}
+
+
+def _toca_refrescar(identifier: str, hoy: date) -> bool:
+    return (hoy.toordinal() + zlib.crc32(identifier.encode("utf-8"))) % DIAS_REFRESCO_DETALLE == 0
 
 
 def _peticion(text_param: str, query: dict | None, display_fields: list[str] | None,
@@ -170,6 +196,10 @@ def extraer_detalle(identifier: str) -> dict:
 
 def extraer() -> list[dict]:
     listado = extraer_listado()
+    cache = _leer_cache_detalle()
+    cache_nuevo: dict[str, dict] = {}
+    hoy = date.today()
+    pedidos = 0
     resultados = []
     for item in listado:
         md = item.get("metadata", {})
@@ -194,14 +224,31 @@ def extraer() -> list[dict]:
         }
 
         if identifier:
-            try:
-                detalle = extraer_detalle(identifier)
-            except requests.RequestException:
-                detalle = {}
+            # Varias entradas del listado comparten identificador (una por
+            # tema de la convocatoria): el detalle se pide una sola vez.
+            detalle = cache_nuevo.get(identifier)
+            if detalle is None:
+                detalle = cache.get(identifier)
+                if not detalle or _toca_refrescar(identifier, hoy):
+                    try:
+                        pedido = extraer_detalle(identifier)
+                    except requests.RequestException:
+                        pedido = {}
+                    pedidos += 1
+                    time.sleep(1 / PETICIONES_POR_SEGUNDO)
+                    # Si la petición falla o vuelve vacía, vale lo que hubiera.
+                    detalle = pedido or detalle or {}
+                if detalle:
+                    cache_nuevo[identifier] = detalle
             registro.update(detalle)
-            time.sleep(1 / PETICIONES_POR_SEGUNDO)
 
         resultados.append(registro)
+
+    # Solo se guardan las convocatorias que siguen en el listado: las que se
+    # cierran salen de la caché solas.
+    CACHE_DETALLE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE_DETALLE.write_text(json.dumps(cache_nuevo, ensure_ascii=False), encoding="utf-8")
+    print(f"[eu_grants] detalles de {len(cache_nuevo)} convocatorias: {pedidos} pedidos a la API, el resto de la caché")
     return resultados
 
 

@@ -179,7 +179,10 @@ resuelve con un filtro por provincia, sin zona destacada.
 | Títulos en catalán, gallego y euskera | Hecho: `config.TERMINOS_OTRAS_LENGUAS` |
 | Alertas por correo | Aplazado por decisión del usuario |
 | Plataformas autonómicas completas | Hecho: `placsp.py` lee también el feed `sindicacion_1044` (ver README) |
-| Hora del fin de plazo, favoritos, afinidad, licitaciones parecidas, pliegos | Sin hacer |
+| Hora del fin de plazo | Hecho: la tarjeta enseña la hora de cierre que publican PLACSP y TED |
+| Pliegos | Hecho: enlaces al pliego administrativo y al técnico dentro de la tarjeta |
+| Favoritos, afinidad, licitaciones parecidas | Sin hacer |
+| Materias nuevas (actividades culturales, concursos de ideas) | Descartado por ahora: la agencia no las quiere en el radar (2026-10-02) |
 
 Efecto de la taxonomía nueva sobre las 320 alertas: reconoce 46 en lugar de 23.
 Las 23 nuevas son las 13 relevantes que se escapaban, 9 inserciones de

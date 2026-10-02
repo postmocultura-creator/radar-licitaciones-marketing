@@ -56,6 +56,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE))
 sys.path.append(str(BASE / "scrapers"))
 import config  # noqa: E402
+import territorio  # noqa: E402
 from clasificar import clasificar_texto, _normalizar_texto, _titulo_ted  # noqa: E402
 from placsp import NS  # noqa: E402
 
@@ -193,6 +194,10 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
     enlace = link.attrib.get("href") if link is not None else None
     organismo = _texto(cfs, parte + "cac:PartyName/cbc:Name") or "no publicado"
     expediente = _texto(cfs, "cbc:ContractFolderID")
+    nuts = _texto(proyecto, "cac:RealizedLocation/cbc:CountrySubentityCode") or ""
+    # Mismo criterio que el radar (normalizar._lugar): lugar de ejecución y,
+    # si no lo hay, código postal del organismo.
+    provincia, comunidad = territorio.lugar(nuts, None, cp)
 
     return {
         "id": _id(enlace or expediente, organismo),
@@ -200,8 +205,9 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
         "titulo": titulo,
         "organismo": organismo,
         "organismo_nif": _texto(cfs, parte + "cac:PartyIdentification/cbc:ID"),
-        "ambito": "Euskadi" if _es_euskadi(
-            cp, _texto(proyecto, "cac:RealizedLocation/cbc:CountrySubentityCode") or "", enlace) else "Estado",
+        "ambito": "Euskadi" if _es_euskadi(cp, nuts, enlace) else "Estado",
+        "provincia": provincia,
+        "comunidad": comunidad,
         "tipo_contrato": TIPOS_CONTRATO.get(_texto(proyecto, "cbc:TypeCode") or "", "no publicado"),
         "procedimiento": "Contrato menor" if es_menor else PROCEDIMIENTOS.get(
             _texto(cfs, "cac:TenderingProcess/cbc:ProcedureCode") or "", "no publicado"),
@@ -381,13 +387,18 @@ def pieza_euskadi_menores(periodo: str) -> list[dict]:
             href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
             fecha = (item.get("awardDate") or "")[:10]
             identificador = str(item.get("id") or "")
+            organismo = euskadi._resolver_organismo(href) or "no publicado"
+            # _resolver_organismo deja en caché la región del organismo.
+            provincia, _ = territorio.lugar(None, euskadi._CACHE_NUTS.get(href))
             salida[identificador] = {
                 "id": _id("EUSKADI", identificador),
                 "expediente": identificador,
                 "titulo": titulo,
-                "organismo": euskadi._resolver_organismo(href) or "no publicado",
+                "organismo": organismo,
                 "organismo_nif": None,
                 "ambito": "Euskadi",
+                "provincia": provincia,
+                "comunidad": "País Vasco",
                 "tipo_contrato": (item.get("contractType") or {}).get("name") or "no publicado",
                 "procedimiento": "Contrato menor",
                 "menor": True,
@@ -439,6 +450,7 @@ def pieza_ted(anio: str) -> list[dict]:
         region = (n.get("buyer-country-sub") or [""])[0]
         fecha = (n.get("publication-date") or "")[:10]
         numero = n.get("publication-number", "")
+        provincia, comunidad = territorio.lugar(None, region)
         salida.append({
             "id": _id("TED", numero),
             "expediente": None,
@@ -446,6 +458,8 @@ def pieza_ted(anio: str) -> list[dict]:
             "organismo": nombres[0],
             "organismo_nif": None,
             "ambito": "Euskadi" if region.startswith("ES21") else "Estado",
+            "provincia": provincia,
+            "comunidad": comunidad,
             "tipo_contrato": "no publicado",
             "procedimiento": "no publicado",
             "menor": False,
@@ -490,24 +504,65 @@ CABECERA_JS = "window.HISTORICO = "
 
 
 def _clave_empresa(nif: str | None, nombre: str) -> str:
-    # Agrupa por NIF (el nombre se escribe de varias formas: "S.L.", "SL",
-    # "SOCIEDAD LIMITADA"...); sin NIF, por nombre normalizado.
+    """Agrupa por NIF (el nombre se escribe de varias formas: "S.L.", "SL",
+    "SOCIEDAD LIMITADA"...); sin NIF, por nombre normalizado.
+
+    Un NIF enmascarado ("***9688**", "XXXXX155F") solo enseña tres o cuatro
+    cifras: no basta para agrupar, porque junta a personas distintas. Con
+    esos se exige además el mismo nombre, comparado sin tildes, sin
+    puntuación y sin importar el orden ("GARCÍA LÓPEZ, ANA" = "Ana García
+    López")."""
+    from normalizar import _normalizar_clave, nif_enmascarado
+
+    nif = _nif_empresa(nif)
+    if nif and nif_enmascarado(nif):
+        return nif + "~" + " ".join(sorted(_normalizar_clave(nombre).split()))
     return nif or "~" + " ".join(nombre.upper().split())
+
+
+def _nif_empresa(nif: str | None) -> str | None:
+    """NIF tal como se guarda y se compara: limpio (normalizar._nif_limpio)
+    y sin los de relleno. "A00000000", "X00000000" o "0" no son de nadie:
+    agrupaban bajo una misma ficha a UTE y personas sin relación (unas 70
+    adjudicaciones el 2026-10-02). Sin NIF, la empresa se agrupa por nombre."""
+    from normalizar import _nif_limpio
+
+    limpio = _nif_limpio(nif)
+    if not limpio or re.fullmatch(r"[A-Z]?0+", limpio) or limpio.startswith("NOCONSTITU"):
+        return None
+    return limpio
 
 
 def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
     """dic_previo: diccionarios de lo ya publicado. Se parte de ellos para que
-    cada empresa/organismo conserve su índice (ver combinar_registros)."""
-    dic = {"empresa": [], "organismo": [], "tipo": [], "procedimiento": []}
+    cada empresa/organismo conserve su índice (ver combinar_registros).
+
+    Empresas fusionadas: si dos fichas ya publicadas resultan ser la misma
+    empresa (el mismo NIF escrito con y sin prefijo "ES"), se queda la
+    primera y la otra NO se borra: borrarla correría una posición los
+    índices de todas las siguientes, y con ellos los enlaces a fichas que el
+    radar ya tiene calculados. Se deja en su sitio como [None, nombre,
+    índice_de_la_buena]; el dashboard redirige a la buena."""
+    dic = {"empresa": [], "organismo": [], "tipo": [], "procedimiento": [], "lugar": []}
     indices: dict[str, dict] = {k: {} for k in dic}
     nombres_empresa: dict[str, dict[str, int]] = {}
     if dic_previo:
-        for tabla in dic:
+        for valor in dic_previo.get("empresa", []):
+            if len(valor) > 2:  # ya fusionada en una pasada anterior
+                dic["empresa"].append(list(valor))
+                continue
+            clave = _clave_empresa(valor[0], valor[1])
+            if clave in indices["empresa"]:
+                dic["empresa"].append([None, valor[1], indices["empresa"][clave]])
+                continue
+            indices["empresa"][clave] = len(dic["empresa"])
+            dic["empresa"].append([_nif_empresa(valor[0]), valor[1]])
+        for tabla in ("organismo", "tipo", "procedimiento", "lugar"):
             for valor in dic_previo.get(tabla, []):
-                clave = _clave_empresa(valor[0], valor[1]) if tabla == "empresa" else valor
+                clave = tuple(valor) if tabla == "lugar" else valor
                 if clave not in indices[tabla]:
                     indices[tabla][clave] = len(dic[tabla])
-                    dic[tabla].append(list(valor) if tabla == "empresa" else valor)
+                    dic[tabla].append(valor)
 
     def idx(tabla: str, clave, valor=None) -> int:
         if clave not in indices[tabla]:
@@ -519,18 +574,22 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
     for r in registros:
         enlace = r["enlace"] or ""
         mascara = sum(1 << CATEGORIAS.index(c) for c in r["categorias"] if c in CATEGORIAS)
+        lugar = (r.get("provincia"), r.get("comunidad"))
         exp.append([
             r["id"], r["titulo"][:MAX_TITULO].strip(), idx("organismo", r["organismo"]),
             1 if r["ambito"] == "Euskadi" else 0, idx("tipo", r["tipo_contrato"]),
             idx("procedimiento", r["procedimiento"]), 1 if r["menor"] else 0, mascara,
             enlace[len(PREFIJO_DEEPLINK):] if enlace.startswith(PREFIJO_DEEPLINK) else enlace,
             1 if r["fuente"] == "TED" else 0, r["actualizado"][:10], r["presupuesto"],
+            # [provincia, comunidad]; [None, None] = la fuente no publica el
+            # lugar, o el expediente es anterior a que se recogiera.
+            idx("lugar", lugar, list(lugar)),
         ])
         for l in r["lotes"]:
             clave = _clave_empresa(l["nif"], l["empresa"])
             nombres_empresa.setdefault(clave, {}).setdefault(l["empresa"], 0)
             nombres_empresa[clave][l["empresa"]] += 1
-            lotes.append([len(exp) - 1, idx("empresa", clave, [l["nif"], ""]), l["fecha"],
+            lotes.append([len(exp) - 1, idx("empresa", clave, [_nif_empresa(l["nif"]), ""]), l["fecha"],
                           round(l["importe"]) if l["importe"] else None, l["ofertas"],
                           None if l["pyme"] is None else int(l["pyme"])])
     # Nombre mostrado de cada empresa: la grafía más frecuente.
@@ -547,16 +606,19 @@ def _expandir(c: dict) -> list[dict]:
     registros = []
     for e in c["exp"]:
         enlace = e[8] if e[8].startswith("http") or not e[8] else c["prefijo_enlace"] + e[8]
+        # Lo publicado antes de octubre de 2026 no tiene la columna de lugar.
+        provincia, comunidad = d["lugar"][e[12]] if len(e) > 12 else (None, None)
         registros.append({
             "id": e[0], "expediente": None, "titulo": e[1], "organismo": d["organismo"][e[2]],
             "organismo_nif": None, "ambito": "Euskadi" if e[3] else "Estado",
+            "provincia": provincia, "comunidad": comunidad,
             "tipo_contrato": d["tipo"][e[4]], "procedimiento": d["procedimiento"][e[5]],
             "menor": bool(e[6]), "presupuesto": e[11],
             "categorias": [cat for i, cat in enumerate(c["categorias"]) if e[7] >> i & 1],
             "enlace": enlace, "fuente": "TED" if e[9] else "PLACSP", "actualizado": e[10], "lotes": [],
         })
     for l in c["lotes"]:
-        nif, nombre = d["empresa"][l[1]]
+        nif, nombre = d["empresa"][l[1]][:2]
         registros[l[0]]["lotes"].append({"empresa": nombre, "nif": nif, "fecha": l[2], "importe": l[3],
                                          "ofertas": l[4], "pyme": None if l[5] is None else bool(l[5])})
     return registros
@@ -586,8 +648,8 @@ def _publicar(c: dict) -> None:
 
     nucleo = {k: c[k] for k in ("v", "actualizado", "categorias", "prefijo_enlace", "dic", "lotes")}
     nucleo["fragmentos"] = FRAGMENTOS
-    # [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias]
-    nucleo["exp"] = [e[2:8] for e in c["exp"]]
+    # [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias, lugar]
+    nucleo["exp"] = [e[2:8] + [e[12]] for e in c["exp"]]
     SALIDA_DASHBOARD.write_text(
         "// Generado por scrapers/historico_adjudicaciones.py (ver _publicar). No editar a mano.\n"
         + CABECERA_JS + json.dumps(nucleo, ensure_ascii=False, separators=(",", ":")) + ";\n",

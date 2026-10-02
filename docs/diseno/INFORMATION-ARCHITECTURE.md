@@ -157,6 +157,37 @@ datos a lo que ya había.
 
 No se ha quitado ningún dato.
 
+## Competencia y detalle de cada licitación (tercera ronda, 2026-10-02)
+
+Tampoco cambia la estructura. Estado: publicada el 2026-10-02.
+
+- **Filtros de Competencia.** A los que había (ámbito, tipo de adjudicación,
+  año y categoría) se suman la **provincia**, con el mismo desplegable
+  agrupado por comunidad que el radar, y el **importe mínimo y máximo de cada
+  adjudicación**. Valen para el análisis de mercado, los dos directorios y
+  las fichas. Con un filtro de importe quedan fuera las adjudicaciones que
+  no publican importe, igual que en el radar. El de provincia no se enseña
+  mientras menos de la mitad de las adjudicaciones tengan lugar (hasta la
+  reconstrucción del histórico).
+- **Adjudicaciones de más de 1 M€.** Bajo "Empresas que más ganan" hay una
+  línea que dice cuántas son y qué parte del importe suman con los filtros
+  puestos, y un botón que pone el importe máximo en 1 M€. Son las que
+  deciden el orden por importe y casi nunca son contratos de agencia; no se
+  ocultan por defecto.
+- **Fichas de empresa fusionadas.** Cuando dos fichas resultan ser la misma
+  empresa (el mismo NIF escrito de dos formas), se queda una y la dirección
+  de la otra (`historico.html#/empresa/<id>`) lleva a ella.
+- **Hora de cierre en la tarjeta.** "Fin de presentación: 19 oct 2026,
+  14:00" y, el último día, "Cierra hoy a las 14:00" (o "Cerró hoy a las
+  14:00" si ya ha pasado). Solo donde la fuente la publica: PLACSP y TED
+  (en TED, hora local del organismo).
+- **Bloque "Pliegos" en el detalle.** Enlaces al pliego de cláusulas
+  administrativas y al de prescripciones técnicas, con el nombre del fichero
+  tal como lo subió el organismo, o a la documentación de la licitación
+  cuando la fuente solo da esa dirección.
+
+No se ha quitado ningún dato.
+
 ## Ideas para más adelante (no implementadas)
 
 Tomadas de la referencia; cada una necesita algo que hoy la plataforma no tiene
@@ -166,5 +197,6 @@ Tomadas de la referencia; cada una necesita algo que hoy la plataforma no tiene
   decisión del 2026-10-02; se retomará más adelante).
 - **Seguimiento**: marcar una licitación como "interesa / descartada / en
   preparación / presentada", con responsable.
-- **Ficha de licitación con pliegos** y análisis del pliego (enlaza con la fase
-  prevista de ayuda a la redacción de propuestas).
+- **Análisis del pliego** (los enlaces a los pliegos ya están en la tarjeta;
+  leerlos y resumirlos enlaza con la fase prevista de ayuda a la redacción
+  de propuestas).

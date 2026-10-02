@@ -402,10 +402,34 @@ Cómo se construye (`scrapers/historico_adjudicaciones.py` +
 - El workflow `historico-adjudicaciones.yml` es **solo manual**, para
   reconstruir o reparar. "completo" cuesta ~550 minutos de Actions: el
   2026-10-01, lanzarlo tres veces agotó los 2.000 minutos gratuitos del mes.
+  Única excepción: la reconstrucción completa del 2026-10-04 (taxonomía
+  nueva, provincia y NIF unificados) va programada a las 03:23 UTC, porque
+  de día PLACSP sirve a 0,1 MB/s. El propio workflow comprueba la fecha y
+  cualquier otro día el disparo no hace nada; el bloque `schedule` se quita
+  después.
 - Se guardan **todos los lotes** de cada expediente (un expediente puede
   tener varias adjudicatarias) con NIF, importe sin IVA, ofertas recibidas
   y si la ganadora es pyme. Las empresas se agrupan por NIF: el nombre se
   escribe de muchas formas ("S.L.", "SL", "SOCIEDAD LIMITADA").
+- **El NIF también se escribe de varias formas.** Con prefijo de IVA
+  ("ESB28016970"), con puntos, comas o guiones. Hasta octubre de 2026 eso
+  partía a 36 empresas en dos fichas (Uniprex, Radio Popular, Diario
+  ABC...). `normalizar._nif_limpio` deja solo letras y cifras y quita el
+  "ES". Las fichas ya publicadas se fusionan sin borrar ninguna: borrar una
+  correría los índices de todas las siguientes y con ellos los enlaces del
+  radar, así que la sobrante se queda como `[null, nombre, id de la buena]`
+  y el dashboard redirige.
+- **NIF que no identifican a nadie.** Los de relleno ("A00000000",
+  "X00000000", "0") agrupaban a UTE y personas sin relación: se tratan como
+  "sin NIF" y la empresa se agrupa por nombre. Los enmascarados de personas
+  físicas ("***9688**" en PLACSP, "XXXXX155F" en Euskadi) solo enseñan tres
+  o cuatro cifras y los comparten personas distintas: con esos se exige
+  además el mismo nombre, sin tildes, puntuación ni orden.
+- **Provincia de cada expediente** (`dic.lugar`, séptima columna de `exp`):
+  lugar de ejecución y, si no lo hay, código postal del organismo, como en
+  el radar (`territorio.py`). En Euskadi, la región del organismo; en TED,
+  la del comprador. Lo procesado antes de octubre de 2026 no la tiene hasta
+  que se vuelve a leer su fichero.
 - Plataformas agregadas: no rellenan la fecha de adjudicación del lote ni la
   dirección del organismo. La fecha sale del anuncio de adjudicación
   (`DOC_CAN_ADJ`) o de formalización; Euskadi se detecta por lugar de
@@ -424,7 +448,13 @@ Ojo al leer importes: la taxonomía deja entrar algunos contratos enormes que
 no son de agencia en sentido estricto (gestión de un canal de televisión
 autonómico, 54 M€; derechos de una carrera de motos; centralitas de
 emergencias). Inflan los totales en euros; el ranking por número no se ve
-afectado.
+afectado. Medido el 2026-10-02: 1.084 adjudicaciones de más de 1 M€, de
+146.000, suman el 66 % del importe. No se quitan (un contrato de planificación
+de medios de varios millones sí es de agencia): la sección Competencia tiene
+un filtro de importe mínimo y máximo por adjudicación, y el análisis de
+mercado dice cuánto pesan las de más de 1 M€ con los filtros puestos y
+ofrece dejarlas fuera. Con "hasta 100.000 €", las primeras empresas pasan a
+ser cadenas de radio y agencias de medios en lugar de Serveo, FCC o Correos.
 
 ## Contratos menores — probado, retirado, y por qué se está recuperando
 
@@ -756,6 +786,39 @@ no coincidía. `normalizar.py` fusiona ahora también dos licitaciones cuando
 tienen la misma fecha límite, organismo compatible y un título que es el
 comienzo del otro (con un mínimo de 40 caracteres, `MIN_TITULO_PREFIJO`).
 
+## Hora de cierre y pliegos (octubre de 2026)
+
+Dos datos que las fuentes ya publicaban y el radar no recogía.
+
+- **Hora de cierre.** PLACSP la da en `TenderSubmissionDeadlinePeriod/EndTime`
+  (hora peninsular) y TED en `deadline-receipt-tender-time-lot` (hora local
+  del organismo, con su huso). Medido con los ZIP de septiembre de 2026:
+  viene en todas las licitaciones abiertas de los dos feeds de PLACSP; la
+  mitad cierra a las 23:59 y el resto a las 14:00, 12:00, 13:00... En TED,
+  38 de 39 avisos españoles. La API de Euskadi da la fecha límite con una
+  hora que casi siempre es 00:00 y sin huso fiable: no se enseña.
+- **Pliegos.** PLACSP publica el pliego de cláusulas administrativas
+  (`LegalDocumentReference`) y el de prescripciones técnicas
+  (`TechnicalDocumentReference`) con su dirección de descarga: 98 % de las
+  licitaciones abiertas de perfiles propios y 80 % de las plataformas
+  autonómicas. TED da la dirección donde están los documentos
+  (`document-url-lot`), que suele ser la ficha de la licitación en PLACSP o
+  en la plataforma autonómica. `placsp.py` solo guarda los pliegos de lo que
+  está en plazo (estado `PUB`).
+
+`normalizar._hora_y_pliegos` los pasa al registro (`hora_limite`, `pliegos`)
+solo en las licitaciones. Al deduplicar, el registro que se queda hereda la
+hora y los pliegos del que se descarta si le faltan: TED gana al deduplicar
+pero solo trae la dirección general, y PLACSP trae los pliegos uno a uno.
+
+**Relectura puntual.** `clasificar.py` acumula los registros de PLACSP tal
+como se leyeron, así que un campo nuevo solo llega a lo acumulado cuando se
+relee el ZIP de su mes, y el pipeline solo relee el mes anterior los tres
+primeros días. `placsp.RELECTURA_PUNTUAL_MESES` hace releer agosto y
+septiembre de 2026 hasta el 2026-10-05 (unos 700 MB más por noche) y luego
+deja de aplicarse sola. Sirve de patrón para la próxima vez que se añada un
+campo.
+
 ## El feed de PLACSP iba desfasado ~3 semanas — hallazgo crítico (RESUELTO)
 
 Investigando por qué el radar recogía pocas licitaciones (el usuario
@@ -1001,9 +1064,16 @@ Cómo funciona cada pieza:
   adjudicataria; columna de importe. Se despliega (`<details>/<summary>` nativo,
   accesible por teclado) con el detalle en pares dato/valor: información
   general (incluidos expediente y CPV), fechas (incluida la de entrada en el
-  radar) e importes, la descripción, las categorías y los enlaces: anuncio
-  original, "Historial de la empresa" y "Quién gana en este organismo" (estos
-  dos llevan al histórico).
+  radar) e importes, la descripción, los pliegos, las categorías y los
+  enlaces: anuncio original, "Historial de la empresa" y "Quién gana en este
+  organismo" (estos dos llevan al histórico).
+- **Hora de cierre y pliegos** (`hora_limite` y `pliegos`, solo en
+  licitaciones y solo si la fuente los publica; ver "Hora de cierre y
+  pliegos"): la fecha límite se escribe "19 oct 2026, 14:00" y el día de
+  cierre la urgencia dice "Cierra hoy a las 14:00", o "Cerró hoy a las 14:00"
+  si el organismo es español y la hora ya ha pasado en el reloj de quien mira.
+  En TED, fuera de España, se añade "(hora local)". El bloque "Pliegos" enlaza
+  cada documento y enseña el nombre del fichero que subió el organismo.
 - **Código de color por urgencia**: rojo ≤7 días, ámbar ≤21 días, verde el
   resto, gris si no hay fecha límite publicada (en contratos menores: rojo ≤30,
   ámbar ≤60). Es señal funcional, igual en todas las vistas y siempre con
@@ -1012,10 +1082,21 @@ Cómo funciona cada pieza:
 - **Importes**: `normalizar.py` los entrega como "865,200 EUR"; el dashboard los
   pasa a "865.200 €" sin tocar la moneda (TED publica cada licitación en la
   suya: SEK, PLN, RON...).
-- **Competencia** (`historico.js`): los filtros de ámbito, tipo, año y
-  categoría son comunes al análisis, a los directorios y a las fichas. Los
-  directorios se ordenan por cualquier columna y van paginados de 50 en 50. Las
-  búsquedas ignoran tildes y puntuación.
+- **Competencia** (`historico.js`): los filtros de ámbito, tipo, año,
+  categoría, provincia e importe son comunes al análisis, a los directorios y
+  a las fichas. Los directorios se ordenan por cualquier columna y van
+  paginados de 50 en 50. Las búsquedas ignoran tildes y puntuación.
+  - *Provincia*: mismo desplegable por comunidad que el radar. No se enseña
+    mientras menos de la mitad de las adjudicaciones tengan lugar: filtraría
+    sobre una parte pequeña de los datos sin que se notara.
+  - *Importe mínimo y máximo* de cada adjudicación (tramos de 5.000 € a
+    5 M€). Con alguno puesto, las adjudicaciones sin importe publicado quedan
+    fuera.
+  - Bajo "Empresas que más ganan", una línea dice cuántas adjudicaciones de
+    más de 1 M€ hay con los filtros puestos y qué parte del importe suman, con
+    un botón que fija el máximo en 1 M€.
+  - Una ficha de empresa fusionada con otra (mismo NIF escrito de dos formas)
+    redirige a la que se queda.
 - **Enlaces del radar al histórico**: por NIF (`empresa_nif`, que `normalizar.py`
   añade a adjudicaciones y contratos menores) y, si no, por nombre exacto; si no
   hay una única coincidencia, se abre el directorio filtrado. Cuando
