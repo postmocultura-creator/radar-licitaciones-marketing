@@ -166,7 +166,7 @@
     plazo_largo:
       "Licitaciones abiertas a las que les quedan más de 60 días de plazo: sistemas dinámicos de adquisición, homologaciones de proveedores y acuerdos marco que admiten solicitudes durante meses o años. Son parte de \"Licitaciones abiertas\". Las de PLACSP se leen de su buscador una vez a la semana, sin límite de antigüedad, y por eso no tienen fecha de publicación.",
     adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando PLACSP los publica (perfiles propios del organismo, no plataformas autonómicas), el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación.",
+      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando la fuente los publica, el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación: PLACSP (perfiles propios del organismo, no plataformas autonómicas) y el portal de Euskadi, que además dice qué empresas se presentaron.",
     contrato_menor_venciendo:
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:
@@ -827,6 +827,7 @@
       acta: "Acta de la mesa de contratación",
       informe_anormales: "Informe sobre ofertas anormalmente bajas",
       apertura: "Acto público de apertura de ofertas",
+      resolucion: "Resolución de adjudicación",
     };
     var documentosHtml = "";
     var docs = t.documentos_adjudicacion || [];
@@ -838,9 +839,29 @@
         docs.map(function (d) {
           vistos[d.tipo] = (vistos[d.tipo] || 0) + 1;
           var nombre = NOMBRES_DOCUMENTO[d.tipo] || d.nombre || "Documento";
-          if (NOMBRES_DOCUMENTO[d.tipo] && porTipo[d.tipo] > 1) nombre += " (" + vistos[d.tipo] + ")";
+          // Euskadi dice qué es cada acta ("Apertura sobre B"): se enseña al
+          // lado. PLACSP no: se numeran.
+          if (NOMBRES_DOCUMENTO[d.tipo] && porTipo[d.tipo] > 1 && !d.detalle) nombre += " (" + vistos[d.tipo] + ")";
           return '<li><a class="enlace" href="' + escaparHtml(d.url) + '" target="_blank" rel="noopener noreferrer">' +
-            escaparHtml(nombre) + Nav.icono("externo") + "</a></li>";
+            escaparHtml(nombre) + Nav.icono("externo") + "</a>" +
+            (d.detalle ? "<span>" + escaparHtml(d.detalle) + "</span>" : "") + "</li>";
+        }).join("") + "</ul></div>";
+    }
+
+    // Empresas que se presentaron (portal de Euskadi), con enlace a su
+    // ficha del histórico cuando está.
+    var licitadoresHtml = "";
+    if (t.licitadores && t.licitadores.length) {
+      licitadoresHtml = '<div class="tarjeta__bloque"><h4>Empresas que se presentaron (' + t.licitadores.length + ")</h4>" +
+        '<ul class="tarjeta__principales">' + t.licitadores.map(function (l) {
+          var gano = (l.nif && l.nif === t.empresa_nif) || (!l.nif && l.nombre.toLowerCase() === (t.empresa_adjudicataria || "").toLowerCase());
+          var nombre = escaparHtml(l.nombre);
+          var notas = [];
+          if (gano) notas.push("adjudicataria");
+          if (l.pyme) notas.push("pyme");
+          if (l.provincia) notas.push(escaparHtml(l.provincia));
+          return "<li>" + (l.id != null ? '<a class="enlace" href="historico.html#/empresa/' + l.id + '">' + nombre + "</a>" : "<span class=\"tarjeta__licitador\">" + nombre + "</span>") +
+            "<span>" + notas.join(" · ") + "</span></li>";
         }).join("") + "</ul></div>";
     }
 
@@ -902,6 +923,7 @@
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
           pliegosHtml +
           documentosHtml +
+          licitadoresHtml +
           historialHtml +
           '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div></div>" +
           codigoHtml +

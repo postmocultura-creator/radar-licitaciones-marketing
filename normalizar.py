@@ -522,9 +522,28 @@ def _historiales(registros: list[dict]) -> None:
     id_organismo.pop("", None)
     id_por_nombre.pop("", None)
 
+    def buscar_empresa(nif: str, nombre: str) -> int | None:
+        i_emp = id_por_nif.get(nif)
+        if i_emp is None and nif_enmascarado(nif):
+            # Un NIF enmascarado solo enseña tres o cuatro cifras y lo pueden
+            # compartir personas distintas: además tiene que coincidir el
+            # nombre en al menos dos palabras (tolera el orden cambiado y una
+            # errata: "Marta Sánchez Ruis" / "MARTA SANCHEZ RUIZ").
+            palabras = set(_normalizar_clave(nombre).split())
+            i_emp = next((i for i, n in por_nif_enmascarado.get(nif, []) if len(n & palabras) >= 2), None)
+        if i_emp is None and nombre != NO_PUBLICADO:
+            i_emp = id_por_nombre.get(_normalizar_clave(nombre))
+        return i_emp
+
     for r in registros:
         if r["tipo_registro"] == "convocatoria_ue":
             continue
+        # Empresas que se presentaron (Euskadi): enlace a su ficha si están
+        # en el histórico.
+        for licitador in r.get("licitadores") or []:
+            i_lic = buscar_empresa(licitador.get("nif") or "", licitador["nombre"])
+            if i_lic is not None and i_lic in por_empresa:
+                licitador["id"] = i_lic
         # "no publicado" también existe como nombre en el histórico: no es
         # un organismo ni una empresa, no se cruza.
         i_org = None if r["organismo"] == NO_PUBLICADO else id_organismo.get(_normalizar_clave(r["organismo"]))
@@ -545,17 +564,7 @@ def _historiales(registros: list[dict]) -> None:
         if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo"):
             continue
         nombre_empresa = r.get("empresa_adjudicataria") or NO_PUBLICADO
-        nif_empresa = r.get("empresa_nif") or ""
-        i_emp = id_por_nif.get(nif_empresa)
-        if i_emp is None and nif_enmascarado(nif_empresa):
-            # Un NIF enmascarado solo enseña tres o cuatro cifras y lo pueden
-            # compartir personas distintas: además tiene que coincidir el
-            # nombre en al menos dos palabras (tolera el orden cambiado y una
-            # errata: "Marta Sánchez Ruis" / "MARTA SANCHEZ RUIZ").
-            palabras = set(_normalizar_clave(nombre_empresa).split())
-            i_emp = next((i for i, nombre in por_nif_enmascarado.get(nif_empresa, []) if len(nombre & palabras) >= 2), None)
-        if i_emp is None and nombre_empresa != NO_PUBLICADO:
-            i_emp = id_por_nombre.get(_normalizar_clave(nombre_empresa))
+        i_emp = buscar_empresa(r.get("empresa_nif") or "", nombre_empresa)
         e = por_empresa.get(i_emp) if i_emp is not None else None
         if e:
             r["historial_empresa"] = {
@@ -1215,10 +1224,24 @@ def main() -> None:
         if tipo_registro == "licitacion":
             salida["hora_limite"], salida["pliegos"] = _hora_y_pliegos(registro)
         elif tipo_registro == "adjudicacion":
-            # Actas de la mesa e informes de valoración: solo los publica
-            # PLACSP en los perfiles propios (ver placsp._documentos_adjudicacion).
-            documentos = [d for d in registro["original"].get("documentos_adjudicacion") or []
-                          if (d.get("url") or "").startswith("http")] if registro["fuente"] == "Estado" else []
+            # Actas de la mesa, informes de valoración y resolución: PLACSP
+            # los publica en el feed (perfiles propios, ver
+            # placsp._documentos_adjudicacion) y Euskadi en la ficha del
+            # expediente, que también dice qué empresas se presentaron (ver
+            # euskadi.leer_ficha).
+            original = registro["original"]
+            if registro["fuente"] == "Estado":
+                documentos = original.get("documentos_adjudicacion") or []
+            elif registro["fuente"] == "Euskadi":
+                documentos = (original.get("ficha") or {}).get("documentos") or []
+                licitadores = (original.get("ficha") or {}).get("licitadores") or []
+                if licitadores:
+                    salida["licitadores"] = [
+                        {"nombre": l["nombre"], "nif": _nif_limpio(l.get("nif")), "pyme": l.get("pyme"),
+                         "provincia": l.get("provincia")} for l in licitadores if l.get("nombre")]
+            else:
+                documentos = []
+            documentos = [d for d in documentos if (d.get("url") or "").startswith("http")]
             if documentos:
                 salida["documentos_adjudicacion"] = documentos
         normalizados.append(salida)
