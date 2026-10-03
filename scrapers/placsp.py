@@ -292,17 +292,13 @@ DIR_ZIPS = Path(__file__).resolve().parent.parent / "data" / "raw" / "zips"
 # en curso", el último lote del mes (el del día 30/31 a las 20:15) no se
 # leía nunca. Además esos días el ZIP del mes nuevo puede no existir aún.
 DIAS_LEER_MES_ANTERIOR = 3
-# Relectura puntual de meses ya pasados. clasificar.py acumula los registros
-# de PLACSP entre ejecuciones tal como se leyeron en su día, así que un campo
-# nuevo de este scraper solo llega a lo acumulado cuando se vuelve a leer el
-# ZIP de su mes. En octubre de 2026 se añadieron el lugar (provincia), la
-# hora de cierre y los pliegos: sin releer, unos 230 registros de agosto se
-# quedaban sin provincia y las licitaciones abiertas en septiembre, sin hora
-# ni pliegos, hasta que vencieran. Se releen esos dos meses hasta la fecha
-# indicada (varias noches, por si alguna ejecución falla; ~700 MB más por
-# noche) y después la regla deja de aplicarse sola.
-RELECTURA_PUNTUAL_MESES = ("202608", "202609")
-RELECTURA_PUNTUAL_HASTA = "2026-10-05"
+# OJO: no releer meses pasados dentro del pipeline diario para rellenar un
+# campo nuevo. Se probó la noche del 2026-10-03 (agosto y septiembre, para la
+# provincia, la hora de cierre y los pliegos): triplicó la descarga, PLACSP
+# servía lento esa noche, el paso tardó 68 minutos y el día se quedó sin
+# publicar. Además el mes en curso se lee el último, así que si el paso se
+# corta, lo que se pierde es justo lo más reciente. Si hace falta rellenar
+# lo acumulado, mejor una ejecución aparte.
 
 
 def _meses_a_leer() -> list[str]:
@@ -311,8 +307,6 @@ def _meses_a_leer() -> list[str]:
     if hoy.day <= DIAS_LEER_MES_ANTERIOR:
         anterior = hoy.replace(day=1) - timedelta(days=1)
         meses.insert(0, anterior.strftime("%Y%m"))
-    if hoy.isoformat() <= RELECTURA_PUNTUAL_HASTA:
-        meses = sorted(set(meses) | set(RELECTURA_PUNTUAL_MESES))
     return meses
 
 
