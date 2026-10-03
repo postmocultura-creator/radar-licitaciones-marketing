@@ -1163,6 +1163,10 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
     documentos, y PLACSP da los pliegos uno a uno."""
     if not superviviente.get("hora_limite") and duplicado.get("hora_limite"):
         superviviente["hora_limite"] = duplicado["hora_limite"]
+    # Adjudicaciones: TED gana al deduplicar, pero las actas e informes de
+    # valoración solo vienen de PLACSP.
+    if not superviviente.get("documentos_adjudicacion") and duplicado.get("documentos_adjudicacion"):
+        superviviente["documentos_adjudicacion"] = duplicado["documentos_adjudicacion"]
     propios = superviviente.get("pliegos") or []
     ajenos = [p for p in duplicado.get("pliegos") or [] if p["tipo"] != "documentacion"]
     if ajenos and not any(p["tipo"] != "documentacion" for p in propios):
@@ -1210,6 +1214,13 @@ def main() -> None:
         salida["provincia"], salida["comunidad"] = _lugar(registro)
         if tipo_registro == "licitacion":
             salida["hora_limite"], salida["pliegos"] = _hora_y_pliegos(registro)
+        elif tipo_registro == "adjudicacion":
+            # Actas de la mesa e informes de valoración: solo los publica
+            # PLACSP en los perfiles propios (ver placsp._documentos_adjudicacion).
+            documentos = [d for d in registro["original"].get("documentos_adjudicacion") or []
+                          if (d.get("url") or "").startswith("http")] if registro["fuente"] == "Estado" else []
+            if documentos:
+                salida["documentos_adjudicacion"] = documentos
         normalizados.append(salida)
 
     _FILTROS_VENTANA = {
