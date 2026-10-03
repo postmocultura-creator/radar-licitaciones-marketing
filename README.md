@@ -373,6 +373,29 @@ agregadas (`sindicacion_1044` no trae ningún documento general), ni los
 contratos menores, ni TED. Al deduplicar con TED, el registro que se queda
 hereda los documentos de PLACSP.
 
+**Euskadi: ficha del expediente.** La API de Euskadi no da documentos, pero
+la página pública de cada expediente (`mainEntityOfPage`, la misma a la que
+enlaza la tarjeta) sí, en HTML normal, por pestañas: "Ficheros" (cada fichero
+con su tipo: "Acta de la mesa", "Informe de valoración", "Informe de Juicios
+de Valor"...), "Tablón Anuncios" (acuerdos de la mesa, con un concepto como
+"Apertura sobre B" o "Valoración técnica"), "Resolución" y "Gestión Ofertas",
+que lista **todas las empresas que se presentaron**, no solo la ganadora: un
+dato que el feed de PLACSP no da. `euskadi.leer_ficha()` las lee y
+`anadir_fichas()` lo hace solo con las adjudicaciones que encajan con la
+taxonomía (unas 10-20 al mes; leerlas todas serían cientos de páginas cada
+noche). De cada licitadora se guarda nombre, NIF, si es pyme y provincia; la
+página publica también teléfonos y correos, que no se guardan. Cada fichero
+se descarga con una dirección directa, sin sesión
+(`URL_DESCARGA_FICHERO`). Medido el 2026-10-04 con 63 adjudicaciones de
+servicios desde julio: 34 traen acta de la mesa o informe de valoración, 59
+algún documento de la adjudicación y todas la lista de licitadoras (208
+empresas, unas 3 por contrato). Es leer una página, no una API: si Euskadi
+cambia el diseño, las fichas vuelven vacías y la tarjeta sale sin esos
+bloques; `anadir_fichas()` avisa en el registro cuando ninguna trae nada.
+En la tarjeta, cada licitadora enlaza a su ficha del histórico si está
+(`normalizar._historiales`, mismo cruce por NIF o nombre que la
+adjudicataria).
+
 ## Histórico de adjudicaciones (desde 2021)
 
 Sección "Competencia" de la barra lateral (`dashboard/historico.html`: análisis

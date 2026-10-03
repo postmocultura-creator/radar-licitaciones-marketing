@@ -28,9 +28,12 @@ la carpeta licitaciones_marketing/):
 
 from __future__ import annotations
 
+import html
 import json
+import re
 import sys
 import time
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -167,6 +170,161 @@ def extraer_contratos(dias_atras: int, solo_menores: bool = False) -> list[dict]
     return resultados
 
 
+# ---------------------------------------------------------------------------
+# Ficha del expediente en el portal (mainEntityOfPage). La API no da ni los
+# documentos ni quién se presentó, pero la página pública de cada expediente
+# sí, en HTML normal: pestañas "Ficheros", "Tablón Anuncios" (acuerdos de la
+# mesa), "Gestión Ofertas" (empresas licitadoras) y "Resolución". Medido el
+# 2026-10-04 con 63 adjudicaciones de servicios desde julio: 34 traen acta
+# de la mesa o informe de valoración, 59 algún documento de la adjudicación,
+# y todas la lista de licitadoras (208 empresas, ~3 por contrato). Cada
+# fichero se descarga con una dirección directa, sin sesión.
+#
+# Es leer una página, no una API: si Euskadi cambia el diseño, las fichas
+# vuelven vacías (la tarjeta sale igual, sin esos bloques) y main() lo avisa.
+# ---------------------------------------------------------------------------
+URL_DESCARGA_FICHERO = ("https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/"
+                        "descargaFicheroPorIdFichero?idFichero={}&R01HNoPortal=true")
+MAX_DOCUMENTOS_FICHA = 10
+_RE_PESTANA = re.compile(r'<a[^>]+href="#(tabs-\d+)"[^>]*>(.*?)</a>', re.S)
+_RE_FILA = re.compile(
+    r'<div class="col-xs-12 col-sm-12 col-md-12[^"]*">(?P<titulo>.*?)</div>'
+    r'|<div class="col-xs-12 col-sm-4 col-md-4">(?P<etiqueta>.*?)</div>\s*<div class="col-xs-6 col-md-8">(?P<valor>.*?)</div>'
+    r'|(?P<fin><div class="row last">)', re.S)
+_RE_FICHERO = re.compile(r"descargarFichero\('(\d+)'\)")
+
+
+def _limpio(fragmento: str) -> str:
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", fragmento or ""))).strip()
+
+
+def _plano(texto: str) -> str:
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii").lower()
+
+
+def _pestanas(pagina: str) -> dict[str, str]:
+    """Nombre de la pestaña ("Ficheros", "Resolución"...) -> su HTML."""
+    salida = {}
+    for ident, nombre in _RE_PESTANA.findall(pagina):
+        inicio = pagina.find(f'<div id="{ident}">')
+        if inicio == -1:
+            continue
+        fin = pagina.find('<div id="tabs-', inicio + 10)
+        salida[_limpio(nombre)] = pagina[inicio:fin if fin != -1 else len(pagina)]
+    return salida
+
+
+def _tipo_documento(texto: str, de_la_mesa: bool) -> str | None:
+    """Mismos tipos que PLACSP (placsp._documentos_adjudicacion) más
+    "resolucion". Pliegos, DEUC, memorias y demás preparatorios: None."""
+    t = _plano(texto)
+    # Documentos preparatorios que a veces se cuelgan en la pestaña de
+    # resolución ("Autorizacion gasto_025.pdf"): no dicen nada de la
+    # valoración.
+    if re.search(r"autorizacion|gasto|aprobacion del expediente|pliego|deuc|memoria|insuficiencia|composicion", t):
+        return None
+    if re.search(r"valoraci|juicio|puntuaci|baremaci", t):
+        return "informe_valoracion"
+    if re.search(r"resolucion definitiva|resolucion de adjudicacion|informe de adjudicacion|propuesta de adjudicacion", t):
+        return "resolucion"
+    if re.search(r"\bacta", t) or de_la_mesa:
+        return "acta"
+    return None
+
+
+def leer_ficha(url: str) -> dict:
+    """{documentos: [{tipo, nombre, detalle, url}], licitadores: [{nombre,
+    nif, pyme, provincia}]} de la página pública de un expediente. Solo el
+    nombre, NIF, si es pyme y la provincia de cada licitadora: la página
+    publica también teléfonos y correos, que no se guardan."""
+    resp = requests.get(url, timeout=60, headers={"User-Agent": "licitaciones-marketing-radar/1.0"})
+    resp.raise_for_status()
+    pestanas = _pestanas(resp.content.decode("utf-8", "replace"))
+    documentos: dict[str, dict] = {}
+    for nombre_pestana in ("Ficheros", "Tablón Anuncios", "Resolución"):
+        seccion, concepto, tipo_fichero = "", "", ""
+        filas = list(_RE_FILA.finditer(pestanas.get(nombre_pestana, "")))
+        for i, m in enumerate(filas):
+            if m.group("titulo") is not None:
+                seccion = _limpio(m.group("titulo"))
+                continue
+            if m.group("fin"):
+                concepto = ""
+                continue
+            etiqueta, valor = _limpio(m.group("etiqueta")), m.group("valor")
+            if etiqueta == "Concepto":
+                concepto = _limpio(valor)
+                continue
+            fichero = _RE_FICHERO.search(valor)
+            if not fichero or etiqueta not in ("Nombre del fichero", "Fichero"):
+                continue
+            nombre_fichero = _limpio(valor)
+            tipo_fichero = ""
+            if i + 1 < len(filas) and filas[i + 1].group("etiqueta") is not None \
+                    and _limpio(filas[i + 1].group("etiqueta")) == "Tipo de fichero":
+                tipo_fichero = _limpio(filas[i + 1].group("valor"))
+            de_la_mesa = nombre_pestana == "Tablón Anuncios" and "mesa" in _plano(seccion)
+            if nombre_pestana == "Tablón Anuncios" and not de_la_mesa:
+                continue  # avisos a licitadores, consultas...
+            tipo = _tipo_documento(" ".join((tipo_fichero, concepto, nombre_fichero)), de_la_mesa)
+            if nombre_pestana == "Resolución" and tipo is None and                     _tipo_documento(nombre_fichero, False) is None and "resolucion" in _plano(tipo_fichero)                     and not re.search(r"autorizacion|gasto", _plano(nombre_fichero)):
+                tipo = "resolucion"
+            if tipo and fichero.group(1) not in documentos:
+                documentos[fichero.group(1)] = {
+                    "tipo": tipo,
+                    "nombre": nombre_fichero,
+                    # Lo que el organismo dice que es ("Apertura sobre B",
+                    # "Valoración técnica"); si no, el nombre del fichero.
+                    "detalle": concepto or nombre_fichero,
+                    "url": URL_DESCARGA_FICHERO.format(fichero.group(1)),
+                }
+
+    licitadores: list[dict] = []
+    for m in _RE_FILA.finditer(pestanas.get("Gestión Ofertas", "")):
+        if m.group("etiqueta") is None:
+            continue
+        etiqueta, valor = _limpio(m.group("etiqueta")), _limpio(m.group("valor"))
+        if etiqueta == "Razón Social":
+            licitadores.append({"nombre": valor, "nif": None, "pyme": None, "provincia": None})
+        elif licitadores and etiqueta == "CIF":
+            licitadores[-1]["nif"] = valor or None
+        elif licitadores and etiqueta == "Es Pyme":
+            licitadores[-1]["pyme"] = {"si": True, "no": False}.get(_plano(valor))
+        elif licitadores and etiqueta == "Provincia":
+            licitadores[-1]["provincia"] = valor or None
+
+    orden = ["informe_valoracion", "acta", "resolucion"]
+    docs = sorted(documentos.values(), key=lambda d: orden.index(d["tipo"]))
+    return {"documentos": docs[:MAX_DOCUMENTOS_FICHA], "licitadores": licitadores}
+
+
+def anadir_fichas(items: list[dict]) -> None:
+    """Lee la ficha solo de las adjudicaciones que el radar va a enseñar
+    (las que encajan con la taxonomía, ~10-20 al mes): leerlas todas serían
+    cientos de páginas cada noche."""
+    from clasificar import clasificar_texto  # noqa: E402
+
+    leidas = vacias = 0
+    for item in items:
+        url = item.get("mainEntityOfPage")
+        cpv = [item["CPV"]] if item.get("CPV") else []
+        if not url or not clasificar_texto(item.get("object") or "", cpv)["incluir"]:
+            continue
+        try:
+            item["ficha"] = leer_ficha(url)
+        except requests.RequestException as exc:
+            print(f"[euskadi] AVISO: no se pudo leer la ficha {url} ({exc})", file=sys.stderr)
+            continue
+        leidas += 1
+        vacias += not item["ficha"]["documentos"] and not item["ficha"]["licitadores"]
+        time.sleep(1 / PETICIONES_POR_SEGUNDO)
+    print(f"[euskadi] fichas de expediente leídas: {leidas}")
+    if leidas and vacias == leidas:
+        # Todas vacías: lo más probable es que haya cambiado el diseño del
+        # portal, no que ningún expediente tenga documentos ni licitadoras.
+        print("[euskadi] AVISO: ninguna ficha trae documentos ni licitadoras; revisar leer_ficha()", file=sys.stderr)
+
+
 def guardar_crudo(items: list[dict], prefijo: str = "euskadi") -> Path:
     ahora = datetime.now(timezone.utc)
     raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
@@ -212,6 +370,7 @@ def main() -> None:
         print(f"[euskadi] ERROR al consultar adjudicaciones en la API de Euskadi: {exc}", file=sys.stderr)
         _guardar_error("euskadi_adjudicaciones", exc)
         return
+    anadir_fichas(adjudicaciones)
     ruta_adj = guardar_crudo(adjudicaciones, "euskadi_adjudicaciones")
     print(f"[euskadi] {len(adjudicaciones)} adjudicaciones guardadas en {ruta_adj}")
 

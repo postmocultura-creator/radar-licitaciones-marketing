@@ -970,6 +970,8 @@ a.kpi:active { transform: scale(.99); }
 }
 .tarjeta__principales li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
 .tarjeta__principales span { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+/* Licitadora sin ficha en el histórico: el nombre, sin enlace y sin atenuar. */
+.tarjeta__principales .tarjeta__licitador { color: var(--color-ink); }
 
 .tarjeta__pliegos {
   display: grid;
