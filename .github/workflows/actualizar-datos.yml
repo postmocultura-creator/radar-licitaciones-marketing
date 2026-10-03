@@ -32,14 +32,17 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    # Antes 45: se comprobó en la práctica que el scraper de PLACSP, que
-    # normalmente tarda 5-6 minutos, puede tardar 42 -servidor de PLACSP
-    # lento ese día, no un bug nuestro- y con 45 de límite total el job se
-    # cancelaba a media tarea, antes de llegar siquiera a "Publicar cambios":
-    # no se publicaba nada ese día aunque el scraping hubiera ido bien. 90 da
-    # margen de sobra incluso si PLACSP vuelve a ir lento, sin dejar de ser
-    # un límite real por si algo se cuelga de verdad.
-    timeout-minutes: 90
+    # El límite del job es la SUMA de los límites de sus pasos, más margen:
+    # así ningún paso lento puede impedir que se llegue a "Publicar cambios".
+    # Antes era un límite global de 90 minutos y, cuando PLACSP servía lento
+    # (pasa de día y alguna noche: 0,1-0,2 MB/s en vez de ~1), el job se
+    # cortaba a media tarea y ese día no se publicaba NADA, ni siquiera lo
+    # que sí se había descargado bien (2026-09-29, 2026-10-02 y la noche del
+    # 2026-10-03, con el paso de PLACSP en 68 minutos). Ahora cada fuente
+    # tiene su propio límite: si se pasa, ese día se queda con lo acumulado
+    # de días anteriores y el resto se publica igual. Una noche normal sigue
+    # tardando unos 25-35 minutos; el límite solo se alcanza si algo falla.
+    timeout-minutes: 160
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -57,10 +60,15 @@ jobs:
       # continue-on-error aquí: si una fuente falla, clasificar.py sigue
       # con las que sí trajeron datos.
       - name: Scraper TED
+        timeout-minutes: 10
         run: python scrapers/ted.py
         continue-on-error: true
 
+      # Lo normal son 5-8 minutos (unos 350 MB a final de mes). 40 cubren una
+      # noche lenta (a 0,2 MB/s); si ni así, clasificar.py sigue con lo
+      # acumulado de PLACSP y el buscador web cubre lo publicado ese día.
       - name: Scraper PLACSP
+        timeout-minutes: 40
         run: python scrapers/placsp.py
         continue-on-error: true
 
@@ -81,16 +89,21 @@ jobs:
         continue-on-error: true
 
       - name: Scraper Euskadi
+        timeout-minutes: 20
         run: python scrapers/euskadi.py
         continue-on-error: true
 
       # El scraper de la UE pide el detalle de cada convocatoria (unas 600
       # peticiones, 15 minutos a una por segundo). Los detalles se conservan
       # de una noche a otra y solo se piden los nuevos (ver eu_grants.py).
-      # La clave lleva el número de ejecución para que se guarde siempre una
-      # caché nueva; se restaura la más reciente.
-      - name: Caché de detalles de convocatorias UE
-        uses: actions/cache@v4
+      # Restaurar y guardar van separados para que la caché se guarde nada
+      # más terminar este paso, aunque después falle otro (con un solo paso
+      # actions/cache se guarda al final del job, y si el job se cortaba no
+      # se guardaba nunca: pasó la noche del 2026-10-03). La clave lleva el
+      # número de ejecución para que cada noche guarde una nueva; se restaura
+      # la más reciente.
+      - name: Restaurar caché de convocatorias UE
+        uses: actions/cache/restore@v4
         with:
           path: data/cache
           key: eu-grants-detalle-${{ github.run_id }}
@@ -98,8 +111,16 @@ jobs:
             eu-grants-detalle-
 
       - name: Scraper calls for proposals UE
+        timeout-minutes: 20
         run: python scrapers/eu_grants.py
         continue-on-error: true
+
+      - name: Guardar caché de convocatorias UE
+        if: ${{ !cancelled() && hashFiles('data/cache/eu_grants_detalle.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: data/cache
+          key: eu-grants-detalle-${{ github.run_id }}
 
       # Histórico de adjudicaciones: se alimenta cada día con lo que los
       # scrapers de arriba ya han descargado (los ZIP de PLACSP del mes), más

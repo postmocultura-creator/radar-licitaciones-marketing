@@ -811,13 +811,16 @@ solo en las licitaciones. Al deduplicar, el registro que se queda hereda la
 hora y los pliegos del que se descarta si le faltan: TED gana al deduplicar
 pero solo trae la dirección general, y PLACSP trae los pliegos uno a uno.
 
-**Relectura puntual.** `clasificar.py` acumula los registros de PLACSP tal
-como se leyeron, así que un campo nuevo solo llega a lo acumulado cuando se
-relee el ZIP de su mes, y el pipeline solo relee el mes anterior los tres
-primeros días. `placsp.RELECTURA_PUNTUAL_MESES` hace releer agosto y
-septiembre de 2026 hasta el 2026-10-05 (unos 700 MB más por noche) y luego
-deja de aplicarse sola. Sirve de patrón para la próxima vez que se añada un
-campo.
+**Lo ya acumulado no se rellena solo.** `clasificar.py` acumula los registros
+de PLACSP tal como se leyeron, así que un campo nuevo solo llega a lo
+acumulado cuando se relee el ZIP de su mes, y el pipeline solo relee el mes
+anterior los tres primeros días. Se probó a releer agosto y septiembre dentro
+de la actualización diaria y salió mal (ver "Automatización"): la noche del
+2026-10-03 triplicó la descarga, PLACSP iba lento y el día se quedó sin
+publicar. Se retiró. Las licitaciones abiertas que no se actualicen en
+octubre se quedan sin hora ni pliegos hasta que venzan, y unos 230 contratos
+menores de agosto, sin provincia. Si hiciera falta rellenarlo, con una
+ejecución aparte, nunca dentro de la diaria.
 
 ## El feed de PLACSP iba desfasado ~3 semanas — hallazgo crítico (RESUELTO)
 
@@ -1178,6 +1181,16 @@ propia más arriba). El resto, más pequeños pero reales:
   ningún sitio del código. Borrado.
 
 ## Automatización (GitHub Actions + Vercel)
+
+**Límites de tiempo (octubre de 2026).** Cada paso de scraping tiene su propio
+límite (TED 10 min, PLACSP 40, buscador web 30, Euskadi 20, UE 20, histórico
+25) y el del job (160) es la suma más margen. Antes había solo un límite
+global de 90 minutos y, cuando PLACSP servía lento, el job se cortaba antes
+de "Publicar cambios" y ese día no se publicaba nada (2026-09-29, 2026-10-02 y
+la noche del 2026-10-03). Ahora, si una fuente se pasa de su límite, ese día
+se queda con lo acumulado y el resto se publica. La caché del scraper de la
+UE se guarda justo después de su paso (`actions/cache/save`), no al final
+del job: la noche del 2026-10-03 el job se cortó y no llegó a guardarse.
 
 El pipeline completo (scrapers + clasificar + normalizar) no depende de
 ningún ordenador encendido: corre a diario en GitHub Actions, gratis, y el

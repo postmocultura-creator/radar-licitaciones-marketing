@@ -133,11 +133,11 @@ reales de la referencia y se han aplicado.
   a GitHub a 0,1 MB/s y sin coincidir con la actualización diaria. Después:
   comprobar el resultado en producción y quitar el bloque `schedule` de
   `historico-adjudicaciones.yml`.
-- Unos 230 registros de PLACSP acumulados de agosto no tienen provincia: el
-  pipeline solo relee el mes anterior los tres primeros días de cada mes. La
-  tercera ronda incluye una relectura puntual de agosto y septiembre
-  (`placsp.RELECTURA_PUNTUAL_*`, hasta el 2026-10-05) que lo arregla y lleva
-  la hora de cierre y los pliegos a las licitaciones ya acumuladas.
+- Unos 230 registros de PLACSP acumulados de agosto no tienen provincia, y
+  las licitaciones abiertas que no se actualicen en octubre no tendrán hora
+  de cierre ni pliegos. La relectura de agosto y septiembre dentro de la
+  actualización diaria se retiró el 2026-10-03: triplicó la descarga y esa
+  noche no se publicó nada. Si se quiere rellenar, con una ejecución aparte.
 - Revisión visual independiente (`impeccable`) sobre la versión publicada.
 - Minutos de Actions antes de que el repositorio vuelva a ser privado: la
   actualización diaria tardaba unos 37 minutos (unos 1.100 al mes de los
