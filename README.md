@@ -354,6 +354,25 @@ ya está cerrado): `fecha_publicacion` guarda la fecha de adjudicación para
 que el orden por defecto y el filtro de ventana temporal (últimos 30 días)
 no necesiten un camino aparte.
 
+**Actas e informes de valoración (octubre de 2026).** A petición del usuario,
+para saber qué se valoró al adjudicar. PLACSP publica en el feed, dentro de
+cada expediente adjudicado, sus "documentos generales"
+(`cac-place-ext:GeneralDocument`) con un código de la lista oficial
+`GeneralContractDocuments-2.08` y la dirección de descarga directa (PDF):
+13 = informe de valoración de los criterios sujetos a juicio de valor,
+12 = acta del órgano de asistencia (la mesa de contratación), 14 = informe
+sobre ofertas anormalmente bajas, 1 = actos públicos de apertura de ofertas,
+ZZZ = otros (de esos solo se cogen, por el nombre, resoluciones de
+adjudicación, resultados de las ofertas, actas e informes de valoración).
+`placsp._documentos_adjudicacion` los recoge y la tarjeta los enlaza en
+"Documentos de la adjudicación". Medido con el ZIP de septiembre de 2026: de
+443 adjudicaciones de servicios de agencia de perfiles propios, 173 traen
+acta o informe de valoración; en el radar del 2026-10-03, 77 de las 252
+adjudicaciones de PLACSP. No los publican las plataformas autonómicas
+agregadas (`sindicacion_1044` no trae ningún documento general), ni los
+contratos menores, ni TED. Al deduplicar con TED, el registro que se queda
+hereda los documentos de PLACSP.
+
 ## Histórico de adjudicaciones (desde 2021)
 
 Sección "Competencia" de la barra lateral (`dashboard/historico.html`: análisis

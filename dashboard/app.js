@@ -166,7 +166,7 @@
     plazo_largo:
       "Licitaciones abiertas a las que les quedan más de 60 días de plazo: sistemas dinámicos de adquisición, homologaciones de proveedores y acuerdos marco que admiten solicitudes durante meses o años. Son parte de \"Licitaciones abiertas\". Las de PLACSP se leen de su buscador una vez a la semana, sin límite de antigüedad, y por eso no tienen fecha de publicación.",
     adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia.",
+      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando PLACSP los publica (perfiles propios del organismo, no plataformas autonómicas), el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación.",
     contrato_menor_venciendo:
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:
@@ -820,6 +820,30 @@
         }).join("") + "</ul></div>";
     }
 
+    // Actas e informes de valoración de una adjudicación (solo PLACSP). Las
+    // actas no tienen título propio: se numeran en el orden de la fuente.
+    var NOMBRES_DOCUMENTO = {
+      informe_valoracion: "Informe de valoración de las ofertas",
+      acta: "Acta de la mesa de contratación",
+      informe_anormales: "Informe sobre ofertas anormalmente bajas",
+      apertura: "Acto público de apertura de ofertas",
+    };
+    var documentosHtml = "";
+    var docs = t.documentos_adjudicacion || [];
+    if (docs.length) {
+      var porTipo = {};
+      docs.forEach(function (d) { porTipo[d.tipo] = (porTipo[d.tipo] || 0) + 1; });
+      var vistos = {};
+      documentosHtml = '<div class="tarjeta__bloque"><h4>Documentos de la adjudicación</h4><ul class="tarjeta__pliegos">' +
+        docs.map(function (d) {
+          vistos[d.tipo] = (vistos[d.tipo] || 0) + 1;
+          var nombre = NOMBRES_DOCUMENTO[d.tipo] || d.nombre || "Documento";
+          if (NOMBRES_DOCUMENTO[d.tipo] && porTipo[d.tipo] > 1) nombre += " (" + vistos[d.tipo] + ")";
+          return '<li><a class="enlace" href="' + escaparHtml(d.url) + '" target="_blank" rel="noopener noreferrer">' +
+            escaparHtml(nombre) + Nav.icono("externo") + "</a></li>";
+        }).join("") + "</ul></div>";
+    }
+
     var esDirecto = t.enlace_directo !== false;
     var acciones = "";
     if (t.enlace && t.enlace !== NO_PUBLICADO) {
@@ -877,6 +901,7 @@
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
           pliegosHtml +
+          documentosHtml +
           historialHtml +
           '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div></div>" +
           codigoHtml +

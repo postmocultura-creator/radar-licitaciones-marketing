@@ -60,6 +60,7 @@ la carpeta licitaciones_marketing/):
 from __future__ import annotations
 
 import json
+import re
 import sys
 import zipfile
 from datetime import datetime, timedelta, timezone
@@ -101,6 +102,54 @@ def _fecha_anuncio(cfs, tipos: tuple[str, ...]) -> str | None:
             if fechas:
                 return min(fechas)[:10]
     return None
+
+
+# Documentos de la adjudicación que se enlazan desde la tarjeta: los que
+# dicen qué se valoró y cómo. Códigos de la lista oficial
+# GeneralContractDocuments-2.08 de PLACSP (codice/cl/2.08/).
+DOCUMENTOS_ADJUDICACION = {
+    "13": "informe_valoracion",   # Informe de valoración de los criterios ... juicio de valor
+    "12": "acta",                 # Acta del órgano de asistencia (la mesa de contratación)
+    "14": "informe_anormales",    # Informe sobre las ofertas incursas en presunción de anormalidad
+    "1": "apertura",              # Actos públicos informativos o de apertura de ofertas
+}
+# "Otros documentos" (ZZZ): solo los que, por su nombre, son del resultado.
+_RE_OTROS_ADJUDICACION = re.compile(
+    r"resoluci[oó]n de adjudicaci|resultado de las ofertas|informe de valoraci|propuesta de adjudicaci"
+    r"|informe t[eé]cnico|acta", re.I)
+MAX_DOCUMENTOS_ADJUDICACION = 10
+
+
+def _documentos_adjudicacion(cfs) -> list[dict]:
+    """Actas de la mesa, informes de valoración y resolución de adjudicación
+    de un expediente adjudicado, con su dirección de descarga directa (PDF).
+    Medido con el ZIP de septiembre de 2026: de 443 adjudicaciones de
+    servicios de agencia de perfiles propios, 173 traen acta o informe de
+    valoración y 236 algún documento de este tipo. Las plataformas
+    autonómicas agregadas y los contratos menores no publican ninguno."""
+    documentos = []
+    for doc in cfs.findall("cac-place-ext:GeneralDocument/cac-place-ext:GeneralDocumentDocumentReference", NS):
+        url = _texto(doc, "cac:Attachment/cac:ExternalReference/cbc:URI")
+        if not url:
+            continue
+        nombre = _texto(doc, "cac:Attachment/cac:ExternalReference/cbc:FileName") or ""
+        codigo = _texto(doc, "cbc:DocumentTypeCode") or ""
+        tipo = DOCUMENTOS_ADJUDICACION.get(codigo)
+        # Algunos expedientes llegan sin código: se reconocen por el nombre
+        # oficial del tipo, que PLACSP pone como nombre del fichero.
+        if tipo is None and not codigo:
+            if nombre.startswith("Acta del órgano"):
+                tipo = "acta"
+            elif nombre.startswith("Informe de valoración"):
+                tipo = "informe_valoracion"
+        if tipo is None and _RE_OTROS_ADJUDICACION.search(nombre):
+            tipo = "otro"
+        if tipo:
+            documentos.append({"tipo": tipo, "nombre": nombre, "url": url})
+    # Primero lo que más dice sobre la valoración.
+    orden = ["informe_valoracion", "acta", "otro", "informe_anormales", "apertura"]
+    documentos.sort(key=lambda d: orden.index(d["tipo"]))
+    return documentos[:MAX_DOCUMENTOS_ADJUDICACION]
 
 
 def _parsear_entry(entry) -> dict:
@@ -236,6 +285,7 @@ def _parsear_entry(entry) -> dict:
         "fecha_limite": fecha_limite,
         "hora_limite": hora_limite,
         "pliegos": pliegos,
+        "documentos_adjudicacion": _documentos_adjudicacion(cfs) if cfs is not None and estado in ("ADJ", "RES") else [],
         "enlace": enlace,
         "resumen_feed": _texto(entry, "atom:summary"),
         "empresa_adjudicataria": empresa_adjudicataria,
