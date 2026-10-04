@@ -42,7 +42,8 @@ jobs:
     # tiene su propio límite: si se pasa, ese día se queda con lo acumulado
     # de días anteriores y el resto se publica igual. Una noche normal sigue
     # tardando unos 25-35 minutos; el límite solo se alcanza si algo falla.
-    timeout-minutes: 160
+    # Pasos: 10+40+30+20+20+25+10+15 = 170, más la instalación y margen.
+    timeout-minutes: 185
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -96,18 +97,21 @@ jobs:
       # El scraper de la UE pide el detalle de cada convocatoria (unas 600
       # peticiones, 15 minutos a una por segundo). Los detalles se conservan
       # de una noche a otra y solo se piden los nuevos (ver eu_grants.py).
-      # Restaurar y guardar van separados para que la caché se guarde nada
-      # más terminar este paso, aunque después falle otro (con un solo paso
-      # actions/cache se guarda al final del job, y si el job se cortaba no
-      # se guardaba nunca: pasó la noche del 2026-10-03). La clave lleva el
-      # número de ejecución para que cada noche guarde una nueva; se restaura
-      # la más reciente.
-      - name: Restaurar caché de convocatorias UE
+      # En data/cache van también las traducciones automáticas de
+      # normalizar.py. Restaurar y guardar van separados para que la caché se
+      # guarde nada más terminar cada paso que la usa, aunque después falle
+      # otro (con un solo paso actions/cache se guarda al final del job, y si
+      # el job se cortaba no se guardaba nunca: pasó la noche del
+      # 2026-10-03). La clave lleva el número de ejecución para que cada
+      # noche guarde una nueva; se restaura la más reciente. "eu-grants-
+      # detalle-" es el nombre anterior de la caché: se lee si no hay otra.
+      - name: Restaurar cachés
         uses: actions/cache/restore@v4
         with:
           path: data/cache
-          key: eu-grants-detalle-${{ github.run_id }}
+          key: datos-cache-${{ github.run_id }}-a
           restore-keys: |
+            datos-cache-
             eu-grants-detalle-
 
       - name: Scraper calls for proposals UE
@@ -115,12 +119,12 @@ jobs:
         run: python scrapers/eu_grants.py
         continue-on-error: true
 
-      - name: Guardar caché de convocatorias UE
+      - name: Guardar cachés (convocatorias UE)
         if: ${{ !cancelled() && hashFiles('data/cache/eu_grants_detalle.json') != '' }}
         uses: actions/cache/save@v4
         with:
           path: data/cache
-          key: eu-grants-detalle-${{ github.run_id }}
+          key: datos-cache-${{ github.run_id }}-a
 
       # Histórico de adjudicaciones: se alimenta cada día con lo que los
       # scrapers de arriba ya han descargado (los ZIP de PLACSP del mes), más
@@ -134,10 +138,20 @@ jobs:
         continue-on-error: true
 
       - name: Clasificar
+        timeout-minutes: 10
         run: python clasificar.py
 
+      # Normal: menos de un minuto. El límite cubre un traductor lento.
       - name: Normalizar
+        timeout-minutes: 15
         run: python normalizar.py
+
+      - name: Guardar cachés (traducciones)
+        if: ${{ !cancelled() && hashFiles('data/cache/traducciones_auto.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: data/cache
+          key: datos-cache-${{ github.run_id }}-b
 
       # Si varias fuentes fallan a la vez (p. ej. un corte de red puntual
       # en el runner), el dataset resultante puede quedar sospechosamente
@@ -177,6 +191,8 @@ jobs:
           git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json
           # Solo existe si el scraper web ha funcionado alguna vez.
           if [ -f data/placsp_web_acumulado.json ]; then git add data/placsp_web_acumulado.json; fi
+          # Menores de Euskadi leídos por meses (euskadi.actualizar_menores).
+          if [ -f data/euskadi_menores_acumulado.json ]; then git add data/euskadi_menores_acumulado.json; fi
           # Solo si el paso del histórico terminó bien: si se cortó a medias,
           # no se publican ficheros a medio escribir.
           if [ "${{ steps.historico.outcome }}" = "success" ]; then

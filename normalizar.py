@@ -90,6 +90,7 @@ from pathlib import Path
 from deep_translator import MyMemoryTranslator
 
 import config
+import nif
 import territorio
 
 CLASIFICADO = Path(__file__).resolve().parent / "data" / "clasificado.json"
@@ -663,68 +664,12 @@ def _from_euskadi(registro: dict) -> dict:
 # necesitan un camino aparte.
 # ---------------------------------------------------------------------------
 
-# Solo interesan adjudicaciones ganadas por empresas españolas (vascas
-# incluidas): la agencia quiere ver a sus competidores en Euskadi y España,
-# no a una empresa francesa que gana un contrato en Francia. Se decide por el
-# NIF del ganador (formato español) o, en TED, por el país del adjudicatario.
-# N y W son NIF de entidades EXTRANJERAS (no residentes / sucursales): fuera.
-_NIF_ESPANOL = re.compile(
-    # Sociedades, entidades y UTE (U). Se tolera un dígito de más o que
-    # falte el de control: errores de tecleo reales en PLACSP (Correos con
-    # "A083052407", una UTE con "U0002056").
-    r"^(?:[ABCDEFGHJPQRSUV]\d{7,9}[0-9A-J]?"
-    r"|[0-9X]{8}[A-Z]"   # DNI (Euskadi enmascara así: XXXXX155F)
-    r"|[XYZ]\d{7}[A-Z])$"  # NIE (residente en España)
-)
-
-
-def _nif_limpio(nif) -> str | None:
-    """NIF de la adjudicataria con el formato que usa el histórico
-    (scrapers/historico_adjudicaciones.py): el dashboard enlaza por él cada
-    adjudicación del radar con la ficha de la empresa.
-
-    Sin separadores (cada fuente los pone a su manera: "B-12345678",
-    "B12.345.678", "B12345678,") y sin el prefijo de IVA "ES": el mismo NIF
-    llegaba como "B28016970" y como "ESB28016970" y la empresa salía dos
-    veces en el histórico (24 casos el 2026-10-02: Uniprex, Radio Popular,
-    Diario ABC...). El asterisco se conserva: PLACSP enmascara con él los
-    NIF de personas físicas."""
-    limpio = re.sub(r"[^A-Z0-9*]", "", (nif or "").upper())
-    if limpio.startswith("ES") and _NIF_ESPANOL.match(limpio[2:]):
-        limpio = limpio[2:]
-    return limpio or None
-
-
-def nif_enmascarado(nif: str | None) -> bool:
-    """PLACSP publica los NIF de personas físicas con asteriscos
-    ("***9688**") y Euskadi con equis ("XXXXX155F"): solo quedan a la vista
-    tres o cuatro cifras, así que dos personas distintas pueden compartir el
-    mismo NIF enmascarado."""
-    return bool(nif) and ("*" in nif or nif.startswith("XXX"))
-
-
-def es_empresa_espanola(nif: str | None, paises_ganador: list[str] | None = None,
-                        comprador_espanol: bool = False) -> bool:
-    """paises_ganador (TED, ISO3) manda si viene: española si alguna es ESP.
-    Si no, el NIF. Sin NIF utilizable, se acepta solo si el contrato es de
-    un organismo español (en PLACSP/Euskadi casi siempre hay NIF).
-
-    Verificado contra adjudicaciones reales: lo que queda fuera son IVA
-    extranjeros (IE..., FR..., DE..., GB...: Google Ireland, Meta, Ryanair,
-    Digimind...), números extranjeros sin letra y NIF N/W."""
-    if paises_ganador:
-        return "ESP" in paises_ganador
-    limpio = re.sub(r"[^A-Z0-9*]", "", (nif or "").upper())
-    # NIF de relleno ("Varias empresas", X00000000, "NOCONSTITUIDO"): no dice nada.
-    if not limpio or re.fullmatch(r"X?0+", limpio) or limpio.startswith("NOCONSTITU"):
-        return comprador_espanol
-    # PLACSP enmascara por protección de datos los NIF de personas físicas y
-    # de algunas empresas ("***1032**"); solo enmascara NIF españoles.
-    if "*" in limpio:
-        return len(limpio) == 9
-    if limpio.startswith("ES") and _NIF_ESPANOL.match(limpio[2:]):
-        return True
-    return bool(_NIF_ESPANOL.match(limpio))
+# NIF: limpieza, enmascarado de personas y nacionalidad viven en nif.py
+# (compartido con los scrapers y el histórico). Se mantienen estos nombres
+# porque los usa el resto del módulo y el histórico.
+_nif_limpio = nif.limpiar
+nif_enmascarado = nif.enmascarado
+es_empresa_espanola = nif.es_espanola
 
 
 def _from_ted_adjudicacion(registro: dict) -> dict:
@@ -1036,35 +981,66 @@ _TRADUCCIONES_MANUALES: dict[str, str] = (
     json.loads(_RUTA_TRADUCCIONES_MANUALES.read_text(encoding="utf-8"))
     if _RUTA_TRADUCCIONES_MANUALES.exists() else {}
 )
-_CACHE_TRADUCCION: dict[str, str] = {}
 _SIN_TRADUCIR: list[str] = []
+
+# Las traducciones automáticas que sí salieron se guardan entre noches (en
+# GitHub Actions, con actions/cache; data/cache/ no se versiona): sin esto se
+# pedían otra vez todas cada noche. Y si MyMemory falla varias veces seguidas
+# se deja de llamar hasta la noche siguiente: con sus reintentos y esperas,
+# un MyMemory caído alargaba Normalizar unos 15 minutos.
+_RUTA_CACHE_TRADUCCION = Path(__file__).resolve().parent / "data" / "cache" / "traducciones_auto.json"
+FALLOS_SEGUIDOS_MAX = 3
+
+
+def _leer_cache_traduccion() -> dict[str, str]:
+    try:
+        cache = json.loads(_RUTA_CACHE_TRADUCCION.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return cache if isinstance(cache, dict) else {}
+
+
+_CACHE_TRADUCCION: dict[str, str] = _leer_cache_traduccion()
+_USADAS: set[str] = set()  # para no arrastrar en la caché convocatorias ya cerradas
+_fallos_seguidos = 0
 
 
 def _traducir_en_es(texto: str) -> str:
-    """Nunca debe tumbar el pipeline: si no hay traducción manual y MyMemory
-    falla o satura el límite de peticiones, se reintenta con espera y, si
-    sigue sin ir, se deja el texto en inglés -avisando por stderr, no en
-    silencio- en vez de romper la generación de todo el dataset."""
+    """Nunca debe tumbar el pipeline: si no hay traducción manual ni guardada
+    y MyMemory falla o satura el límite de peticiones, se deja el texto en
+    inglés -avisando por stderr, no en silencio-."""
+    global _fallos_seguidos
     if not texto:
         return texto
     if texto in _TRADUCCIONES_MANUALES:
         return _TRADUCCIONES_MANUALES[texto]
     if texto in _CACHE_TRADUCCION:
+        _USADAS.add(texto)
         return _CACHE_TRADUCCION[texto]
     traducido = None
-    for intento in range(3):
-        try:
-            traducido = MyMemoryTranslator(source="en-GB", target="es-ES").translate(texto[:490])
-            break
-        except Exception:
-            if intento < 2:
-                time.sleep(3 * (intento + 1))
-    if traducido is None:
+    if _fallos_seguidos < FALLOS_SEGUIDOS_MAX:
+        for intento in range(3):
+            try:
+                traducido = MyMemoryTranslator(source="en-GB", target="es-ES").translate(texto[:490])
+                break
+            except Exception:  # deep_translator lanza tipos variados (red, cuota, respuesta vacía)
+                if intento < 2:
+                    time.sleep(3 * (intento + 1))
+        time.sleep(0.5)  # ritmo prudente: es un servicio gratuito compartido, no una API propia
+    if not traducido:
+        _fallos_seguidos += 1
         _SIN_TRADUCIR.append(texto[:80])
-    resultado = traducido or texto
-    _CACHE_TRADUCCION[texto] = resultado
-    time.sleep(0.5)  # ritmo prudente: es un servicio gratuito compartido, no una API propia
-    return resultado
+        return texto
+    _fallos_seguidos = 0
+    _CACHE_TRADUCCION[texto] = traducido
+    _USADAS.add(texto)
+    return traducido
+
+
+def _guardar_cache_traduccion() -> None:
+    _RUTA_CACHE_TRADUCCION.parent.mkdir(parents=True, exist_ok=True)
+    vigentes = {t: v for t, v in _CACHE_TRADUCCION.items() if t in _USADAS}
+    _RUTA_CACHE_TRADUCCION.write_text(json.dumps(vigentes, ensure_ascii=False), encoding="utf-8")
 
 
 def _from_eu_grant(registro: dict) -> dict:
@@ -1184,6 +1160,18 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
         superviviente["pliegos"] = duplicado["pliegos"]
 
 
+def _sin_dni(registro: dict) -> None:
+    """Última red antes de publicar: ningún DNI o NIE completo en los textos
+    que enseña el radar, venga de la fuente que venga (los scrapers ya los
+    enmascaran en los campos de NIF; aquí se cubren nombres y títulos con el
+    DNI pegado, ver nif.ocultar_en_texto)."""
+    for campo in ("titulo", "resumen", "empresa_adjudicataria"):
+        if registro.get(campo):
+            registro[campo] = nif.ocultar_en_texto(registro[campo])
+    for licitador in registro.get("licitadores") or []:
+        licitador["nombre"] = nif.ocultar_en_texto(licitador["nombre"])
+
+
 CONVERSORES = {
     ("UE", "licitacion"): _from_ted,
     ("Estado", "licitacion"): _from_placsp,
@@ -1244,6 +1232,7 @@ def main() -> None:
             documentos = [d for d in documentos if (d.get("url") or "").startswith("http")]
             if documentos:
                 salida["documentos_adjudicacion"] = documentos
+        _sin_dni(salida)
         normalizados.append(salida)
 
     _FILTROS_VENTANA = {
@@ -1380,6 +1369,8 @@ def main() -> None:
     SALIDA_DASHBOARD.parent.mkdir(parents=True, exist_ok=True)
     contenido_js = "window.TENDERS_DATA = " + json.dumps(finales, ensure_ascii=False, indent=2) + ";\n"
     SALIDA_DASHBOARD.write_text(contenido_js, encoding="utf-8")
+
+    _guardar_cache_traduccion()
 
     n_revisar = sum(1 for r in finales if r["revisar_manual"])
     conteo_tipos = {}

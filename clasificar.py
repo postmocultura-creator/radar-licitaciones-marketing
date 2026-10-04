@@ -64,6 +64,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import config
+import nif
 
 RAW_DIR = Path(__file__).resolve().parent / "data" / "raw"
 SALIDA = Path(__file__).resolve().parent / "data" / "clasificado.json"
@@ -412,6 +413,25 @@ FUENTES_ACUMULATIVAS = {"placsp", "placsp_agregadas", "placsp_menores"}
 DIAS_MAX_ACUMULADO = 400  # tope para que la caché no crezca sin fin
 
 
+def _sin_dni(clasificado: dict) -> None:
+    """La caché guarda registros de hasta 400 días, de antes de que los
+    scrapers enmascararan los DNI (octubre de 2026): se limpian al cargarla
+    para que no vuelvan a versionarse. Mismos campos que enmascaran los
+    scrapers (ver nif.py)."""
+    original = clasificado.get("original") or {}
+    for campo in ("empresa_nif", "CIF"):
+        if original.get(campo):
+            original[campo] = nif.limpiar(original[campo])
+    for campo in ("empresa_adjudicataria", "socialReason"):
+        if original.get(campo):
+            original[campo] = nif.ocultar_en_texto(original[campo])
+    for licitador in (original.get("ficha") or {}).get("licitadores") or []:
+        licitador["nif"] = nif.limpiar(licitador.get("nif"))
+        licitador["nombre"] = nif.ocultar_en_texto(licitador.get("nombre"))
+    if clasificado.get("titulo"):
+        clasificado["titulo"] = nif.ocultar_en_texto(clasificado["titulo"])
+
+
 def _clave_placsp(original: dict) -> str | None:
     return original.get("enlace") or original.get("expediente")
 
@@ -442,6 +462,9 @@ def main() -> None:
             cache_previo = json.loads(CACHE_FUENTES.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             cache_previo = {}
+    for registros in cache_previo.values():
+        for c in registros:
+            _sin_dni(c)
     # Arranca como copia del anterior: las claves que esta pasada no
     # actualiza (fuente caída) se quedan tal cual para la próxima ejecución,
     # no se pierden por no haberse usado hoy.

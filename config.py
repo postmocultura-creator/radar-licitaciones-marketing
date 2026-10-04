@@ -75,31 +75,6 @@ CPV_RANGOS = [
 # por CPV.
 
 
-def cpv_en_rango_amplio(cpv: str) -> bool:
-    """True si el código CPV (8 dígitos, con o sin dígito de control) cae
-    dentro de alguno de los CPV_RANGOS."""
-    if not cpv:
-        return False
-    digitos = "".join(ch for ch in str(cpv) if ch.isdigit())[:8]
-    if len(digitos) < 8:
-        return False
-    valor = int(digitos)
-    return any(lo <= valor <= hi for lo, hi, _ in CPV_RANGOS)
-
-
-def etiqueta_cpv(cpv: str) -> str | None:
-    if not cpv:
-        return None
-    digitos = "".join(ch for ch in str(cpv) if ch.isdigit())[:8]
-    if len(digitos) < 8:
-        return None
-    valor = int(digitos)
-    for lo, hi, etiqueta in CPV_RANGOS:
-        if lo <= valor <= hi:
-            return etiqueta
-    return None
-
-
 # ---------------------------------------------------------------------------
 # Capa 2 — Categorías y palabras clave (EXTENSIBLE)
 # ---------------------------------------------------------------------------
