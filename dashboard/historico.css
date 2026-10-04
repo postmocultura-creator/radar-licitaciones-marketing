@@ -2,6 +2,24 @@
    de empresas y organismos y sus fichas. Reutiliza los tokens y componentes
    de style.css (KPIs, paneles, barras, controles). */
 
+/* ---------- Lo que dicen los datos ---------- */
+
+/* Las conclusiones van antes que las cifras: es lo primero que se lee. */
+.conclusiones { margin-bottom: 20px; border-left: 3px solid var(--color-primary); }
+.conclusiones h2 { margin-bottom: 4px; }
+.conclusiones__lista {
+  display: grid;
+  gap: 8px;
+  max-width: 95ch;
+  margin: 8px 0 4px;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-foreground);
+}
+.conclusiones__lista strong { color: var(--color-ink); }
+.conclusiones__lista .barras__vacio { list-style: none; margin-left: -18px; }
+
 /* ---------- Barra de filtros ---------- */
 
 .herramientas {

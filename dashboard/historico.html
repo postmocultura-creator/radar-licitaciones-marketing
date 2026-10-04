@@ -47,6 +47,12 @@
 
       <!-- Análisis de mercado -->
       <section id="vista-mercado" hidden>
+        <section class="panel conclusiones" aria-labelledby="t-conclusiones">
+          <h2 id="t-conclusiones">Lo que dicen los datos</h2>
+          <ul class="conclusiones__lista" id="conclusiones"></ul>
+          <p class="panel__nota">Se recalcula con los filtros: elige una categoría, una provincia o un año para ver ese mercado.</p>
+        </section>
+
         <div class="kpis" id="kpis" aria-label="Resumen"></div>
 
         <div class="rejilla">
@@ -88,7 +94,13 @@
           <section class="panel" aria-labelledby="t-competencia">
             <h2 id="t-competencia">Competencia: ofertas recibidas por licitación</h2>
             <ol class="barras" id="grafico-ofertas"></ol>
-            <p class="panel__nota">Solo licitaciones que publican el número de ofertas (los contratos menores no lo publican).</p>
+            <p class="panel__nota">Solo licitaciones que publican el número de ofertas. Sin contratos menores, que no tienen concurso.</p>
+          </section>
+
+          <section class="panel" aria-labelledby="t-rebaja">
+            <h2 id="t-rebaja">Rebaja de la ganadora según las ofertas</h2>
+            <ol class="barras" id="grafico-rebaja"></ol>
+            <p class="panel__nota">Mediana de la rebaja sobre el presupuesto (sin IVA), en contratos de un solo lote que no son menores ni acuerdos marco y que se adjudicaron por debajo del presupuesto. Solo tramos con al menos 20 contratos.</p>
           </section>
         </div>
       </section>
@@ -128,6 +140,7 @@
 
 <script src="nav.js"></script>
 <script src="historico-data.js"></script>
+<script src="licitadoras-data.js"></script>
 <script src="historico.js"></script>
 </body>
 </html>

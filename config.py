@@ -177,6 +177,7 @@ CATEGORIAS = {
         "paginas web", "sitios web", "portales web", "web municipal",
         "web corporativa", "web institucional",
         "landing", "landing page", "landing pages",
+        "web turistica", "portal turistico",
     ],
     "Diseño y desarrollo de apps": [
         "aplicacion movil", "app movil", "desarrollo de app",
@@ -239,7 +240,7 @@ CATEGORIAS = {
         "informacion y sensibilizacion", "difusion y sensibilizacion",
         "servicio de promocion turistica", "servicios de promocion turistica",
         "campana de promocion turistica", "plan de promocion turistica",
-        "presencia digital",
+        "presencia digital", "estrategia digital", "canales digitales",
         # "comunicacion" a secas: se verificó con datos reales de Euskadi
         # (muestra de 23 títulos discartados) que ronda el 55-60% de
         # precisión -"Servicio de gabinete de comunicacion", "Servicio de
@@ -264,6 +265,9 @@ CATEGORIAS = {
         "diseno de logotipo", "diseno de logo", "naming",
         "guia de estilo", "diseno editorial", "diseno de packaging",
         "diseno de catalogos", "rebranding", "diseno de material grafico",
+        # Ronda del benchmark: 5 de 7 aciertos cada una (el resto,
+        # señalización y monopostes).
+        "imagen de marca", "marca turistica",
     ],
     "Producción de eventos digitales": [
         "evento digital", "retransmision en streaming", "webinar",
@@ -301,6 +305,15 @@ CATEGORIAS = {
         "calendario de contenidos", "content strategy",
         "redactor de contenidos", "guion publicitario",
         "contenido digital para marketing",
+        # Ronda del benchmark (2026-10-04), medida contra 203.000 títulos
+        # de PLACSP: "difusion de contenidos" era lo que le faltaba a
+        # "gestión, creación y difusión de contenidos en los canales
+        # digitales" (Avilés). "contenidos digitales" acierta algo más de
+        # la mitad (el resto: licencias de software y bibliotecas
+        # digitales), como "comunicacion". Los singulares "contenido
+        # digital"/"contenido multimedia" se probaron y son suscripciones.
+        "contenidos digitales", "difusion de contenidos",
+        "contenidos multimedia",
     ],
     "E-commerce": [
         "comercio electronico", "ecommerce", "e-commerce",
@@ -414,7 +427,7 @@ TERMINOS_OTRAS_LENGUAS = {
         # Equivalentes de "publicidad", "comunicacion" y "marketing".
         # "publicitaria" y "comunicacion" ya valen para el gallego.
         "publicitat", "publicitari", "publicitaris", "publicitaries",
-        "comunicacio", "marqueting",
+        "comunicacio", "marqueting", "canals digitals",
         "gabinet de premsa", "notes de premsa", "relacions publiques",
         "estudi de mercat", "estudis de mercat",
         "campanya de sensibilitzacio", "campanya de difusio",
@@ -434,9 +447,11 @@ TERMINOS_OTRAS_LENGUAS = {
         "deseno grafico", "identidade visual", "imaxe corporativa",
         "identidade corporativa",
         "diseinu grafiko", "diseinu grafikoa",
+        "imatge de marca",
     ],
     "Creación de contenidos": [
         "creacio de continguts", "creacion de contidos",
+        "continguts digitals",
     ],
     "E-commerce": [
         "comerc electronic", "botiga online", "botiga en linia",

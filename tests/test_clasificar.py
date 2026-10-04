@@ -11,6 +11,9 @@ from clasificar import _normalizar_texto, clasificar_texto
     "Contratación de una Agencia de Publicidad para el Plan de Comunicación sobre las actuaciones derivadas del PAI",
     "Publicidad de la marca Turismo de Navarra 2023 - 2026",
     "Instal·lació de publicitat exterior",
+    # Se escapaban frente a un radar comercial (benchmark del 2026-10-04).
+    "Los servicios para la gestión, creación y difusión de contenidos en los canales digitales del Ayuntamiento de Avilés.",
+    "Web turística + imagen de marca",
 ])
 def test_titulos_de_agencia_entran(titulo):
     resultado = clasificar_texto(titulo)

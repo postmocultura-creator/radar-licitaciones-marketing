@@ -208,12 +208,12 @@ jobs:
           # Primero el estado interno (rama "estado", un solo commit que
           # sustituye al anterior). El histórico completo, solo si su paso
           # terminó bien: si se cortó a medias, no se publica a medio escribir.
-          estado="data/ultimo_bueno_por_fuente.json data/primera_aparicion.json data/placsp_web_acumulado.json data/euskadi_menores_acumulado.json"
+          estado="data/ultimo_bueno_por_fuente.json data/primera_aparicion.json data/placsp_web_acumulado.json data/euskadi_menores_acumulado.json data/euskadi_licitadoras.json"
           if [ "${{ steps.historico.outcome }}" = "success" ]; then estado="$estado data/historico_adjudicaciones.json"; fi
           sh .github/publicar_estado.sh $estado
           # Después lo que sirve la web (main, que Vercel publica).
           git reset origin/main
-          git add dashboard/tenders-data.js
+          git add dashboard/tenders-data.js dashboard/licitadoras-data.js
           if [ "${{ steps.historico.outcome }}" = "success" ]; then
             git add dashboard/historico-data.js dashboard/historico-detalle
           fi

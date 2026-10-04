@@ -159,6 +159,69 @@ def _texto_plano(texto_html: str) -> str:
     return re.sub(r"\s+", " ", html.unescape(sin_tags)).strip()
 
 
+MAX_DOCUMENTOS_CONVOCATORIA = 6
+_RE_ENLACE = re.compile(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', re.S | re.I)
+
+
+def _documentos_convocatoria(condiciones_html: str) -> list[dict]:
+    """[{nombre, url}] del apartado "Call document and annexes" de las
+    condiciones: el documento de la convocatoria (donde están los criterios
+    de evaluación y su puntuación), el modelo de solicitud, el acuerdo de
+    subvención... No los de "Additional documents", que son normativa general
+    del portal, iguales en todas las convocatorias."""
+    texto = condiciones_html or ""
+    documentos: dict[str, dict] = {}
+
+    def anadir(url: str, nombre: str) -> None:
+        url, nombre = html.unescape(url).strip(), _texto_plano(nombre)
+        if url.startswith("http") and len(nombre) > 2 and url not in documentos:
+            documentos[url] = {"nombre": nombre[:120], "url": url}
+
+    inicio = texto.lower().find("call document and annexes")
+    if inicio != -1:
+        fin = texto.lower().find("additional documents", inicio)
+        for url, nombre in _RE_ENLACE.findall(texto[inicio:fin if fin != -1 else len(texto)]):
+            anadir(url, nombre)
+        return list(documentos.values())[:MAX_DOCUMENTOS_CONVOCATORIA]
+
+    # Horizonte Europa no tiene ese apartado: sus condiciones remiten a los
+    # anexos generales del programa de trabajo. Se enseña el anexo al que
+    # remite el apartado "Award criteria, scoring and thresholds" y los
+    # modelos de solicitud y de evaluación (este último trae la puntuación).
+    criterios = re.search(r"award criteria.*?(?=<h[1-6]|$)", texto, re.S | re.I)
+    if criterios:
+        enlace = _RE_ENLACE.search(criterios.group(0))
+        if enlace:
+            anadir(enlace.group(1), "Award criteria, scoring and thresholds (" + _texto_plano(enlace.group(2)) + ")")
+    for url, nombre in _RE_ENLACE.findall(texto):
+        if re.match(r"\s*(?:standard\s+)?(?:application|evaluation)\s+form", _texto_plano(nombre), re.I):
+            anadir(url, nombre)
+    return list(documentos.values())[:MAX_DOCUMENTOS_CONVOCATORIA]
+
+
+def _presupuesto(resumen_json: str | None, identifier: str) -> dict:
+    """Presupuesto del tema (suma de los años), cuántos proyectos se prevé
+    financiar y la subvención máxima por proyecto, de "budgetOverview"."""
+    try:
+        acciones = [a for lista in json.loads(resumen_json or "{}").get("budgetTopicActionMap", {}).values() for a in lista]
+    except (ValueError, AttributeError, TypeError):
+        return {}
+    acciones = [a for a in acciones if isinstance(a, dict) and str(a.get("action") or "").startswith(identifier)]
+    if not acciones:
+        return {}
+
+    def numero(valor):
+        try:
+            return float(valor)
+        except (TypeError, ValueError):
+            return 0.0
+
+    total = sum(numero(v) for a in acciones for v in (a.get("budgetYearMap") or {}).values())
+    proyectos = sum(int(numero(a.get("expectedGrants"))) for a in acciones)
+    maximo = max(numero(a.get("maxContribution")) for a in acciones)
+    return {"presupuesto": total or None, "proyectos_previstos": proyectos or None, "subvencion_maxima": maximo or None}
+
+
 def extraer_detalle(identifier: str) -> dict:
     """Segunda petición por convocatoria: da el texto largo que el listado
     no incluye (ver docstring del módulo)."""
@@ -178,7 +241,15 @@ def extraer_detalle(identifier: str) -> dict:
         "destino_descripcion": _primero("destinationDescription") or "",
         "destino_detalle": _texto_plano(_primero("destinationDetails") or ""),
         "url_detalle": _primero("url"),
+        "documentos": _documentos_convocatoria(_primero("topicConditions") or ""),
+        **_presupuesto(_primero("budgetOverview"), identifier),
     }
+
+
+# Detalles guardados antes de que se leyeran los documentos y el presupuesto:
+# se vuelven a pedir, pero pocos cada noche para no alargar el paso (pedirlos
+# todos de golpe son unos 9 minutos de los 20 que tiene; 60 es minuto y medio).
+MAX_RELLENO_POR_NOCHE = 60
 
 
 def extraer() -> list[dict]:
@@ -186,7 +257,7 @@ def extraer() -> list[dict]:
     cache = _leer_cache_detalle()
     cache_nuevo: dict[str, dict] = {}
     hoy = date.today()
-    pedidos = fallidos = 0
+    pedidos = fallidos = rellenos = 0
     resultados = []
     for item in listado:
         md = item.get("metadata", {})
@@ -216,7 +287,9 @@ def extraer() -> list[dict]:
             detalle = cache_nuevo.get(identifier)
             if detalle is None:
                 detalle = cache.get(identifier)
-                if not detalle or _toca_refrescar(identifier, hoy):
+                incompleto = bool(detalle) and "documentos" not in detalle and rellenos < MAX_RELLENO_POR_NOCHE
+                rellenos += incompleto
+                if not detalle or incompleto or _toca_refrescar(identifier, hoy):
                     try:
                         pedido = extraer_detalle(identifier)
                     except requests.RequestException:

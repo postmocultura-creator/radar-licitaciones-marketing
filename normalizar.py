@@ -735,6 +735,8 @@ def _from_placsp_adjudicacion(registro: dict) -> dict:
     fecha_adjudicacion = _limpiar_fecha(item.get("fecha_adjudicacion"))
     empresa = item.get("empresa_adjudicataria") or NO_PUBLICADO
     importe_valor, importe_display = _parsear_presupuesto(item.get("importe_adjudicado"), "EUR")
+    # Presupuesto base sin IVA: con él se calcula la rebaja (ver _competencia).
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("presupuesto_sin_iva"), "EUR")
 
     titulo = registro["titulo"]
 
@@ -746,8 +748,8 @@ def _from_placsp_adjudicacion(registro: dict) -> dict:
         "pais_territorio": "España",
         "fecha_publicacion": fecha_adjudicacion,
         "fecha_limite": NO_PUBLICADO,
-        "presupuesto_valor": None,
-        "presupuesto_display": NO_PUBLICADO,
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
         "cpv": registro["cpv"],
         "categorias": registro["categorias"],
         "revisar_manual": registro["revisar_manual"],
@@ -1038,6 +1040,8 @@ def _from_eu_grant(registro: dict) -> dict:
     fecha_limite = _limpiar_fecha(item.get("deadlineDate"))
     enlace = item.get("url_detalle") or item.get("url") or NO_PUBLICADO
     identifier = item.get("identifier")
+    # Presupuesto del tema, de "budgetOverview" (eu_grants._presupuesto).
+    presupuesto_valor, presupuesto_display = _parsear_presupuesto(item.get("presupuesto"), "EUR")
 
     return {
         "id": _id_unico("UEsub", identifier or item.get("reference", ""), titulo),
@@ -1047,8 +1051,13 @@ def _from_eu_grant(registro: dict) -> dict:
         "pais_territorio": "UE",
         "fecha_publicacion": fecha_publicacion,
         "fecha_limite": fecha_limite,
-        "presupuesto_valor": None,
-        "presupuesto_display": NO_PUBLICADO,
+        "presupuesto_valor": presupuesto_valor,
+        "presupuesto_display": presupuesto_display,
+        "proyectos_previstos": item.get("proyectos_previstos"),
+        "subvencion_maxima": item.get("subvencion_maxima"),
+        # Documento de la convocatoria y anexos (eu_grants._documentos_convocatoria).
+        "pliegos": [{"tipo": "convocatoria", "nombre": d.get("nombre"), "url": d["url"]}
+                    for d in item.get("documentos") or [] if str(d.get("url") or "").startswith("http")][:MAX_PLIEGOS],
         "cpv": [],
         "categorias": registro["categorias"],
         "revisar_manual": registro["revisar_manual"],
@@ -1107,11 +1116,14 @@ def _hora_y_pliegos(registro: dict) -> tuple[str | None, list[dict]]:
         los pliegos administrativo y técnico, con su dirección de descarga.
       - TED: hora local del organismo y la dirección donde están los
         documentos (suele ser la ficha en la plataforma nacional).
-      - Euskadi y buscador web de PLACSP: nada. La API de Euskadi da la
-        fecha límite con una hora que casi siempre es 00:00 y sin huso
-        fiable, así que no se enseña.
+      - Euskadi: los pliegos administrativo y técnico y la carátula, de la
+        ficha pública del expediente (euskadi.anadir_fichas_licitaciones).
+        Sin hora: la API da la fecha límite con una hora que casi siempre
+        es 00:00 y sin huso fiable, así que no se enseña.
+      - Buscador web de PLACSP: nada.
 
-    Cada pliego: {tipo: administrativo | tecnico | documentacion, nombre, url}."""
+    Cada pliego: {tipo: administrativo | tecnico | caratula | documentacion,
+    nombre, url}."""
     item = registro["original"]
     fuente = registro["fuente"]
     if fuente in ("Estado", "Estado-agregadas"):
@@ -1125,7 +1137,258 @@ def _hora_y_pliegos(registro: dict) -> tuple[str | None, list[dict]]:
                 urls.append(url)
         pliegos = [{"tipo": "documentacion", "nombre": None, "url": url} for url in urls[:MAX_PLIEGOS]]
         return _hora(horas[0] if horas else None), pliegos
+    if fuente == "Euskadi":
+        pliegos = [p for p in (item.get("ficha") or {}).get("pliegos") or [] if (p.get("url") or "").startswith("http")]
+        return None, pliegos[:MAX_PLIEGOS]
     return None, []
+
+
+MAX_CRITERIOS = 12
+# Por encima, casi siempre presupuesto e importe están en unidades distintas
+# (anual frente a total, precio unitario...): 379 de 20.800 expedientes
+# del histórico el 2026-10-04.
+REBAJA_MAX = 0.8
+
+
+def _competencia(registro: dict, licitadores: list[dict]) -> dict:
+    """Ofertas recibidas y rebaja de la adjudicataria sobre el presupuesto.
+
+    - PLACSP: las ofertas del resultado y los dos importes sin IVA. Solo con
+      un único resultado: con lotes o acuerdos marco el presupuesto es del
+      expediente entero. Rebaja 0 no se enseña: es lo normal en negociados
+      (90 % en el histórico) y en contratos a precios unitarios, donde el
+      importe adjudicado es el máximo y la rebaja real no se ve.
+    - Euskadi: las ofertas son las empresas que se presentaron (ficha).
+
+    Medido en el histórico (2026-10-04): cuando hay rebaja, la mediana es del
+    16 %, y crece con la competencia (7 % con una oferta, 30 % con seis o más)."""
+    salida = {}
+    item = registro["original"]
+    if registro["fuente"] in ("Estado", "Estado-agregadas"):
+        if item.get("resultados") != 1:
+            return salida
+        if item.get("ofertas"):
+            salida["ofertas"] = item["ofertas"]
+        presupuesto = _parsear_presupuesto(item.get("presupuesto_sin_iva"), "EUR")[0]
+        importe = _parsear_presupuesto(item.get("importe_adjudicado_sin_iva"), "EUR")[0]
+        if presupuesto and importe:
+            rebaja = 1 - importe / presupuesto
+            if 0.0005 <= rebaja <= REBAJA_MAX:
+                salida["rebaja"] = round(rebaja * 100, 1)
+    elif licitadores:
+        salida["ofertas"] = len(licitadores)
+    return salida
+
+
+def _criterios(registro: dict) -> dict | None:
+    """Cómo se puntúa una licitación de PLACSP: qué parte es precio, qué
+    parte otros criterios con fórmula y qué parte juicio de valor (la
+    propuesta que valora la mesa). Para una agencia es lo que dice si puede
+    competir con su propuesta o si gana el que más baja.
+
+    {precio, formulas, juicio: % enteros que suman 100,
+     detalle: [{descripcion, peso (%), tipo}], por_lotes: bool}
+
+    Con lotes se enseña el expediente si trae criterios generales y, si no,
+    el primer lote; por_lotes avisa de que hay más grupos (pueden puntuar
+    distinto). None si la fuente no los publica o no traen peso.
+
+    Euskadi (ver _criterios_euskadi) no dice si un criterio va con fórmula o
+    con juicio de valor: da {precio, resto, detalle, por_lotes: False}."""
+    if registro["fuente"] == "Euskadi":
+        return _criterios_euskadi(registro)
+    if registro["fuente"] == "UE":
+        return _criterios_ted(registro)
+    if registro["fuente"] not in ("Estado", "Estado-agregadas"):
+        return None
+    grupos = registro["original"].get("criterios_adjudicacion") or []
+    if not grupos:
+        return None
+    grupo = next((g for g in grupos if g["lote"] is None), grupos[0])
+    reparto = _reparto_placsp(grupo["criterios"])
+    if reparto:
+        reparto["por_lotes"] = len(grupos) > 1
+    return reparto
+
+
+def _reparto_placsp(criterios: list[dict]) -> dict | None:
+    """{precio, formulas, juicio, detalle} de una lista de criterios de PLACSP
+    (los del expediente o los de un lote)."""
+    con_peso = [c for c in criterios if c.get("peso") is not None and c["peso"] >= 0]
+    total = sum(c["peso"] for c in con_peso)
+    if total <= 0:
+        return None
+    reparto = {"precio": 0.0, "formula": 0.0, "juicio": 0.0}
+    for c in con_peso:
+        reparto[c["tipo"]] += c["peso"] * 100 / total
+    precio, juicio = round(reparto["precio"]), round(reparto["juicio"])
+    detalle = sorted(con_peso, key=lambda c: -c["peso"])[:MAX_CRITERIOS]
+    return {
+        "precio": precio,
+        "formulas": max(0, 100 - precio - juicio),  # dos redondeos hacia arriba darían -1
+        "juicio": juicio,
+        "detalle": [{"descripcion": c["descripcion"] or "(sin descripción)",
+                     "peso": round(c["peso"] * 100 / total, 1), "tipo": c["tipo"]} for c in detalle],
+    }
+
+
+MAX_LOTES = 40
+
+
+def _lotes(registro: dict) -> list[dict]:
+    """Lotes de una licitación, con lo que publique su fuente:
+    [{id, nombre, importe (sin IVA) | None, precio: % | None}].
+
+      - PLACSP, perfiles propios: nombre, importe y lo que pesa el precio en
+        cada lote. Plataformas agregadas: solo el nombre.
+      - Euskadi: pestaña "Lotes" de la ficha, con nombre, importe y precio.
+      - TED: título de cada lote y, si viene uno por lote, su valor estimado.
+        Los criterios no: TED los da todos seguidos, sin decir de qué lote son.
+      - Calls for proposals: no tienen lotes (cada tema es una convocatoria).
+
+    Un único lote no se enseña: es la licitación entera."""
+    item = registro["original"]
+    fuente = registro["fuente"]
+    lotes: list[dict] = []
+    if fuente in ("Estado", "Estado-agregadas"):
+        por_lote = {g["lote"]: _reparto_placsp(g["criterios"]) for g in item.get("criterios_adjudicacion") or [] if g["lote"]}
+        for l in item.get("lotes") or []:
+            reparto = por_lote.get(l.get("id"))
+            lotes.append({"id": l.get("id"), "nombre": l.get("nombre"),
+                          "importe": _parsear_presupuesto(l.get("importe"), "EUR")[0],
+                          "precio": reparto["precio"] if reparto else None})
+    elif fuente == "Euskadi":
+        for l in (item.get("ficha") or {}).get("lotes") or []:
+            reparto = _reparto_precio_resto(l.get("criterios") or [])
+            lotes.append({"id": l.get("id"), "nombre": l.get("nombre"), "importe": l.get("importe") or None,
+                          "precio": reparto["precio"] if reparto else None})
+    elif fuente == "UE":
+        ids = item.get("identifier-lot") or []
+        titulos = _textos_ted(item.get("title-lot"), len(ids)) or [None] * len(ids)
+        valores = item.get("estimated-value-lot") or []
+        valores = valores if len(valores) == len(ids) else [None] * len(ids)
+        for ident, titulo, valor in zip(ids, titulos, valores):
+            numero = re.sub(r"^LOT-0*", "", str(ident)) or str(ident)
+            lotes.append({"id": numero, "nombre": " ".join(titulo.split()) if titulo else None,
+                          "importe": _parsear_presupuesto(valor, "EUR")[0], "precio": None})
+    return lotes[:MAX_LOTES] if len(lotes) > 1 else []
+
+
+def _reparto_precio_resto(lista: list[dict]) -> dict | None:
+    """{precio, resto, detalle} de una lista de criterios de Euskadi. Solo
+    cuando las ponderaciones suman 100 y hay algún criterio de precio (ver
+    _criterios_euskadi)."""
+    con_peso = [c for c in lista if c.get("peso") is not None and c["peso"] >= 0]
+    if not con_peso or len(con_peso) != len(lista):
+        return None
+    total = sum(c["peso"] for c in con_peso)
+    if abs(total - 100) > 0.5 or not any(c["tipo"] == "precio" for c in con_peso):
+        return None
+    precio = round(sum(c["peso"] for c in con_peso if c["tipo"] == "precio"))
+    detalle = sorted(con_peso, key=lambda c: -c["peso"])[:MAX_CRITERIOS]
+    return {
+        "precio": precio,
+        "resto": 100 - precio,
+        "detalle": [{"descripcion": c["descripcion"] or "(sin descripción)",
+                     "peso": round(c["peso"], 1), "tipo": c["tipo"]} for c in detalle],
+    }
+
+
+def _criterios_euskadi(registro: dict) -> dict | None:
+    """Criterios de la ficha pública de Euskadi (euskadi._criterios), que
+    solo permite separar el precio del resto:
+
+    {precio, resto: % enteros que suman 100,
+     detalle: [{descripcion, peso (%), tipo: precio | otro}], por_lotes: False}
+
+    Solo cuando las ponderaciones suman 100: si suman 200 o 300 es que la
+    ficha mezcla los criterios de varios lotes, y si suman menos, que está
+    incompleta; en los dos casos el reparto saldría falso. Y solo cuando se
+    reconoce algún criterio de precio: sin él no se sabe cuánto pesa (hay
+    fichas que solo dicen "Criterios objetivos 47 / Criterios subjetivos 53")."""
+    ficha = registro["original"].get("ficha") or {}
+    reparto = _reparto_precio_resto(ficha.get("criterios") or [])
+    if reparto:
+        reparto["por_lotes"] = False
+        return reparto
+    # Sin criterios generales pero con lotes: se enseñan los del primero y se
+    # avisa (como en PLACSP); el precio de cada lote va en la lista de lotes.
+    for lote in ficha.get("lotes") or []:
+        reparto = _reparto_precio_resto(lote.get("criterios") or [])
+        if reparto:
+            reparto["por_lotes"] = True
+            return reparto
+    return None
+
+
+# El precio por su nombre, en los idiomas que más salen en TED. En los avisos
+# españoles hace falta: PLACSP los manda a TED con todos los criterios
+# marcados como "quality", también el precio.
+_RE_NOMBRE_PRECIO = re.compile(
+    r"\bprecio|\bprice\b|\bpreu\b|\bprix\b|\bpreis|\bprezzo|\bpreco\b|\bprijs"
+    r"|(?:oferta|proposicion|propuesta)\s+economica", re.I)
+_NOMBRE_GENERICO_TED = {"price": "Precio", "cost": "Coste", "quality": "Calidad"}
+
+
+def _textos_ted(valor, cuantos: int) -> list[str] | None:
+    """Lista de textos de un campo multilingüe de TED ({idioma: [..]}), en
+    español, inglés o el idioma que venga; None si no hay uno por criterio
+    (entonces no se sabe a cuál corresponde cada texto)."""
+    if isinstance(valor, dict):
+        valor = valor.get("spa") or valor.get("eng") or next(iter(valor.values()), None)
+    if isinstance(valor, list) and len(valor) == cuantos and all(isinstance(v, str) for v in valor):
+        return valor
+    return None
+
+
+def _criterios_ted(registro: dict) -> dict | None:
+    """Criterios de un aviso de TED. Como en Euskadi, solo se puede separar
+    el precio (tipos price y cost, o un criterio que se llame "precio") del
+    resto: {precio, resto, detalle, por_lotes}.
+
+    TED da todos los lotes seguidos en la misma lista. Si es el mismo
+    reparto repetido se enseña una vez (por_lotes); si cada lote puntúa
+    distinto no hay forma de separarlos y no se enseña. Tampoco si los pesos
+    no suman 100 (o 1, cuando vienen en tanto por uno), ni si ningún
+    criterio es el precio: entonces no se sabe cuánto pesa."""
+    item = registro["original"]
+    tipos = item.get("award-criterion-type-lot") or []
+    numeros = item.get("award-criterion-number-lot") or []
+    if not tipos or len(tipos) != len(numeros):
+        return None
+    try:
+        pesos = [float(str(n).replace(",", ".")) for n in numeros]
+    except ValueError:
+        return None
+    nombres = (_textos_ted(item.get("award-criterion-name-lot"), len(tipos))
+               or _textos_ted(item.get("award-criterion-description-lot"), len(tipos))
+               or [None] * len(tipos))
+    filas = list(zip(tipos, pesos, nombres))
+    por_lotes = False
+    reparto = [(t, p) for t, p, _ in filas]
+    for periodo in range(1, len(filas) // 2 + 1):
+        if len(filas) % periodo == 0 and reparto == reparto[:periodo] * (len(filas) // periodo):
+            filas, por_lotes = filas[:periodo], True
+            break
+    total = sum(p for _, p, _ in filas)
+    if abs(total - 100) <= 0.5:
+        escala = 1
+    elif abs(total - 1) <= 0.005:
+        escala = 100
+    else:
+        return None
+    detalle = []
+    for tipo, peso, nombre in filas:
+        if peso < 0:
+            return None
+        es_precio = tipo in ("price", "cost") or bool(nombre and _RE_NOMBRE_PRECIO.search(_normalizar_clave(nombre)))
+        detalle.append({"descripcion": " ".join(nombre.split()) if nombre else _NOMBRE_GENERICO_TED.get(tipo, "Criterio"),
+                        "peso": round(peso * escala, 1), "tipo": "precio" if es_precio else "otro"})
+    if not any(d["tipo"] == "precio" for d in detalle):
+        return None
+    precio = round(sum(d["peso"] for d in detalle if d["tipo"] == "precio"))
+    return {"precio": precio, "resto": 100 - precio,
+            "detalle": sorted(detalle, key=lambda d: -d["peso"])[:MAX_CRITERIOS], "por_lotes": por_lotes}
 
 
 def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
@@ -1135,6 +1398,21 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
     documentos, y PLACSP da los pliegos uno a uno."""
     if not superviviente.get("hora_limite") and duplicado.get("hora_limite"):
         superviviente["hora_limite"] = duplicado["hora_limite"]
+    # Las ofertas y la rebaja solo vienen de PLACSP y de Euskadi.
+    for campo in ("ofertas", "rebaja"):
+        if not superviviente.get(campo) and duplicado.get(campo):
+            superviviente[campo] = duplicado[campo]
+    # Criterios: mandan los de PLACSP, que separan fórmula y juicio de
+    # valor; los de TED y Euskadi solo separan el precio del resto.
+    propios, ajenos = superviviente.get("criterios"), duplicado.get("criterios")
+    if ajenos and (not propios or ("resto" in propios and "resto" not in ajenos)):
+        superviviente["criterios"] = ajenos
+    # Lotes: los de la fuente que diga lo que pesa el precio en cada uno
+    # (PLACSP o Euskadi) antes que los de TED.
+    mios, suyos = superviviente.get("lotes"), duplicado.get("lotes")
+    if suyos and (not mios or (any(l.get("precio") is not None for l in suyos)
+                               and not any(l.get("precio") is not None for l in mios))):
+        superviviente["lotes"] = suyos
     # Adjudicaciones: TED gana al deduplicar, pero las actas e informes de
     # valoración solo vienen de PLACSP.
     if not superviviente.get("documentos_adjudicacion") and duplicado.get("documentos_adjudicacion"):
@@ -1198,6 +1476,12 @@ def main() -> None:
         salida["provincia"], salida["comunidad"] = _lugar(registro)
         if tipo_registro == "licitacion":
             salida["hora_limite"], salida["pliegos"] = _hora_y_pliegos(registro)
+            criterios = _criterios(registro)
+            if criterios:
+                salida["criterios"] = criterios
+            lotes = _lotes(registro)
+            if lotes:
+                salida["lotes"] = lotes
         elif tipo_registro == "adjudicacion":
             # Actas de la mesa, informes de valoración y resolución: PLACSP
             # los publica en el feed (perfiles propios, ver
@@ -1205,6 +1489,10 @@ def main() -> None:
             # expediente, que también dice qué empresas se presentaron (ver
             # euskadi.leer_ficha).
             original = registro["original"]
+            licitadores = []
+            if registro["fuente"] == "Euskadi":
+                licitadores = (original.get("ficha") or {}).get("licitadores") or []
+            salida.update(_competencia(registro, licitadores))
             if registro["fuente"] == "Estado":
                 documentos = original.get("documentos_adjudicacion") or []
             elif registro["fuente"] == "Euskadi":

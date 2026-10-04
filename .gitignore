@@ -27,5 +27,6 @@ data/ultimo_bueno_por_fuente.json
 data/primera_aparicion.json
 data/placsp_web_acumulado.json
 data/euskadi_menores_acumulado.json
+data/euskadi_licitadoras.json
 # Lo mismo que dashboard/tenders-data.js, que es lo que se publica.
 data/tenders.json

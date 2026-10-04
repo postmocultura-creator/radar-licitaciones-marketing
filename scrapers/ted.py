@@ -50,6 +50,21 @@ CAMPOS = [
     # plataforma autonómica.
     "deadline-receipt-tender-time-lot",
     "document-url-lot",
+    # Criterios de adjudicación (BT-539 tipo: price | cost | quality; BT-734
+    # nombre; BT-541 número, casi siempre el peso en puntos o en %). Medido
+    # en vivo el 2026-10-04 con avisos de publicidad y comunicación: traen
+    # el peso 57 de 84 españoles y 43 de 100 del resto de la UE. Vienen
+    # todos los lotes seguidos en la misma lista (ver normalizar._criterios_ted).
+    "award-criterion-type-lot",
+    "award-criterion-name-lot",
+    "award-criterion-description-lot",
+    "award-criterion-number-lot",
+    # Lotes (BT-137 identificador, BT-21 título, BT-27 valor estimado).
+    # Medido en vivo el 2026-10-04: 25 de 84 avisos españoles van por lotes,
+    # todos con título y 20 con el valor de cada uno.
+    "identifier-lot",
+    "title-lot",
+    "estimated-value-lot",
     "estimated-value-proc",
     "estimated-value-cur-proc",
 ]
@@ -75,7 +90,7 @@ def consulta_cpv() -> str:
 # Títulos, organismos y adjudicatarias llegan en todos los idiomas de la UE
 # (5,9 MB de la caché para 540 avisos, medido el 2026-10-04). El radar solo
 # usa el español o, si no hay, el inglés o el primero que venga.
-CAMPOS_MULTILINGUES = ("notice-title", "buyer-name", "winner-name")
+CAMPOS_MULTILINGUES = ("notice-title", "buyer-name", "winner-name", "title-lot")
 
 
 def _solo_idiomas_utiles(aviso: dict) -> dict:

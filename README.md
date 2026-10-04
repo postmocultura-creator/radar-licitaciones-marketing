@@ -127,6 +127,49 @@ nuevos se comprueban antes en
   la fecha de adjudicación y la duración.
 - **Calls for proposals UE**: abiertas o próximas, traducidas al español
   (MyMemory, o `data/traducciones_manuales.json`).
+- **Cómo se puntúa**: los criterios de adjudicación con su peso, con lo que
+  publique cada fuente (`normalizar._criterios`):
+  - PLACSP (perfiles propios): precio, otros criterios con fórmula y juicio
+    de valor (`placsp._criterios_adjudicacion`). Con lotes se enseña el
+    primero. El precio se reconoce por su código o, si el organismo lo marca
+    mal, por su nombre.
+  - Euskadi: de la ficha pública del expediente (`euskadi._criterios`). Solo
+    separa el precio del resto, y solo si las ponderaciones suman 100.
+  - TED: del propio aviso (`normalizar._criterios_ted`). También precio y
+    resto; con lotes, solo si todos puntúan igual. Una licitación de TED que
+    también está en PLACSP se queda con los criterios de PLACSP.
+  - Plataformas agregadas y buscador web: no los publican.
+  - Calls for proposals: la API no los da como dato; se enlaza el documento
+    donde están (ver "Pliegos y documentos").
+
+  El filtro "Puntúa la propuesta, precio hasta el 50 %" deja las que se
+  pueden ganar con la propuesta: en PLACSP, con juicio de valor; en Euskadi y
+  TED, con algún criterio que no sea el precio.
+- **Pliegos y documentos** (`normalizar._hora_y_pliegos`): PLACSP, los pliegos
+  administrativo y técnico; Euskadi, esos dos y la carátula, de la pestaña
+  "Ficheros" de la ficha (`euskadi.anadir_fichas_licitaciones`, solo de las
+  licitaciones en plazo que encajan con la taxonomía); TED, la dirección
+  donde están los documentos; calls for proposals, el documento de la
+  convocatoria y sus anexos o, en Horizonte Europa, el anexo de los criterios
+  y los modelos de solicitud y de evaluación
+  (`eu_grants._documentos_convocatoria`), además del presupuesto del tema,
+  los proyectos previstos y la subvención máxima (`eu_grants._presupuesto`).
+- **Lotes** (`normalizar._lotes`): objeto e importe sin IVA de cada lote y,
+  si la fuente lo dice, lo que pesa el precio en ese lote. PLACSP (perfiles
+  propios): las tres cosas; plataformas agregadas: solo el objeto. Euskadi:
+  de la pestaña "Lotes" de la ficha. TED: título y, si viene uno por lote,
+  el valor estimado (los criterios no: los da todos seguidos, sin decir de
+  qué lote son). Las calls for proposals no tienen lotes. Una licitación con
+  un solo lote no enseña la lista.
+- **Competencia en cada adjudicación**: ofertas recibidas (PLACSP; en Euskadi,
+  las empresas que se presentaron) y rebaja de la ganadora sobre el
+  presupuesto, los dos sin IVA (`normalizar._competencia`). La rebaja solo
+  sale con un único resultado y cuando la hay: un 0 % suele ser un negociado
+  o un contrato a precios unitarios, donde el importe adjudicado es el máximo.
+- **Índice de éxito en Euskadi**: a cuántos concursos vascos se presenta cada
+  empresa y cuántos gana (`euskadi.indice_exito`, en `licitadoras-data.js`).
+  Sale en su ficha de Competencia y junto a cada licitadora de una
+  adjudicación vasca, con al menos 3 concursos.
 - **La misma licitación en dos fuentes** se fusiona si coinciden título y
   organismo (o, con el mismo plazo, un título es el comienzo del otro). Se
   queda la de TED; después la del feed de PLACSP, la de Euskadi, la de las
@@ -147,6 +190,8 @@ nuevos se comprueban antes en
 | `data/primera_aparicion.json` | cuándo vio el radar cada registro por primera vez ("Nuevo hoy") | normalizar.py | rama `estado` |
 | `data/placsp_web_acumulado.json` | lo del buscador web, hasta que vence su plazo | placsp_web.py | rama `estado` |
 | `data/euskadi_menores_acumulado.json` | menores de Euskadi de agencia, por mes de adjudicación | euskadi.py | rama `estado` |
+| `data/euskadi_licitadoras.json` | qué empresas se presentaron a cada concurso vasco (NIF y si es pyme) | euskadi.py | rama `estado` |
+| `dashboard/licitadoras-data.js` | índice de éxito por empresa en concursos vascos | euskadi.py | `main` |
 | `data/cache/` | detalle de las convocatorias UE y traducciones automáticas | eu_grants.py, normalizar.py | actions/cache |
 | `data/traducciones_manuales.json` | traducciones revisadas a mano | a mano | `main` |
 
@@ -165,7 +210,9 @@ enteros: `nif.py` los enmascara en cuanto llegan, como lo hace PLACSP
 (`***4567**`, `****4567*`), también si vienen pegados al nombre. El
 dashboard no enseña el NIF de una persona ni lo pone en direcciones. De las
 empresas que se presentan a un concurso de Euskadi se guarda nombre, NIF, si
-es pyme y provincia, nunca teléfonos ni correos.
+es pyme y provincia, nunca teléfonos ni correos; en el acumulado del índice
+de éxito, solo el NIF y si es pyme, y el índice publicado deja fuera a las
+personas físicas.
 
 ## Automatización
 
@@ -206,6 +253,16 @@ reintentan: repetir 300 MB a ciegas puede costar más que el límite del paso.
 - **Contratos menores**: los de PLACSP se acumulan desde octubre de 2026 (el
   ZIP solo trae lo actualizado ese mes); los de Euskadi tardan unas 7 noches
   en cubrir los 15 meses.
+- **Criterios de adjudicación**: las licitaciones de PLACSP ya acumuladas antes
+  del cambio los van teniendo a medida que su expediente vuelve a salir en el
+  ZIP del mes; las nuevas, desde el primer día.
+- **Documentos y presupuesto de las calls for proposals**: el detalle de cada
+  convocatoria se guarda en caché; los guardados antes del cambio se vuelven
+  a pedir a razón de 60 por noche, así que tardan unas noches en completarse.
+- **Índice de éxito en Euskadi**: cada noche se leen hasta 150 fichas de
+  concursos vascos del histórico (unos 5 minutos como máximo), así que tarda
+  unas 8 noches en cubrir 2021-2026. Solo Euskadi publica quién se presentó;
+  PLACSP solo da el número de ofertas.
 - **Importes del histórico**: incluyen algún contrato enorme que no es de
   agencia aunque su título encaje (Competencia permite quitar los de más de
   1 M€).

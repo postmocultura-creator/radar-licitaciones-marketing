@@ -118,15 +118,41 @@
   // traen hasta que se vuelve a leer su fichero.
   var LUGARES = D.lugar || [];
   var SIN_LUGAR = [null, null];
+
+  // Rebaja de la ganadora sobre el presupuesto (sin IVA los dos). Solo con
+  // un lote por expediente (con varios, el presupuesto es del expediente
+  // entero), fuera de contratos menores y acuerdos marco. null = no se puede
+  // calcular; 0 = adjudicado por el presupuesto, lo normal en negociados y
+  // contratos a precios unitarios, donde la rebaja real no se ve. Por encima
+  // del 80 %, casi siempre importes en unidades distintas (anual/total).
+  var REBAJA_MAX = 0.8;
+  var LOTES_POR_EXP = [];
+  H.lotes.forEach(function (l) { LOTES_POR_EXP[l[0]] = (LOTES_POR_EXP[l[0]] || 0) + 1; });
+  var ES_ACUERDO_MARCO = D.procedimiento.map(function (p) { return /acuerdo marco/i.test(p || ""); });
+  function rebajaDe(e, l) {
+    var presupuesto = e[7];
+    if (!presupuesto || !l[3] || e[4] === 1 || LOTES_POR_EXP[l[0]] !== 1 || ES_ACUERDO_MARCO[e[3]]) return null;
+    var r = 1 - l[3] / presupuesto;
+    if (r < -0.001 || r > REBAJA_MAX) return null;
+    return r < 0.0005 ? 0 : r;
+  }
+
   var FILAS = H.lotes.map(function (l) {
     var e = H.exp[l[0]];
     var lugar = LUGARES[e[6]] || SIN_LUGAR;
     return {
       exp: l[0], empresa: l[1], anio: l[2] ? l[2].slice(0, 4) : "", fecha: l[2] || "",
-      importe: l[3] || 0, ofertas: l[4], pyme: l[5],
+      importe: l[3] || 0, ofertas: l[4], pyme: l[5], rebaja: rebajaDe(e, l),
       organismo: e[0], euskadi: e[1] === 1, procedimiento: e[3], menor: e[4] === 1, mascara: e[5],
       provincia: lugar[0], comunidad: lugar[1],
     };
+  });
+
+  // Fecha del primer contrato de cada empresa en todo el histórico (sin
+  // filtros): para saber cuántas entran nuevas al mercado.
+  var PRIMERA_FECHA = [];
+  FILAS.forEach(function (f) {
+    if (f.fecha && (!PRIMERA_FECHA[f.empresa] || f.fecha < PRIMERA_FECHA[f.empresa])) PRIMERA_FECHA[f.empresa] = f.fecha;
   });
   // Texto en minúsculas, sin tildes ni puntuación, y con las siglas juntas:
   // "uniprex sau" encuentra "UNIPREX, S.A.U." (cada fuente escribe la forma
@@ -334,7 +360,9 @@
     el.innerHTML = lista.map(function (x) {
       var detalle = metrica === "importe"
         ? euros(x.importe) + ' <span class="barras__sec">· ' + miles(x.numero) + "</span>"
-        : miles(x.numero) + ' <span class="barras__sec">· ' + euros(x.importe) + "</span>";
+        : metrica === "rebaja"
+          ? porcentaje(x.rebaja) + ' <span class="barras__sec">· ' + miles(x.numero) + " contratos</span>"
+          : miles(x.numero) + ' <span class="barras__sec">· ' + euros(x.importe) + "</span>";
       var nombre = escaparHtml(etiqueta(x));
       var contenido =
         '<span class="barras__nombre" title="' + nombre + '">' + nombre + "</span>" +
@@ -352,14 +380,38 @@
     }).join("");
   }
 
+  function mediana(lista) {
+    if (!lista.length) return null;
+    var s = lista.slice().sort(function (a, b) { return a - b; });
+    var m = s.length >> 1;
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  // "1 contrato", "16 contratos".
+  function cuantos(n, uno, varios) {
+    return miles(n) + " " + (n === 1 ? uno : varios);
+  }
+
+  function porcentaje(fraccion) {
+    return miles(100 * fraccion, fraccion < 0.1 ? 1 : 0) + " %";
+  }
+
   function resumen(filas) {
-    var r = { importe: 0, conImporte: 0, empresas: {}, organismos: {}, ofertas: 0, conOfertas: 0, pymes: 0, conPyme: 0, menores: 0, anios: [] };
+    var r = { importe: 0, conImporte: 0, empresas: {}, organismos: {}, ofertas: 0, conOfertas: 0, pymes: 0, conPyme: 0, menores: 0, anios: [],
+      listaOfertas: [], rebajas: [], conRebaja: 0, sinRebaja: 0 };
     var anios = {};
     filas.forEach(function (f) {
       if (f.importe) { r.importe += f.importe; r.conImporte++; }
       r.empresas[f.empresa] = true;
       r.organismos[f.organismo] = true;
-      if (f.ofertas) { r.ofertas += f.ofertas; r.conOfertas++; }
+      // Los contratos menores no tienen concurso: PLACSP los publica con
+      // "1 oferta" y hundían la media (en el 77 % de lo que publica el número
+      // de ofertas "solo se presentó una").
+      if (f.ofertas && !f.menor) { r.ofertas += f.ofertas; r.conOfertas++; r.listaOfertas.push(f.ofertas); }
+      if (f.rebaja != null) {
+        r.conRebaja++;
+        if (f.rebaja > 0) r.rebajas.push(f.rebaja); else r.sinRebaja++;
+      }
       if (f.pyme != null) { r.conPyme++; r.pymes += f.pyme; }
       if (f.menor) r.menores++;
       if (f.anio) anios[f.anio] = true;
@@ -369,6 +421,8 @@
     r.numOrganismos = Object.keys(r.organismos).length;
     r.importeMedio = r.conImporte ? euros(r.importe / r.conImporte) : "—";
     r.ofertasMedia = r.conOfertas ? (r.ofertas / r.conOfertas).toLocaleString("es-ES", { maximumFractionDigits: 1 }) : "—";
+    r.rebajaMediana = mediana(r.rebajas);
+    r.rebajaTexto = r.rebajaMediana == null ? "—" : porcentaje(r.rebajaMediana);
     r.periodo = r.anios.length ? (r.anios.length > 1 ? r.anios[0] + "–" + r.anios[r.anios.length - 1] : r.anios[0]) : "—";
     return r;
   }
@@ -430,14 +484,94 @@
       ordenar(agrupar(filas, function (f) { return f.organismo; }), "numero").slice(0, TOP_ORGANISMOS), "numero",
       function (x) { return D.organismo[x.clave]; }, function (x) { return "#/organismo/" + x.clave; });
     barras(document.getElementById("grafico-procedimientos"), porProcedimiento(filas), "numero", nombreProcedimiento);
-    var tramos = [[1, 1, "1 oferta"], [2, 2, "2 ofertas"], [3, 5, "3 a 5"], [6, 10, "6 a 10"], [11, 1e9, "Más de 10"]];
     barras(document.getElementById("grafico-ofertas"),
-      tramos.map(function (t, i) {
+      TRAMOS_OFERTAS.map(function (t, i) {
         var x = { clave: i, numero: 0, importe: 0 };
-        filas.forEach(function (f) { if (f.ofertas >= t[0] && f.ofertas <= t[1]) { x.numero++; x.importe += f.importe; } });
+        filas.forEach(function (f) { if (!f.menor && f.ofertas >= t[0] && f.ofertas <= t[1]) { x.numero++; x.importe += f.importe; } });
         return x;
       }).filter(function (x) { return x.numero; }), "numero",
-      function (x) { return tramos[x.clave][2]; });
+      function (x) { return TRAMOS_OFERTAS[x.clave][2]; });
+    var rebajasPorTramo = rebajaPorOfertas(filas);
+    barras(document.getElementById("grafico-rebaja"), rebajasPorTramo, "rebaja",
+      function (x) { return TRAMOS_OFERTAS[x.clave][2]; });
+
+    pintarConclusiones(filas, r, rebajasPorTramo);
+  }
+
+  var TRAMOS_OFERTAS = [[1, 1, "1 oferta"], [2, 2, "2 ofertas"], [3, 5, "3 a 5"], [6, 10, "6 a 10"], [11, 1e9, "Más de 10"]];
+  // Con menos contratos, la mediana de un tramo baila demasiado.
+  var MIN_CONTRATOS_TRAMO = 20;
+
+  // Rebaja mediana de la ganadora según cuántas ofertas recibió el
+  // contrato (solo cuando hay rebaja).
+  function rebajaPorOfertas(filas) {
+    return TRAMOS_OFERTAS.map(function (t, i) {
+      var lista = [];
+      filas.forEach(function (f) { if (f.rebaja > 0 && f.ofertas >= t[0] && f.ofertas <= t[1]) lista.push(f.rebaja); });
+      return { clave: i, numero: lista.length, importe: 0, rebaja: mediana(lista) };
+    }).filter(function (x) { return x.numero >= MIN_CONTRATOS_TRAMO; });
+  }
+
+  // Lo que dicen los datos, en frases: la conclusión antes que el gráfico.
+  // Se recalcula con los filtros (una categoría, una provincia, un año...).
+  function pintarConclusiones(filas, r, rebajasPorTramo) {
+    var frases = [];
+    var empresasPorImporte = ordenar(agrupar(filas, function (f) { return f.empresa; }), "importe");
+
+    if (r.importe && empresasPorImporte.length >= 20) {
+      var top10 = empresasPorImporte.slice(0, 10).reduce(function (s, x) { return s + x.importe; }, 0) / r.importe;
+      frases.push((top10 >= 0.5 ? "<strong>Mercado concentrado.</strong> " : "<strong>Mercado repartido.</strong> ") +
+        "Las 10 empresas que más facturan se llevan el " + porcentaje(top10) + " del importe, entre " +
+        miles(empresasPorImporte.length) + " empresas que han ganado algo.");
+    }
+
+    if (r.listaOfertas.length >= MIN_CONTRATOS_TRAMO) {
+      var unaSola = r.listaOfertas.filter(function (o) { return o === 1; }).length / r.listaOfertas.length;
+      var tipicas = mediana(r.listaOfertas);
+      frases.push("<strong>Competencia.</strong> Se presentan de mediana " + miles(tipicas, 1) + (tipicas === 1 ? " empresa" : " empresas") +
+        " por licitación, y en el " + porcentaje(unaSola) + " solo se presentó una.");
+    }
+
+    if (r.rebajas.length >= MIN_CONTRATOS_TRAMO) {
+      var frase = "<strong>Precio.</strong> Cuando la ganadora rebaja el presupuesto, lo hace una mediana del " + porcentaje(r.rebajaMediana);
+      // Del tramo de una sola oferta al de más competencia con datos.
+      var conUna = rebajasPorTramo.filter(function (x) { return TRAMOS_OFERTAS[x.clave][0] === 1; });
+      var conMas = rebajasPorTramo[rebajasPorTramo.length - 1];
+      if (conUna.length && conMas && conMas !== conUna[0]) {
+        var tramo = TRAMOS_OFERTAS[conMas.clave];
+        var cuantasOfertas = tramo[1] > 100 ? "más de " + (tramo[0] - 1) : (tramo[0] === tramo[1] ? String(tramo[0]) : tramo[2]);
+        frase += ": un " + porcentaje(conUna[0].rebaja) + " si compite sola y un " + porcentaje(conMas.rebaja) + " con " + cuantasOfertas + " ofertas";
+      }
+      frase += ". En el " + porcentaje(r.sinRebaja / r.conRebaja) +
+        " de los contratos se adjudica por el presupuesto (negociados y precios unitarios, donde la rebaja no se ve).";
+      frases.push(frase);
+    }
+
+    if (r.conPyme >= MIN_CONTRATOS_TRAMO) {
+      frases.push("<strong>Pymes.</strong> Ganan el " + porcentaje(r.pymes / r.conPyme) + " de las adjudicaciones que dicen si la ganadora es pyme.");
+    }
+
+    // Empresas que ganan su primer contrato en los 12 meses anteriores a la
+    // última actualización.
+    var hace12 = String(Number(H.actualizado.slice(0, 4)) - 1) + H.actualizado.slice(4, 10);
+    var activas = {};
+    filas.forEach(function (f) { if (f.fecha > hace12) activas[f.empresa] = true; });
+    var numActivas = Object.keys(activas).length;
+    var nuevas = Object.keys(activas).filter(function (k) { return PRIMERA_FECHA[k] > hace12; }).length;
+    if (numActivas >= MIN_CONTRATOS_TRAMO) {
+      frases.push("<strong>Entrada.</strong> En el último año " + miles(nuevas) + " empresas ganaron un contrato por primera vez desde 2021: el " +
+        porcentaje(nuevas / numActivas) + " de las que ganaron algo en ese tiempo.");
+    }
+
+    if (filas.length >= MIN_CONTRATOS_TRAMO && r.menores) {
+      frases.push("<strong>Contratos menores.</strong> Son el " + porcentaje(r.menores / filas.length) +
+        " de las adjudicaciones (hasta 15.000 € sin IVA en servicios, sin concurso): la vía de entrada más directa a un organismo.");
+    }
+
+    var el = document.getElementById("conclusiones");
+    el.innerHTML = frases.length
+      ? frases.map(function (f) { return "<li>" + f + "</li>"; }).join("")
+      : '<li class="barras__vacio">Pocos contratos con estos filtros para sacar conclusiones.</li>';
   }
 
   // ---------- Directorios ----------
@@ -563,6 +697,19 @@
     return f.menor ? "Contrato menor" : (D.procedimiento[f.procedimiento] || "—");
   }
 
+  // Índice de éxito en concursos vascos (licitadoras-data.js, ver
+  // euskadi.indice_exito): a cuántos se presentó y cuántos ganó. No depende
+  // de los filtros. Solo con al menos MIN_CONCURSOS_EXITO concursos: con
+  // menos, un porcentaje dice poco.
+  var LICITADORAS = window.LICITADORAS || {};
+  var MIN_CONCURSOS_EXITO = 3;
+  function kpiExito(nif) {
+    var x = nif && LICITADORAS[nif];
+    if (!x || x[0] < MIN_CONCURSOS_EXITO) return [];
+    return [["Éxito en concursos vascos", Math.round(100 * x[1] / x[0]) + " %",
+      "gana " + miles(x[1]) + " de " + miles(x[0]) + (x[2] ? " desde " + x[2].slice(0, 4) : "")]];
+  }
+
   // Las fichas respetan ámbito/tipo/año/categoría, pero no el texto de
   // búsqueda (que solo sirve para encontrar la empresa o el organismo).
   function pintarFichaEmpresa(idEmpresa) {
@@ -574,8 +721,9 @@
       ["Importe medio", r.importeMedio],
       ["Organismos distintos", miles(r.numOrganismos)],
       ["Contratos menores", filas.length ? Math.round(100 * r.menores / filas.length) + " %" : "—", miles(r.menores) + " de " + miles(filas.length)],
-      ["Periodo", r.periodo],
-    ]);
+      ["Ofertas por licitación", r.ofertasMedia, r.conOfertas ? "en las que gana" : ""],
+      ["Rebaja al ganar", r.rebajaTexto, r.rebajas.length ? "mediana de " + cuantos(r.rebajas.length, "contrato", "contratos") : ""],
+    ].concat(kpiExito(D.empresa[idEmpresa][0]), [["Periodo", r.periodo]]));
 
     document.getElementById("ficha-bloques").innerHTML =
       panelBarras("Organismos a los que vende", "ficha-b1") + panelBarras("Categorías", "ficha-b2") +
@@ -625,6 +773,7 @@
       ["Importe medio", r.importeMedio],
       ["Empresas distintas", miles(r.numEmpresas)],
       ["Ofertas por licitación", r.ofertasMedia],
+      ["Rebaja de la ganadora", r.rebajaTexto, r.rebajas.length ? "mediana de " + cuantos(r.rebajas.length, "contrato", "contratos") : ""],
       ["Periodo", r.periodo],
     ]);
 

@@ -143,6 +143,92 @@ def _documentos_adjudicacion(cfs) -> list[dict]:
     return documentos[:MAX_DOCUMENTOS_ADJUDICACION]
 
 
+_RE_PRECIO = re.compile(r"\bprecio|oferta econ[oòó]mica|\bpreu\b", re.I)
+# La descripción entera es el nombre del precio: "Precio", "B.1. Oferta
+# Económica", "Criterio 1: Precio", "Precio más bajo". No vale si lo mezcla
+# con otros criterios ("Oferta económica y demás criterios cuantificables...")
+# ni si dice lo contrario ("Criterios automáticos distintos del precio").
+_RE_SOLO_PRECIO = re.compile(
+    r"^\W*(?:(?:criterio\s+)?[\w.]{1,6}\s*[.:)\-]\s*)?(?:(?:mejor|menor)\s+)?"
+    r"(?:precio|preu|prezo|(?:oferta|proposici[oó]n|propuesta)\s+econ[oòó]mica)"
+    r"(?:\s+(?:m[aá]s\s+bajo|ofertad[oa]))?\W*$", re.I)
+
+
+def _tipo_criterio(criterio) -> str:
+    """precio | formula | juicio. SUBJ = juicio de valor (la propuesta
+    técnica o creativa que valora la mesa); OBJ = se puntúa con fórmula, y
+    dentro de los OBJ el subtipo 1 es el precio (lista
+    AwardingCriteriaSubTypeCode de CODICE, a veces escrito "01").
+
+    El código no basta: medido en los ZIP de septiembre y octubre de 2026,
+    unos 400 criterios que se llaman "Precio" u "Oferta económica" van con el
+    subtipo 2 (otros criterios con fórmula), y salían como "Precio 0 %"."""
+    tipo = _texto(criterio, "cbc:AwardingCriteriaTypeCode")
+    if tipo == "SUBJ":
+        return "juicio"
+    subtipo = (_texto(criterio, "cbc:AwardingCriteriaSubTypeCode") or "").lstrip("0")
+    if subtipo == "1":
+        return "precio"
+    descripcion = _texto(criterio, "cbc:Description") or ""
+    # Expedientes antiguos sin códigos (p. ej. "Oferta Económica" con peso
+    # 1000 y nada más): se reconoce el precio por la descripción.
+    if not tipo and not subtipo and _RE_PRECIO.search(descripcion):
+        return "precio"
+    if _RE_SOLO_PRECIO.match(descripcion):
+        return "precio"
+    return "formula"
+
+
+def _peso(criterio) -> float | None:
+    try:
+        return float((_texto(criterio, "cbc:WeightNumeric") or "").replace(",", "."))
+    except ValueError:
+        return None
+
+
+def _criterios_adjudicacion(cfs) -> list[dict]:
+    """Criterios con los que se va a puntuar, con su peso: si la mesa valora
+    la propuesta (juicio de valor) o casi todo es precio. Medido con el ZIP
+    de septiembre de 2026: los traen 514 de las 674 licitaciones en plazo de
+    los perfiles propios. Van en el expediente o, si hay lotes, en cada lote
+    (y pueden ser distintos en cada uno).
+
+    Cada grupo: {lote: id del lote o None, criterios: [{descripcion, peso,
+    tipo}]}. El peso se guarda tal cual (casi siempre suman 100, a veces
+    10 o 200: normalizar.py lo pasa a porcentaje)."""
+    grupos = []
+    for lote, terminos in [(None, cfs.find("cac:TenderingTerms", NS))] + [
+            (_texto(l, "cbc:ID"), l.find("cac:TenderingTerms", NS))
+            for l in cfs.findall("cac:ProcurementProjectLot", NS)]:
+        if terminos is None:
+            continue
+        criterios = [{"descripcion": limpiar_texto(_texto(c, "cbc:Description")),
+                      "peso": _peso(c), "tipo": _tipo_criterio(c)}
+                     for c in terminos.findall("cac:AwardingTerms/cac:AwardingCriteria", NS)]
+        if criterios:
+            grupos.append({"lote": lote, "criterios": criterios})
+    return grupos
+
+
+MAX_LOTES = 40
+
+
+def _lotes(cfs) -> list[dict]:
+    """Lotes de una licitación: [{id, nombre, importe (sin IVA, texto)}].
+    Medido en los ZIP de septiembre y octubre de 2026 (marketing en plazo):
+    13 de 74 expedientes de los perfiles propios van por lotes, todos con
+    nombre e importe; en las plataformas agregadas, 5 de 56 y solo el nombre."""
+    lotes = []
+    for lote in cfs.findall("cac:ProcurementProjectLot", NS)[:MAX_LOTES]:
+        proyecto = lote.find("cac:ProcurementProject", NS)
+        lotes.append({
+            "id": _texto(lote, "cbc:ID"),
+            "nombre": limpiar_texto(_texto(proyecto, "cbc:Name")) if proyecto is not None else None,
+            "importe": _texto(proyecto, "cac:BudgetAmount/cbc:TaxExclusiveAmount") if proyecto is not None else None,
+        })
+    return lotes
+
+
 def _parsear_entry(entry) -> dict:
     cfs = entry.find("cac-place-ext:ContractFolderStatus", NS)
 
@@ -225,6 +311,9 @@ def _parsear_entry(entry) -> dict:
     empresa_nif = None
     fecha_adjudicacion = None
     importe_adjudicado = None
+    ofertas = None
+    resultados = 0
+    importe_sin_iva = None
     tender_result = cfs.find("cac:TenderResult", NS) if cfs is not None else None
     if tender_result is not None:
         nombre_ganador = tender_result.find("cac:WinningParty/cac:PartyName/cbc:Name", NS)
@@ -248,6 +337,14 @@ def _parsear_entry(entry) -> dict:
         if not importe_adjudicado:
             importe_adjudicado = _texto(
                 tender_result, "cac:AwardedTenderedProject/cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount")
+        # Competencia: ofertas recibidas y, para la rebaja, los dos importes
+        # sin IVA (el presupuesto base, no el valor estimado, que suma las
+        # prórrogas). Con varios resultados (lotes, acuerdos marco) la rebaja
+        # no se calcula: el presupuesto es del expediente entero.
+        ofertas = _texto(tender_result, "cbc:ReceivedTenderQuantity")
+        ofertas = int(ofertas) if ofertas and ofertas.isdigit() else None
+        resultados = len(cfs.findall("cac:TenderResult", NS))
+        importe_sin_iva = _texto(tender_result, "cac:AwardedTenderedProject/cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount")
 
     # Duración PLANEADA del contrato (no fecha fin directa: hay que sumarla
     # a fecha_adjudicacion). Solo relevante para contratos menores -única
@@ -277,6 +374,8 @@ def _parsear_entry(entry) -> dict:
         "fecha_limite": fecha_limite,
         "hora_limite": hora_limite,
         "pliegos": pliegos,
+        "criterios_adjudicacion": _criterios_adjudicacion(cfs) if cfs is not None and estado == "PUB" else [],
+        "lotes": _lotes(cfs) if cfs is not None and estado == "PUB" else [],
         "documentos_adjudicacion": _documentos_adjudicacion(cfs) if cfs is not None and estado in ("ADJ", "RES") else [],
         "enlace": enlace,
         "resumen_feed": _texto(entry, "atom:summary"),
@@ -284,6 +383,10 @@ def _parsear_entry(entry) -> dict:
         "empresa_nif": empresa_nif,
         "fecha_adjudicacion": fecha_adjudicacion,
         "importe_adjudicado": importe_adjudicado,
+        "importe_adjudicado_sin_iva": importe_sin_iva,
+        "presupuesto_sin_iva": _texto(proyecto, "cac:BudgetAmount/cbc:TaxExclusiveAmount") if proyecto is not None else None,
+        "ofertas": ofertas,
+        "resultados": resultados,
         "duracion_valor": duracion_valor,
         "duracion_unidad": duracion_unidad,
     }
@@ -366,6 +469,13 @@ def _extraer_zip_mensual(url_template: str, nombre: str) -> list[dict]:
     DIR_ZIPS.mkdir(parents=True, exist_ok=True)
     # Versión más reciente de cada expediente (aparece una vez por cada
     # cambio de estado). Antes se guardaba la primera que salía en el ZIP.
+    # La clave es el identificador de la entrada (atom:id), no el número de
+    # expediente: cada organismo numera por su cuenta ("2026-02", "1/2026") y
+    # con el número como clave un expediente pisaba al de otro organismo.
+    # Medido en los ZIP de septiembre y octubre de 2026: se perdía el 9 % de
+    # los perfiles propios y el 11 % de las plataformas agregadas, entre ellos
+    # 8 licitaciones de marketing en plazo. El enlace tampoco vale: en las
+    # agregadas cambia con cada anuncio del mismo expediente.
     mejores: dict[str, dict] = {}
     ultimo_error: Exception | None = None
     leidos = 0
@@ -381,7 +491,7 @@ def _extraer_zip_mensual(url_template: str, nombre: str) -> list[dict]:
                         continue
                     for entry in root.findall("atom:entry", NS):
                         item = _parsear_entry(entry)
-                        clave = item["expediente"] or item["enlace"]
+                        clave = _texto(entry, "atom:id") or item["enlace"] or item["expediente"]
                         previo = mejores.get(clave)
                         if previo is None or (item["fecha_actualizacion"] or "") >= (previo["fecha_actualizacion"] or ""):
                             mejores[clave] = item

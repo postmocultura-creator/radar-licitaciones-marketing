@@ -191,6 +191,7 @@
     // "" | "c:<comunidad>" | "p:<provincia>" | "sin" (española sin lugar publicado)
     lugar: "",
     soloRevisarManual: false,
+    soloPropuesta: false,
     presupuestoMin: 0,
     presupuestoMax: null,
     orden: ordenPorDefecto("recientes"),
@@ -229,6 +230,7 @@
   var elContenedor = document.getElementById("contenedor-tarjetas");
   var elConteo = document.getElementById("conteo-resultados");
   var elBotonRevisar = document.getElementById("boton-revisar");
+  var elBotonPropuesta = document.getElementById("boton-propuesta");
   var elSinResultados = document.getElementById("sin-resultados");
   var elResumenCabecera = document.getElementById("resumen-cabecera");
   var elFechaGeneracion = document.getElementById("fecha-generacion");
@@ -349,6 +351,11 @@
     return miles(valor) + " €";
   }
 
+  // 18.5 -> "18,5"; 18 -> "18".
+  function numeroEs(valor) {
+    return String(valor).replace(".", ",");
+  }
+
   // "1 empresa", "16 empresas".
   function cuantos(n, uno, varios) {
     return miles(n) + " " + (n === 1 ? uno : varios);
@@ -460,6 +467,7 @@
     var fuentes = {};
     var categorias = {};
     var totalRevisar = 0;
+    var totalPropuesta = 0;
     var paises = {};
     var comunidades = {};  // comunidad -> { total, provincias: { provincia: n } }
     var sinLugar = 0;
@@ -479,6 +487,7 @@
         sinLugar++;
       }
       if (t.revisar_manual) totalRevisar++;
+      if (pesaLaPropuesta(t)) totalPropuesta++;
     });
 
     // Fuente: "Todas" + las fuentes fijas de la vista (FUENTES_POR_TIPO),
@@ -582,6 +591,28 @@
     elBotonRevisar.hidden = totalRevisar === 0;
     elBotonRevisar.textContent = "Solo pendientes de revisar (" + totalRevisar + ")";
     elBotonRevisar.setAttribute("aria-pressed", estado.soloRevisarManual ? "true" : "false");
+
+    // Si en esta vista no hay ninguna (adjudicaciones, calls...), el botón
+    // no sale y el filtro se suelta.
+    if (!totalPropuesta) estado.soloPropuesta = false;
+    elBotonPropuesta.hidden = totalPropuesta === 0;
+    elBotonPropuesta.textContent = "Puntúa la propuesta, precio hasta el 50 % (" + totalPropuesta + ")";
+    elBotonPropuesta.setAttribute("aria-pressed", estado.soloPropuesta ? "true" : "false");
+  }
+
+  // Licitaciones donde la mesa valora la propuesta (hay juicio de valor) y
+  // el precio pesa la mitad o menos: donde una agencia puede ganar sin ser
+  // la más barata. Sin juicio de valor no entran aunque no haya criterio de
+  // precio: suelen puntuar descuentos sobre tarifas o la comisión de agencia,
+  // que son precio con otro nombre. Solo las que publican sus criterios con
+  // peso (PLACSP, perfiles propios).
+  // Euskadi y TED no dicen si un criterio va con fórmula o con juicio de
+  // valor (solo separan el precio del resto): allí basta con que el precio
+  // pese la mitad o menos y haya algún criterio que no sea el precio.
+  function pesaLaPropuesta(t) {
+    var cr = t.criterios;
+    if (!cr || cr.precio > 50) return false;
+    return cr.resto != null ? cr.resto > 0 : cr.juicio > 0;
   }
 
   function marcarFuente() {
@@ -592,6 +623,7 @@
 
   function pasaFiltros(t) {
     if (estado.soloRevisarManual && !t.revisar_manual) return false;
+    if (estado.soloPropuesta && !pesaLaPropuesta(t)) return false;
     if (estado.fuente) {
       var fuenteComparar = estado.tipoRegistro === "recientes" ? ambitoReciente(t) : t.fuente;
       if (fuenteComparar !== estado.fuente) return false;
@@ -723,12 +755,18 @@
       '<span class="chip">' + escaparHtml(t.fuente) + "</span>" +
       chipNovedad(t) +
       (t.revisar_manual ? '<span class="chip chip--aviso">Revisar</span>' : "") +
+      (t.criterios
+        ? '<span class="chip' + (pesaLaPropuesta(t) ? " chip--propuesta" : "") + '" title="Peso del precio en la puntuación">Precio ' + t.criterios.precio + " %</span>"
+        : "") +
+      (t.lotes && t.lotes.length ? '<span class="chip">' + t.lotes.length + " lotes</span>" : "") +
       (urgencia ? '<span class="insignia ' + urgencia.clase + '">' + escaparHtml(urgencia.texto) + "</span>" : "");
 
     var pie;
     if (esAdjudicacion) {
       pie = '<span class="tarjeta__pie-dato">Adjudicataria: <strong>' + escaparHtml(empresa) + "</strong></span>" +
-        "<span>Adjudicada: <strong>" + fechaLarga(t.fecha_adjudicacion) + "</strong></span>";
+        "<span>Adjudicada: <strong>" + fechaLarga(t.fecha_adjudicacion) + "</strong></span>" +
+        (t.ofertas ? "<span>Ofertas: <strong>" + t.ofertas + "</strong></span>" : "") +
+        (t.rebaja ? "<span>Rebaja: <strong>" + numeroEs(t.rebaja) + " %</strong></span>" : "");
     } else if (esMenor) {
       pie = '<span class="tarjeta__pie-dato">Lo tiene: <strong>' + escaparHtml(empresa) + "</strong></span>" +
         "<span>Vence (estimado): <strong>" + finEstimado + "</strong></span>";
@@ -776,8 +814,15 @@
       if (nifPublicable(t.empresa_nif)) importes.push(par("NIF", escaparHtml(t.empresa_nif), true));
       importes.push(par("Importe adjudicado", adjudicado || "No publicado", true));
       if (presupuesto) importes.push(par("Presupuesto de licitación", presupuesto, true));
+      if (t.ofertas) importes.push(par("Ofertas recibidas", String(t.ofertas), true));
+      // Solo cuando la hay: un 0 % suele ser un contrato a precios unitarios
+      // o un negociado, no una oferta sin descuento (ver normalizar._competencia).
+      if (t.rebaja) importes.push(par("Rebaja sobre el presupuesto", numeroEs(t.rebaja) + " %", true));
     } else {
-      importes.push(par("Presupuesto", presupuesto || "No publicado", true));
+      importes.push(par(esCall ? "Presupuesto de la convocatoria" : "Presupuesto", presupuesto || "No publicado", true));
+      // Calls for proposals: cuántos proyectos se van a financiar y con cuánto.
+      if (t.proyectos_previstos) importes.push(par("Proyectos que se prevé financiar", String(t.proyectos_previstos), true));
+      if (t.subvencion_maxima) importes.push(par("Subvención máxima por proyecto", euros(Math.round(t.subvencion_maxima)), true));
     }
 
     var categoriasHtml = (t.categorias || [])
@@ -812,20 +857,79 @@
         "</div>";
     }
 
+    // Cómo se puntúa (PLACSP): reparto entre precio, otros criterios con
+    // fórmula y juicio de valor, y cada criterio con su peso.
+    var NOMBRES_CRITERIO = { precio: "Precio", formula: "Fórmula", juicio: "Juicio de valor", otro: "Otro criterio" };
+    var criteriosHtml = "";
+    var cr = t.criterios;
+    if (cr) {
+      // Euskadi: solo se sabe cuánto pesa el precio y cuánto el resto.
+      var soloPrecioYResto = cr.resto != null;
+      var conclusion = cr.precio >= 100
+        ? "Solo cuenta el precio: gana la oferta más barata."
+        : soloPrecioYResto
+        ? "El precio pesa el " + cr.precio + " % y el resto de criterios el " + cr.resto + " %."
+        : (cr.precio ? "El precio pesa el " + cr.precio + " %. " : "No hay un criterio de precio como tal. ") + (cr.juicio > 0
+          ? "La mesa valora la propuesta técnica (juicio de valor) con el " + cr.juicio + " %" +
+            (cr.formulas > 0 ? " y el " + cr.formulas + " % se puntúa con fórmulas (mejoras, plazos, equipo...)." : ".")
+          : (cr.precio ? "El resto" : "Todo") + " se puntúa con fórmulas (mejoras, plazos, equipo...): no hay juicio de valor.");
+      var tramosReparto = (soloPrecioYResto
+        ? [["precio", cr.precio], ["otro", cr.resto]]
+        : [["precio", cr.precio], ["formula", cr.formulas], ["juicio", cr.juicio]]).filter(function (x) { return x[1] > 0; });
+      criteriosHtml = '<div class="tarjeta__bloque"><h4>Cómo se puntúa</h4>' +
+        '<p class="tarjeta__resumen-texto">' + conclusion + "</p>" +
+        '<div class="reparto" aria-hidden="true">' + tramosReparto.map(function (x) {
+          return '<span class="reparto__tramo reparto__tramo--' + x[0] + '" style="width:' + x[1] + '%"></span>';
+        }).join("") + "</div>" +
+        '<ul class="tarjeta__criterios">' + cr.detalle.map(function (c) {
+          return '<li><span class="tarjeta__criterio-nombre">' + escaparHtml(c.descripcion) + "</span>" +
+            '<span class="tarjeta__criterio-tipo tarjeta__criterio-tipo--' + c.tipo + '">' + NOMBRES_CRITERIO[c.tipo] + "</span>" +
+            '<span class="dato-numerico">' + numeroEs(c.peso) + " %</span></li>";
+        }).join("") + "</ul>" +
+        (soloPrecioYResto ? '<p class="tarjeta__nota">' + (t.fuente === "Euskadi" ? "El portal de Euskadi" : "El anuncio europeo") +
+          " no indica qué criterios se puntúan con fórmula y cuáles con juicio de valor: está en el pliego.</p>" : "") +
+        (cr.por_lotes ? '<p class="tarjeta__nota">Tiene lotes y cada uno puede puntuar distinto: aquí, el primero.' +
+          (t.lotes ? " Lo que pesa el precio en cada lote está en la lista de lotes." : " El detalle de cada lote está en el pliego.") + "</p>" : "") +
+        "</div>";
+    }
+
+    // Lotes: objeto e importe de cada uno y, si la fuente lo dice, lo que
+    // pesa el precio (PLACSP y Euskadi).
+    var lotesHtml = "";
+    if (t.lotes && t.lotes.length) {
+      lotesHtml = '<div class="tarjeta__bloque"><h4>Lotes (' + t.lotes.length + ')</h4><ul class="tarjeta__lotes">' +
+        t.lotes.map(function (l) {
+          return '<li><span class="tarjeta__lote-id">Lote ' + escaparHtml(l.id || "—") + "</span>" +
+            '<span class="tarjeta__lote-nombre">' + escaparHtml(l.nombre || "Sin descripción en la fuente") + "</span>" +
+            '<span class="tarjeta__lote-precio">' + (l.precio != null ? "Precio " + l.precio + " %" : "") + "</span>" +
+            '<span class="dato-numerico">' + (l.importe ? euros(Math.round(l.importe)) : "") + "</span></li>";
+        }).join("") + "</ul>" +
+        '<p class="tarjeta__nota">Importes sin IVA' + (t.lotes.some(function (l) { return !l.importe; }) ? "; la fuente no publica el de todos los lotes" : "") + ".</p></div>";
+    }
+
     // Pliegos: los que publica la fuente, con su enlace de descarga.
     var NOMBRES_PLIEGO = {
       administrativo: "Pliego de cláusulas administrativas",
       tecnico: "Pliego de prescripciones técnicas",
+      caratula: "Carátula (cuadro de características)",
       documentacion: "Documentación de la licitación",
     };
     var pliegosHtml = "";
     if (t.pliegos && t.pliegos.length) {
-      pliegosHtml = '<div class="tarjeta__bloque"><h4>Pliegos</h4><ul class="tarjeta__pliegos">' +
+      pliegosHtml = '<div class="tarjeta__bloque"><h4>' + (esCall ? "Documentos de la convocatoria" : "Pliegos") + '</h4><ul class="tarjeta__pliegos">' +
         t.pliegos.map(function (p) {
+          // Calls for proposals: el nombre que le da el portal europeo (en
+          // inglés), salvo el documento principal.
+          var deConvocatoria = p.tipo === "convocatoria";
+          var etiqueta = deConvocatoria
+            ? (/^call (document|fiche)/i.test(p.nombre || "") ? "Documento de la convocatoria" : escaparHtml(p.nombre || "Documento"))
+            : (NOMBRES_PLIEGO[p.tipo] || "Documento");
           return '<li><a class="enlace" href="' + escaparHtml(p.url) + '" target="_blank" rel="noopener noreferrer">' +
-            (NOMBRES_PLIEGO[p.tipo] || "Documento") + Nav.icono("externo") + "</a>" +
-            (p.nombre ? "<span>" + escaparHtml(p.nombre) + "</span>" : "") + "</li>";
-        }).join("") + "</ul></div>";
+            etiqueta + Nav.icono("externo") + "</a>" +
+            (p.nombre && !deConvocatoria ? "<span>" + escaparHtml(p.nombre) + "</span>" : "") + "</li>";
+        }).join("") + "</ul>" +
+        (esCall ? '<p class="tarjeta__nota">Los criterios de evaluación y su puntuación están en estos documentos (apartado «Award criteria»): el portal europeo no los publica como dato.</p>' : "") +
+        "</div>";
     }
 
     // Actas e informes de valoración de una adjudicación (solo PLACSP). Las
@@ -867,6 +971,9 @@
           var notas = [];
           if (gano) notas.push("adjudicataria");
           if (l.pyme) notas.push("pyme");
+          // Índice de éxito en concursos vascos (licitadoras-data.js).
+          var exito = l.nif && (window.LICITADORAS || {})[l.nif];
+          if (exito && exito[0] >= 3) notas.push("gana " + exito[1] + " de " + exito[0] + " concursos");
           if (l.provincia) notas.push(escaparHtml(l.provincia));
           return "<li>" + (l.id != null ? '<a class="enlace" href="historico.html#/empresa/' + l.id + '">' + nombre + "</a>" : "<span class=\"tarjeta__licitador\">" + nombre + "</span>") +
             "<span>" + notas.join(" · ") + "</span></li>";
@@ -929,6 +1036,8 @@
             "</div>" +
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
+          lotesHtml +
+          criteriosHtml +
           pliegosHtml +
           documentosHtml +
           licitadoresHtml +
@@ -950,6 +1059,7 @@
     if (estado.presupuestoMin > 0) n++;
     if (estado.presupuestoMax !== null && estado.presupuestoMax !== "") n++;
     if (estado.soloRevisarManual) n++;
+    if (estado.soloPropuesta) n++;
     return n;
   }
 
@@ -1160,6 +1270,7 @@
       // Bizkaia en licitaciones quiere seguir en Bizkaia en adjudicaciones.
       // construirControles la descarta si en la vista nueva no existe.
       estado.soloRevisarManual = false;
+      estado.soloPropuesta = false;
       elTexto.value = p.q || "";
 
       Nav.activar(vista.nav);
@@ -1241,6 +1352,11 @@
       elBotonRevisar.setAttribute("aria-pressed", estado.soloRevisarManual ? "true" : "false");
       aplicarFiltros();
     });
+    elBotonPropuesta.addEventListener("click", function () {
+      estado.soloPropuesta = !estado.soloPropuesta;
+      elBotonPropuesta.setAttribute("aria-pressed", estado.soloPropuesta ? "true" : "false");
+      aplicarFiltros();
+    });
     elReset.addEventListener("click", function () {
       estado.texto = "";
       estado.fuente = "";
@@ -1248,6 +1364,7 @@
       estado.pais = "";
       estado.lugar = "";
       estado.soloRevisarManual = false;
+      estado.soloPropuesta = false;
       elTexto.value = "";
       elCategoria.value = "";
       elPais.value = "";

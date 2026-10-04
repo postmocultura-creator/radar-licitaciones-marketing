@@ -612,8 +612,9 @@ def _publicar(c: dict) -> None:
 
     nucleo = {k: c[k] for k in ("v", "actualizado", "categorias", "prefijo_enlace", "dic", "lotes")}
     nucleo["fragmentos"] = FRAGMENTOS
-    # [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias, lugar]
-    nucleo["exp"] = [e[2:8] + [e[12]] for e in c["exp"]]
+    # [organismo, euskadi, tipo, procedimiento, menor, mascara_categorias,
+    # lugar, presupuesto sin IVA en euros enteros (para la rebaja)]
+    nucleo["exp"] = [e[2:8] + [e[12], round(e[11]) if e[11] else None] for e in c["exp"]]
     SALIDA_DASHBOARD.write_text(
         "// Generado por scrapers/historico_adjudicaciones.py (ver _publicar). No editar a mano.\n"
         + CABECERA_JS + json.dumps(nucleo, ensure_ascii=False, separators=(",", ":")) + ";\n",
