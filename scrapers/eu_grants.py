@@ -186,7 +186,7 @@ def extraer() -> list[dict]:
     cache = _leer_cache_detalle()
     cache_nuevo: dict[str, dict] = {}
     hoy = date.today()
-    pedidos = 0
+    pedidos = fallidos = 0
     resultados = []
     for item in listado:
         md = item.get("metadata", {})
@@ -222,6 +222,7 @@ def extraer() -> list[dict]:
                     except requests.RequestException:
                         pedido = {}
                     pedidos += 1
+                    fallidos += not pedido
                     time.sleep(1 / PETICIONES_POR_SEGUNDO)
                     # Si la petición falla o vuelve vacía, vale lo que hubiera.
                     detalle = pedido or detalle or {}
@@ -236,6 +237,11 @@ def extraer() -> list[dict]:
     CACHE_DETALLE.parent.mkdir(parents=True, exist_ok=True)
     CACHE_DETALLE.write_text(json.dumps(cache_nuevo, ensure_ascii=False), encoding="utf-8")
     print(f"[eu_grants] detalles de {len(cache_nuevo)} convocatorias: {pedidos} pedidos a la API, el resto de la caché")
+    if fallidos:
+        # Sin el texto largo, la convocatoria solo se clasifica por el título
+        # y casi nunca encaja: 52 se quedaron así la noche del 2026-10-04.
+        # Se vuelven a pedir la noche siguiente (no están en la caché).
+        print(f"[eu_grants] AVISO: {fallidos} detalles no se pudieron descargar hoy", file=sys.stderr)
     return resultados
 
 

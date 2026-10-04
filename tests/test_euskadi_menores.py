@@ -86,6 +86,41 @@ def test_acumula_solo_lo_relevante_y_poda_lo_vencido(api_falsa, tmp_path, monkey
     assert set(guardado["meses_leidos"]) == set(pedidas)
 
 
+def test_adjudicaciones_solo_resuelven_el_organismo_de_las_relevantes(monkeypatch):
+    # Resolver el organismo cuesta una petición por organismo y segundo: con
+    # todas las adjudicaciones del mes (844 la noche del 2026-10-04) el paso
+    # de Euskadi tardó 16,5 de sus 20 minutos.
+    pedidas = []
+
+    class Resp:
+        def __init__(self, datos):
+            self._datos = datos
+
+        def json(self):
+            return self._datos
+
+    def pedir(metodo, url, **kwargs):
+        pedidas.append(url)
+        if "contracting-authorities" in url:
+            return Resp({"name": "Ayuntamiento", "codNUTS": "ES213"})
+        return Resp({"items": [_contrato(1, "Campaña de publicidad", "2026-09-10", "2026-12-01", menor=False),
+                               _contrato(2, "Limpieza de oficinas", "2026-09-10", "2026-12-01", menor=False)],
+                     "totalPages": 1})
+
+    monkeypatch.setattr(euskadi.peticiones, "pedir", pedir)
+    monkeypatch.setattr(euskadi.time, "sleep", lambda s: None)
+    monkeypatch.setattr(euskadi, "leer_ficha", lambda url: {"documentos": [], "licitadores": []})
+    euskadi._CACHE_ORGANISMO.clear()
+
+    items = euskadi.extraer_contratos(dias_atras=30)
+    euskadi.anadir_fichas(items)
+
+    relevante, ajeno = items
+    assert relevante["organismo_resuelto"] == "Ayuntamiento"
+    assert "organismo_resuelto" not in ajeno
+    assert sum("contracting-authorities" in u for u in pedidas) == 1
+
+
 def test_releer_un_mes_sustituye_lo_que_habia(api_falsa, tmp_path, monkeypatch):
     paginas, _ = api_falsa
     monkeypatch.setattr(euskadi, "ACUMULADO_MENORES", tmp_path / "menores.json")

@@ -155,7 +155,7 @@ encendido y sin pasar por un modelo de IA.
 - **`actualizar-datos.yml`**, cada noche (cron 22:47 UTC; GitHub suele
   arrancarlo hacia la 01:30). Ejecuta los scrapers, el histórico, Clasificar y
   Normalizar. Cada paso tiene su límite de tiempo (TED 10 min, PLACSP 40,
-  buscador web 30, Euskadi 20, UE 20, histórico 25, Clasificar 10, Normalizar
+  buscador web 30, Euskadi 25, UE 20, histórico 25, Clasificar 10, Normalizar
   15) y el job, la suma más margen: si una fuente se pasa, ese día se queda
   con lo acumulado y el resto se publica. No publica si el radar sale con
   menos de 100 registros. Las cachés de `data/cache/` se guardan nada más
@@ -184,7 +184,7 @@ reintentan: repetir 300 MB a ciegas puede costar más que el límite del paso.
   registro lo avisa.
 - **Euskadi no da CPV en los avisos** ni una hora de cierre fiable.
 - **Contratos menores**: los de PLACSP se acumulan desde octubre de 2026 (el
-  ZIP solo trae lo actualizado ese mes); los de Euskadi tardan unas 5 noches
+  ZIP solo trae lo actualizado ese mes); los de Euskadi tardan unas 7 noches
   en cubrir los 15 meses.
 - **Importes del histórico**: incluyen algún contrato enorme que no es de
   agencia aunque su título encaje (Competencia permite quitar los de más de

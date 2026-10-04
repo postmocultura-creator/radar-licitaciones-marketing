@@ -469,7 +469,7 @@ justo no los que vencen ahora (21 por vencer frente a 298 del Estado). La
 API no deja filtrar por fecha de fin, pero sí por menor
 (`minor-contract=true`) y por mes de adjudicación. `euskadi.actualizar_menores()`
 pide cada noche el mes en curso y el anterior, más los meses de la ventana
-que no se han leído nunca (tres por noche, unos 6 minutos) o, cuando ya están todos, uno en
+que no se han leído nunca (dos por noche) o, cuando ya están todos, uno en
 rotación, y acumula solo lo que encaja con la taxonomía en
 `data/euskadi_menores_acumulado.json`. Al releer un mes, lo que había de ese
 mes se sustituye (un contrato anulado desaparece). Ojo con las fechas de la

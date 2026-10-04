@@ -42,8 +42,12 @@ jobs:
     # tiene su propio límite: si se pasa, ese día se queda con lo acumulado
     # de días anteriores y el resto se publica igual. Una noche normal sigue
     # tardando unos 25-35 minutos; el límite solo se alcanza si algo falla.
-    # Pasos: 10+40+30+20+20+25+10+15 = 170, más la instalación y margen.
-    timeout-minutes: 185
+    # Pasos: 10+40+30+25+20+25+10+15 = 175, más la instalación y margen.
+    timeout-minutes: 190
+    # Salida sin búfer: cada línea del registro lleva su hora real, y si un
+    # paso se corta por tiempo se ve hasta dónde llegó.
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -89,8 +93,10 @@ jobs:
           python scrapers/placsp_web.py
         continue-on-error: true
 
+      # Avisos, adjudicaciones con su ficha y contratos menores por meses.
+      # La primera noche con los menores por meses tardó 16,5 minutos.
       - name: Scraper Euskadi
-        timeout-minutes: 20
+        timeout-minutes: 25
         run: python scrapers/euskadi.py
         continue-on-error: true
 

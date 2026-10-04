@@ -153,17 +153,24 @@ def extraer_contratos(dias_atras: int) -> list[dict]:
         pagina += 1
         time.sleep(1 / PETICIONES_POR_SEGUNDO)
 
+    # El organismo (una petición por organismo) solo se resuelve para las que
+    # encajan con la taxonomía, en anadir_fichas(): con todas, el paso de
+    # Euskadi tardó 16,5 de sus 20 minutos (2026-10-04).
     for item in resultados:
-        _completar_contrato(item)
+        _sin_datos_personales(item)
     return resultados
 
 
-def _completar_contrato(item: dict) -> None:
-    """NIF limpio y organismo (nombre y región), que /contracts no trae."""
+def _sin_datos_personales(item: dict) -> None:
     # Euskadi suele enmascarar a las personas físicas (XXXXX155F); por si
     # alguna llega entera, no se guarda (ver nif.limpiar).
     item["CIF"] = limpiar_nif(item.get("CIF"))
     item["socialReason"] = ocultar_en_texto(item.get("socialReason"))
+
+
+def _completar_contrato(item: dict) -> None:
+    """NIF limpio y organismo (nombre y región), que /contracts no trae."""
+    _sin_datos_personales(item)
     href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
     item["organismo_resuelto"] = _resolver_organismo(href)
     item["organismo_nuts"] = _CACHE_NUTS.get(href)
@@ -186,7 +193,9 @@ def _completar_contrato(item: dict) -> None:
 # rotación. Unas 300 páginas por noche.
 # ---------------------------------------------------------------------------
 MESES_MENORES = config.DIAS_HISTORIAL_CONTRATO_MENOR // 30  # 15
-MESES_NUEVOS_POR_NOCHE = 3
+# Dos: con tres, la primera noche el paso de Euskadi tardó 16,5 de sus 20
+# minutos (2026-10-04). Así la ventana se completa en unas 7 noches.
+MESES_NUEVOS_POR_NOCHE = 2
 ACUMULADO_MENORES = Path(__file__).resolve().parent.parent / "data" / "euskadi_menores_acumulado.json"
 
 
@@ -269,7 +278,14 @@ def actualizar_menores(hoy=None) -> list[dict]:
         contratos.update({str(c["id"]): c for c in nuevos})
         leidos[mes] = hoy.isoformat()
         print(f"[euskadi] menores de {mes}: {len(nuevos)} de agencia con fecha de fin")
+        # Se guarda tras cada mes: si el paso se corta por tiempo, lo leído
+        # no se pierde y la noche siguiente sigue por donde iba.
+        _guardar_menores(contratos, leidos, hoy)
+    return _guardar_menores(contratos, leidos, hoy)
 
+
+def _guardar_menores(contratos: dict[str, dict], leidos: dict[str, str], hoy) -> list[dict]:
+    """Poda lo vencido y lo que sale de la ventana, guarda y devuelve los vigentes."""
     ventana = set(_ventana_menores(hoy))
     vigentes = sorted((c for c in contratos.values()
                        if _mes(c) in ventana and (c.get("contractEndDate") or "")[:10] >= hoy.isoformat()),
@@ -418,15 +434,18 @@ def leer_ficha(url: str) -> dict:
 
 
 def anadir_fichas(items: list[dict]) -> None:
-    """Lee la ficha solo de las adjudicaciones que el radar va a enseñar
-    (las que encajan con la taxonomía, ~10-20 al mes): leerlas todas serían
-    cientos de páginas cada noche."""
+    """Organismo y ficha solo de las adjudicaciones que el radar va a enseñar
+    (las que encajan con la taxonomía, ~10-20 al mes): hacerlo con todas
+    serían cientos de peticiones cada noche."""
     from clasificar import clasificar_texto  # noqa: E402
 
     leidas = vacias = 0
     for item in items:
+        if not clasificar_texto(item.get("object") or "")["incluir"]:
+            continue
+        _completar_contrato(item)
         url = item.get("mainEntityOfPage")
-        if not url or not clasificar_texto(item.get("object") or "")["incluir"]:
+        if not url:
             continue
         try:
             item["ficha"] = leer_ficha(url)
