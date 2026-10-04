@@ -75,10 +75,17 @@
     return Number(p[2]) + " " + MESES[Number(p[1]) - 1] + " " + p[0];
   }
 
+  // NIF que se puede enseñar: el de una sociedad. El de una persona física
+  // está enmascarado ("***4567**", "XXXXX155F") y no se enseña (ver nif.py).
+  function nifPublicable(nif) {
+    return nif && nif.indexOf("*") === -1 && nif.indexOf("XXX") !== 0 ? nif : null;
+  }
+
+  // Texto de las fuentes dentro de HTML, también dentro de atributos
+  // (title, href): por eso se escapan las comillas, no solo < > &.
+  var ENTIDADES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   function escaparHtml(str) {
-    var div = document.createElement("div");
-    div.textContent = str == null ? "" : String(str);
-    return div.innerHTML;
+    return (str == null ? "" : String(str)).replace(/[&<>"']/g, function (c) { return ENTIDADES[c]; });
   }
 
   function enlaceCompleto(enlace) {
@@ -503,7 +510,7 @@
       var nombre, sub = "";
       if (deEmpresas) {
         nombre = D.empresa[g.clave][1];
-        if (D.empresa[g.clave][0]) sub = '<span class="tabla__sub">NIF ' + escaparHtml(D.empresa[g.clave][0]) + "</span>";
+        if (nifPublicable(D.empresa[g.clave][0])) sub = '<span class="tabla__sub">NIF ' + escaparHtml(D.empresa[g.clave][0]) + "</span>";
       } else {
         nombre = D.organismo[g.clave];
       }
@@ -652,7 +659,7 @@
       var e = D.empresa[estado.id];
       html = '<nav class="migas" aria-label="Ruta"><a href="#/empresas">Empresas</a><span aria-hidden="true">›</span><span>Ficha de empresa</span></nav>' +
         '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(e[1]) + "</h1>" +
-        '<p class="pagina__descripcion">' + (e[0] ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con los filtros seleccionados (ámbito, tipo, año, categoría, provincia e importe).</p></div></header>";
+        '<p class="pagina__descripcion">' + (nifPublicable(e[0]) ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con los filtros seleccionados (ámbito, tipo, año, categoría, provincia e importe).</p></div></header>";
       document.title = e[1] + " — Radar de licitaciones";
     } else if (estado.vista === "organismo") {
       var nombre = D.organismo[estado.id];

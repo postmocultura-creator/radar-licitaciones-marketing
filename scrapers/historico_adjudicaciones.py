@@ -46,7 +46,7 @@ import sys
 import tempfile
 import time
 import zipfile
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -57,8 +57,10 @@ sys.path.append(str(BASE))
 sys.path.append(str(BASE / "scrapers"))
 import config  # noqa: E402
 import territorio  # noqa: E402
+from nif import enmascarado as nif_enmascarado, es_relleno, limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
 from clasificar import clasificar_texto, _normalizar_texto, _titulo_ted  # noqa: E402
-from placsp import NS  # noqa: E402
+import peticiones  # noqa: E402
+from placsp import NS, limpiar_enlace, limpiar_texto  # noqa: E402
 
 SALIDA = BASE / "data" / "historico_adjudicaciones.json"
 SALIDA_DETALLE = BASE / "dashboard" / "historico-detalle"
@@ -158,7 +160,7 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
         pyme = _texto(tr, "cbc:SMEAwardedIndicator")
         lotes.append({
             "empresa": empresa,
-            "nif": (_texto(tr, "cac:WinningParty/cac:PartyIdentification/cbc:ID") or "").upper().replace("-", "").replace(" ", "") or None,
+            "nif": limpiar_nif(_texto(tr, "cac:WinningParty/cac:PartyIdentification/cbc:ID")),
             "fecha": (_texto(tr, "cbc:AwardDate") or "")[:10] or fecha_anuncio_adj,
             "importe": importe,
             "ofertas": int(ofertas) if ofertas and ofertas.isdigit() else None,
@@ -335,16 +337,6 @@ def pieza_placsp(feed: str, periodo: str) -> list[dict]:
 URL_EUSKADI_CONTRATOS = "https://api.euskadi.eus/procurements/contracts"
 
 
-def _rango_periodo(periodo: str) -> tuple[str, str]:
-    """'2024' -> ('2024-01-01', '2024-12-31'); '202609' -> ('2026-09-01', '2026-09-30')."""
-    anio = int(periodo[:4])
-    if len(periodo) == 4:
-        return f"{anio}-01-01", f"{anio}-12-31"
-    mes = int(periodo[4:6])
-    siguiente = date(anio + (mes == 12), mes % 12 + 1, 1)
-    return f"{anio}-{mes:02d}-01", (siguiente - timedelta(days=1)).isoformat()
-
-
 def pieza_euskadi_menores(periodo: str) -> list[dict]:
     """Contratos menores de organismos vascos, desde la API de contratación
     de Euskadi. Hacen falta aparte: los organismos vascos publican sus
@@ -357,24 +349,17 @@ def pieza_euskadi_menores(periodo: str) -> list[dict]:
     en 2025). El tamaño de página máximo es 50 (100 devuelve 400)."""
     import euskadi  # noqa: E402  (resuelve y cachea el nombre del organismo)
 
-    desde, hasta = _rango_periodo(periodo)
+    desde, hasta = euskadi.rango_mes_api(periodo)
     salida: dict[str, dict] = {}
     pagina, total_paginas = 1, 1
     while pagina <= total_paginas:
         params = {"minor-contract": "true", "award-date.gt": desde, "award-date.lt": hasta,
                   "itemsOfPage": 50, "currentPage": pagina}
-        datos = None
-        for intento in range(4):
-            try:
-                resp = requests.get(URL_EUSKADI_CONTRATOS, params=params, timeout=60,
-                                    headers={"Accept": "application/json"})
-                resp.raise_for_status()
-                datos = resp.json()
-                break
-            except (requests.RequestException, ValueError):
-                time.sleep(10 * (intento + 1))
-        if datos is None:
-            raise RuntimeError(f"La API de Euskadi no responde (página {pagina} de {periodo})")
+        try:
+            datos = peticiones.pedir("GET", URL_EUSKADI_CONTRATOS, intentos=4, espera=10, params=params,
+                                     timeout=60, headers={"Accept": "application/json"}).json()
+        except (requests.RequestException, ValueError) as exc:
+            raise RuntimeError(f"La API de Euskadi no responde (página {pagina} de {periodo})") from exc
         total_paginas = datos.get("totalPages", 1)
         for item in datos.get("items", []):
             titulo = item.get("object") or ""
@@ -410,7 +395,7 @@ def pieza_euskadi_menores(periodo: str) -> list[dict]:
                 "actualizado": fecha,
                 "lotes": [{
                     "empresa": empresa,
-                    "nif": (item.get("CIF") or "").upper().replace("-", "").replace(" ", "") or None,
+                    "nif": limpiar_nif(item.get("CIF")),
                     "fecha": fecha or None,
                     "importe": _importe(str(item.get("awardAmountWithoutVAT") or item.get("awardAmount") or "")),
                     "ofertas": None, "pyme": None, "lote": None,
@@ -471,7 +456,7 @@ def pieza_ted(anio: str) -> list[dict]:
             "actualizado": fecha,
             "lotes": [{
                 "empresa": g,
-                "nif": (nifs[i] if i < len(nifs) else None),
+                "nif": limpiar_nif(nifs[i]) if i < len(nifs) else None,
                 "fecha": fecha or None,
                 "importe": _importe(str(importes[i])) if i < len(importes) else None,
                 "ofertas": None, "pyme": None, "lote": None,
@@ -511,8 +496,9 @@ def _clave_empresa(nif: str | None, nombre: str) -> str:
     cifras: no basta para agrupar, porque junta a personas distintas. Con
     esos se exige además el mismo nombre, comparado sin tildes, sin
     puntuación y sin importar el orden ("GARCÍA LÓPEZ, ANA" = "Ana García
-    López")."""
-    from normalizar import _normalizar_clave, nif_enmascarado
+    López"). Los DNI completos ya llegan enmascarados (nif.limpiar), así que
+    las personas físicas siempre se agrupan de esta forma."""
+    from normalizar import _normalizar_clave
 
     nif = _nif_empresa(nif)
     if nif and nif_enmascarado(nif):
@@ -521,16 +507,16 @@ def _clave_empresa(nif: str | None, nombre: str) -> str:
 
 
 def _nif_empresa(nif: str | None) -> str | None:
-    """NIF tal como se guarda y se compara: limpio (normalizar._nif_limpio)
-    y sin los de relleno. "A00000000", "X00000000" o "0" no son de nadie:
-    agrupaban bajo una misma ficha a UTE y personas sin relación (unas 70
-    adjudicaciones el 2026-10-02). Sin NIF, la empresa se agrupa por nombre."""
-    from normalizar import _nif_limpio
+    """NIF tal como se guarda y se compara (nif.limpiar), sin los de relleno
+    (nif.es_relleno). Sin NIF, la empresa se agrupa por nombre."""
+    return None if es_relleno(nif) else limpiar_nif(nif)
 
-    limpio = _nif_limpio(nif)
-    if not limpio or re.fullmatch(r"[A-Z]?0+", limpio) or limpio.startswith("NOCONSTITU"):
-        return None
-    return limpio
+
+def _publicable(texto: str | None) -> str | None:
+    """Nombres y títulos sin DNI pegados (nif.ocultar_en_texto) ni el
+    "&' || '" de Navarra (placsp.limpiar_texto). Se aplica también a lo ya
+    publicado, al volver a compactarlo."""
+    return ocultar_en_texto(limpiar_texto(texto))
 
 
 def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
@@ -548,8 +534,9 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
     nombres_empresa: dict[str, dict[str, int]] = {}
     if dic_previo:
         for valor in dic_previo.get("empresa", []):
+            valor = [valor[0], _publicable(valor[1]), *valor[2:]]
             if len(valor) > 2:  # ya fusionada en una pasada anterior
-                dic["empresa"].append(list(valor))
+                dic["empresa"].append(valor)
                 continue
             clave = _clave_empresa(valor[0], valor[1])
             if clave in indices["empresa"]:
@@ -559,6 +546,8 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
             dic["empresa"].append([_nif_empresa(valor[0]), valor[1]])
         for tabla in ("organismo", "tipo", "procedimiento", "lugar"):
             for valor in dic_previo.get(tabla, []):
+                if tabla == "organismo":
+                    valor = _publicable(valor)
                 clave = tuple(valor) if tabla == "lugar" else valor
                 if clave not in indices[tabla]:
                     indices[tabla][clave] = len(dic[tabla])
@@ -572,11 +561,11 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
 
     exp, lotes = [], []
     for r in registros:
-        enlace = r["enlace"] or ""
+        enlace = limpiar_enlace(r["enlace"]) or ""
         mascara = sum(1 << CATEGORIAS.index(c) for c in r["categorias"] if c in CATEGORIAS)
         lugar = (r.get("provincia"), r.get("comunidad"))
         exp.append([
-            r["id"], r["titulo"][:MAX_TITULO].strip(), idx("organismo", r["organismo"]),
+            r["id"], _publicable(r["titulo"])[:MAX_TITULO].strip(), idx("organismo", _publicable(r["organismo"])),
             1 if r["ambito"] == "Euskadi" else 0, idx("tipo", r["tipo_contrato"]),
             idx("procedimiento", r["procedimiento"]), 1 if r["menor"] else 0, mascara,
             enlace[len(PREFIJO_DEEPLINK):] if enlace.startswith(PREFIJO_DEEPLINK) else enlace,
@@ -586,9 +575,10 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
             idx("lugar", lugar, list(lugar)),
         ])
         for l in r["lotes"]:
-            clave = _clave_empresa(l["nif"], l["empresa"])
-            nombres_empresa.setdefault(clave, {}).setdefault(l["empresa"], 0)
-            nombres_empresa[clave][l["empresa"]] += 1
+            nombre = _publicable(l["empresa"])
+            clave = _clave_empresa(l["nif"], nombre)
+            nombres_empresa.setdefault(clave, {}).setdefault(nombre, 0)
+            nombres_empresa[clave][nombre] += 1
             lotes.append([len(exp) - 1, idx("empresa", clave, [_nif_empresa(l["nif"]), ""]), l["fecha"],
                           round(l["importe"]) if l["importe"] else None, l["ofertas"],
                           None if l["pyme"] is None else int(l["pyme"])])

@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
+
+import peticiones
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
@@ -115,9 +117,7 @@ def _consultar(query: str, campos: list[str], limite_paginas: int, scope: str = 
         if token:
             cuerpo["iterationNextToken"] = token
 
-        resp = requests.post(TED_SEARCH_URL, json=cuerpo, timeout=30)
-        resp.raise_for_status()
-        datos = resp.json()
+        datos = peticiones.pedir("POST", TED_SEARCH_URL, json=cuerpo).json()
 
         notices = datos.get("notices", [])
         resultados.extend(notices)

@@ -39,8 +39,11 @@ from pathlib import Path
 
 import requests
 
+import peticiones
+
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
+from nif import limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
 
 FUENTE = "Euskadi"
 BASE_URL = "https://api.euskadi.eus/procurements/contracting-notices"
@@ -66,9 +69,7 @@ def extraer() -> list[dict]:
             "orderType": "DESC",
             "lang": "SPANISH",
         }
-        resp = requests.get(BASE_URL, params=params, timeout=30, headers={"Accept": "application/json"})
-        resp.raise_for_status()
-        datos = resp.json()
+        datos = peticiones.pedir("GET", BASE_URL, params=params, headers={"Accept": "application/json"}).json()
 
         items = datos.get("items", [])
         resultados.extend(items)
@@ -92,8 +93,6 @@ def extraer() -> list[dict]:
 # minorContract=true- para "contratos menores por vencer".
 BASE_URL_CONTRATOS = "https://api.euskadi.eus/procurements/contracts"
 
-
-BASE_URL_AUTORIDADES = "https://api.euskadi.eus/procurements/contracting-authorities"
 _CACHE_ORGANISMO: dict[str, str] = {}
 _CACHE_NUTS: dict[str, str | None] = {}
 
@@ -110,32 +109,27 @@ def _resolver_organismo(href: str | None) -> str | None:
         return _CACHE_ORGANISMO[href]
     # Se comprobó en vivo que, tras las ~100 páginas de extraer() en la
     # misma ejecución, estas peticiones a un endpoint distinto fallaban
-    # TODAS de golpe (aislado funcionan 603/603); probablemente una
-    # conexión reutilizada en mal estado, no un fallo real del servidor.
-    # 3 intentos con backoff lo hace resiliente sin depender de la causa
-    # exacta.
+    # TODAS de golpe (aislado funcionan 603/603): de ahí los reintentos. Si
+    # aun así falla, el contrato sale con el organismo "no publicado".
     nombre = None
     nuts = None
-    for intento in range(3):
-        try:
-            resp = requests.get(href, timeout=15, headers={"Accept": "application/json"})
-            resp.raise_for_status()
-            autoridad = resp.json()
-            nombre = autoridad.get("name")
-            # Región del organismo ("ES213" = Bizkaia): la misma respuesta
-            # la trae, y es el único dato de lugar de un contrato vasco.
-            nuts = autoridad.get("codNUTS")
-            break
-        except requests.RequestException:
-            if intento < 2:
-                time.sleep(2 * (intento + 1))
+    try:
+        autoridad = peticiones.pedir("GET", href, espera=2, timeout=15,
+                                     headers={"Accept": "application/json"}).json()
+        nombre = autoridad.get("name")
+        # Región del organismo ("ES213" = Bizkaia): la misma respuesta la
+        # trae, y es el único dato de lugar de un contrato vasco.
+        nuts = autoridad.get("codNUTS")
+    except (requests.RequestException, ValueError):
+        pass
     _CACHE_ORGANISMO[href] = nombre
     _CACHE_NUTS[href] = nuts
     time.sleep(1 / PETICIONES_POR_SEGUNDO)
     return nombre
 
 
-def extraer_contratos(dias_atras: int, solo_menores: bool = False) -> list[dict]:
+def extraer_contratos(dias_atras: int) -> list[dict]:
+    """Contratos de servicios adjudicados en los últimos `dias_atras` días."""
     resultados = []
     pagina = 1
     fecha_desde = (datetime.now(timezone.utc).date() - timedelta(days=dias_atras)).isoformat()
@@ -147,27 +141,148 @@ def extraer_contratos(dias_atras: int, solo_menores: bool = False) -> list[dict]
             "itemsOfPage": ITEMS_POR_PAGINA,
             "currentPage": pagina,
         }
-        resp = requests.get(BASE_URL_CONTRATOS, params=params, timeout=30, headers={"Accept": "application/json"})
-        resp.raise_for_status()
-        datos = resp.json()
+        datos = peticiones.pedir("GET", BASE_URL_CONTRATOS, params=params, headers={"Accept": "application/json"}).json()
 
         items = datos.get("items", [])
-        if solo_menores:
-            items = [it for it in items if it.get("minorContract")]
         resultados.extend(items)
 
         total_paginas = datos.get("totalPages", 1)
-        if pagina >= total_paginas or not datos.get("items"):
+        if pagina >= total_paginas or not items:
             break
         pagina += 1
         time.sleep(1 / PETICIONES_POR_SEGUNDO)
 
     for item in resultados:
-        href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
-        item["organismo_resuelto"] = _resolver_organismo(href)
-        item["organismo_nuts"] = _CACHE_NUTS.get(href)
-
+        _completar_contrato(item)
     return resultados
+
+
+def _completar_contrato(item: dict) -> None:
+    """NIF limpio y organismo (nombre y región), que /contracts no trae."""
+    # Euskadi suele enmascarar a las personas físicas (XXXXX155F); por si
+    # alguna llega entera, no se guarda (ver nif.limpiar).
+    item["CIF"] = limpiar_nif(item.get("CIF"))
+    item["socialReason"] = ocultar_en_texto(item.get("socialReason"))
+    href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
+    item["organismo_resuelto"] = _resolver_organismo(href)
+    item["organismo_nuts"] = _CACHE_NUTS.get(href)
+
+
+# ---------------------------------------------------------------------------
+# Contratos menores por vencer. Un menor dura hasta un año, así que para ver
+# los que vencen en los próximos 3 meses hay que mirar unos 15 meses atrás:
+# unos 75.000 menores de servicios (1.500 páginas, 25 minutos a una petición
+# por segundo). Hasta octubre de 2026 se pedían todos los contratos de
+# servicios de esos 15 meses (85.000, 1.700 páginas), se cortaba en 150
+# páginas y solo se veían los adjudicados en los últimos 3-4 meses: justo
+# faltaban los que vencen ahora. La API no deja filtrar por fecha de fin
+# (probado), pero sí por menor y por mes de adjudicación.
+#
+# Ahora se pide por meses y se acumula entre noches (ACUMULADO_MENORES), solo
+# lo que encaja con la taxonomía (unos cientos): cada noche el mes en curso y
+# el anterior (se publican con retraso), y además los meses que no se han
+# leído nunca (hasta MESES_NUEVOS_POR_NOCHE) o, si ya están todos, uno en
+# rotación. Unas 300 páginas por noche.
+# ---------------------------------------------------------------------------
+MESES_MENORES = config.DIAS_HISTORIAL_CONTRATO_MENOR // 30  # 15
+MESES_NUEVOS_POR_NOCHE = 3
+ACUMULADO_MENORES = Path(__file__).resolve().parent.parent / "data" / "euskadi_menores_acumulado.json"
+
+
+def _ventana_menores(hoy) -> list[str]:
+    """Meses de adjudicación que interesan, 'AAAAMM', del más reciente al más antiguo."""
+    indice = hoy.year * 12 + hoy.month - 1
+    return [f"{(indice - i) // 12}{(indice - i) % 12 + 1:02d}" for i in range(MESES_MENORES)]
+
+
+def _meses_a_leer_menores(hoy, leidos: dict[str, str]) -> list[str]:
+    ventana = _ventana_menores(hoy)
+    fijos, resto = ventana[:2], ventana[2:]
+    nunca = [m for m in resto if m not in leidos]
+    if nunca:
+        return fijos + nunca[:MESES_NUEVOS_POR_NOCHE]
+    return fijos + [resto[hoy.toordinal() % len(resto)]]
+
+
+def rango_mes_api(periodo: str) -> tuple[str, str]:
+    """award-date.gt y award-date.lt para pedir un mes ('AAAAMM') o un año
+    ('AAAA') entero. Comprobado el 2026-10-04: .gt excluye su día y .lt
+    incluye el suyo. Pedir gt=día 1 dejaba fuera los contratos del día 1 de
+    cada mes (27 de 595 en septiembre de 2026)."""
+    anio = int(periodo[:4])
+    if len(periodo) == 4:
+        return f"{anio - 1}-12-31", f"{anio}-12-31"
+    mes = int(periodo[4:6])
+    primero = datetime(anio, mes, 1).date()
+    siguiente = datetime(anio + (mes == 12), mes % 12 + 1, 1).date()
+    return (primero - timedelta(days=1)).isoformat(), (siguiente - timedelta(days=1)).isoformat()
+
+
+def _menores_del_mes(periodo: str) -> list[dict]:
+    """Menores de servicios adjudicados ese mes que encajan con la taxonomía
+    y tienen fecha de fin, con su organismo resuelto."""
+    from clasificar import clasificar_texto  # noqa: E402
+
+    desde, hasta = rango_mes_api(periodo)
+    relevantes = []
+    pagina, total_paginas = 1, 1
+    while pagina <= total_paginas:
+        params = {"contract-type": CONTRACT_TYPE_SERVICIOS, "minor-contract": "true",
+                  "award-date.gt": desde, "award-date.lt": hasta,
+                  "itemsOfPage": ITEMS_POR_PAGINA, "currentPage": pagina}
+        datos = peticiones.pedir("GET", BASE_URL_CONTRATOS, params=params, headers={"Accept": "application/json"}).json()
+        items = datos.get("items", [])
+        for item in items:
+            cpv = [item["CPV"]] if item.get("CPV") else []
+            if item.get("contractEndDate") and clasificar_texto(item.get("object") or "", cpv)["incluir"]:
+                relevantes.append(item)
+        total_paginas = datos.get("totalPages", 1)
+        if not items:
+            break
+        pagina += 1
+        time.sleep(1 / PETICIONES_POR_SEGUNDO)
+    for item in relevantes:
+        _completar_contrato(item)
+    return relevantes
+
+
+def actualizar_menores(hoy=None) -> list[dict]:
+    """Lee los meses que tocan, los sustituye en el acumulado (un menor
+    anulado desaparece al releer su mes) y poda lo vencido o fuera de la
+    ventana. Devuelve los contratos vigentes."""
+    hoy = hoy or datetime.now(timezone.utc).date()
+    try:
+        acumulado = json.loads(ACUMULADO_MENORES.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        acumulado = {}
+    contratos = {str(c["id"]): c for c in acumulado.get("contratos", [])}
+    leidos: dict[str, str] = acumulado.get("meses_leidos", {})
+
+    for mes in _meses_a_leer_menores(hoy, leidos):
+        try:
+            nuevos = _menores_del_mes(mes)
+        except (requests.RequestException, ValueError) as exc:
+            # Ese mes se queda como estaba y se reintenta otra noche.
+            print(f"[euskadi] AVISO: menores de {mes} no disponibles hoy ({exc})", file=sys.stderr)
+            continue
+        contratos = {k: c for k, c in contratos.items() if _mes(c) != mes}
+        contratos.update({str(c["id"]): c for c in nuevos})
+        leidos[mes] = hoy.isoformat()
+        print(f"[euskadi] menores de {mes}: {len(nuevos)} de agencia con fecha de fin")
+
+    ventana = set(_ventana_menores(hoy))
+    vigentes = sorted((c for c in contratos.values()
+                       if _mes(c) in ventana and (c.get("contractEndDate") or "")[:10] >= hoy.isoformat()),
+                      key=lambda c: c["contractEndDate"])
+    ACUMULADO_MENORES.parent.mkdir(parents=True, exist_ok=True)
+    ACUMULADO_MENORES.write_text(json.dumps(
+        {"meses_leidos": {m: f for m, f in leidos.items() if m in ventana}, "contratos": vigentes},
+        ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    return vigentes
+
+
+def _mes(contrato: dict) -> str:
+    return (contrato.get("awardDate") or "")[:7].replace("-", "")
 
 
 # ---------------------------------------------------------------------------
@@ -237,8 +352,7 @@ def leer_ficha(url: str) -> dict:
     nif, pyme, provincia}]} de la página pública de un expediente. Solo el
     nombre, NIF, si es pyme y la provincia de cada licitadora: la página
     publica también teléfonos y correos, que no se guardan."""
-    resp = requests.get(url, timeout=60, headers={"User-Agent": "licitaciones-marketing-radar/1.0"})
-    resp.raise_for_status()
+    resp = peticiones.pedir("GET", url, timeout=60)
     pestanas = _pestanas(resp.content.decode("utf-8", "replace"))
     documentos: dict[str, dict] = {}
     for nombre_pestana in ("Ficheros", "Tablón Anuncios", "Resolución"):
@@ -267,7 +381,12 @@ def leer_ficha(url: str) -> dict:
             if nombre_pestana == "Tablón Anuncios" and not de_la_mesa:
                 continue  # avisos a licitadores, consultas...
             tipo = _tipo_documento(" ".join((tipo_fichero, concepto, nombre_fichero)), de_la_mesa)
-            if nombre_pestana == "Resolución" and tipo is None and                     _tipo_documento(nombre_fichero, False) is None and "resolucion" in _plano(tipo_fichero)                     and not re.search(r"autorizacion|gasto", _plano(nombre_fichero)):
+            # En la pestaña Resolución, un fichero cuyo tipo es "Resolución"
+            # cuenta como tal aunque el nombre no lo diga.
+            if (nombre_pestana == "Resolución" and tipo is None
+                    and _tipo_documento(nombre_fichero, False) is None
+                    and "resolucion" in _plano(tipo_fichero)
+                    and not re.search(r"autorizacion|gasto", _plano(nombre_fichero))):
                 tipo = "resolucion"
             if tipo and fichero.group(1) not in documentos:
                 documentos[fichero.group(1)] = {
@@ -285,9 +404,9 @@ def leer_ficha(url: str) -> dict:
             continue
         etiqueta, valor = _limpio(m.group("etiqueta")), _limpio(m.group("valor"))
         if etiqueta == "Razón Social":
-            licitadores.append({"nombre": valor, "nif": None, "pyme": None, "provincia": None})
+            licitadores.append({"nombre": ocultar_en_texto(valor), "nif": None, "pyme": None, "provincia": None})
         elif licitadores and etiqueta == "CIF":
-            licitadores[-1]["nif"] = valor or None
+            licitadores[-1]["nif"] = limpiar_nif(valor)
         elif licitadores and etiqueta == "Es Pyme":
             licitadores[-1]["pyme"] = {"si": True, "no": False}.get(_plano(valor))
         elif licitadores and etiqueta == "Provincia":
@@ -376,11 +495,10 @@ def main() -> None:
 
     # Ventana distinta a la de arriba a propósito: "adjudicado hace poco"
     # (30 días) no tiene nada que ver con "vence pronto" -un contrato de
-    # hace 10 meses con 1 año de duración vence pronto igual-, así que
-    # contratos menores necesita mirar mucho más atrás. Ver
-    # config.DIAS_HISTORIAL_CONTRATO_MENOR.
+    # hace 10 meses con 1 año de duración vence pronto igual-. Ver
+    # actualizar_menores().
     try:
-        menores = extraer_contratos(dias_atras=config.DIAS_HISTORIAL_CONTRATO_MENOR, solo_menores=True)
+        menores = actualizar_menores()
     except requests.RequestException as exc:
         print(f"[euskadi] ERROR al consultar contratos menores en la API de Euskadi: {exc}", file=sys.stderr)
         _guardar_error("euskadi_menores", exc)

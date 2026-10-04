@@ -320,10 +320,18 @@
     return { clase: "urgencia-verde", texto: "Vence en " + dias + " días" };
   }
 
+  // NIF que se puede enseñar: el de una sociedad. El de una persona física
+  // llega enmascarado ("***4567**", "XXXXX155F") y no se enseña ni se pone en
+  // direcciones (ver nif.py).
+  function nifPublicable(nif) {
+    return nif && nif.indexOf("*") === -1 && nif.indexOf("XXX") !== 0 ? nif : null;
+  }
+
+  // Texto de las fuentes dentro de HTML, también dentro de atributos
+  // (title, href): por eso se escapan las comillas, no solo < > &.
+  var ENTIDADES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   function escaparHtml(str) {
-    var div = document.createElement("div");
-    div.textContent = str == null ? "" : String(str);
-    return div.innerHTML;
+    return (str == null ? "" : String(str)).replace(/[&<>"']/g, function (c) { return ENTIDADES[c]; });
   }
 
   // Minúsculas y sin tildes, para que "comunicacion" encuentre "Comunicación".
@@ -765,7 +773,7 @@
     var importes = [];
     if (conEmpresa) {
       importes.push(par(esMenor ? "Empresa que lo tiene hoy" : "Empresa adjudicataria", escaparHtml(empresa)));
-      if (t.empresa_nif) importes.push(par("NIF", escaparHtml(t.empresa_nif), true));
+      if (nifPublicable(t.empresa_nif)) importes.push(par("NIF", escaparHtml(t.empresa_nif), true));
       importes.push(par("Importe adjudicado", adjudicado || "No publicado", true));
       if (presupuesto) importes.push(par("Presupuesto de licitación", presupuesto, true));
     } else {
@@ -878,7 +886,7 @@
       // histórico); el nombre va siempre, por si el NIF no está allí.
       // Si normalizar.py ya la encontró en el histórico, directo a su ficha.
       acciones += '<a class="enlace" href="historico.html#/' + (he ? "empresa/" + he.id : "empresas?" +
-        (t.empresa_nif ? "nif=" + encodeURIComponent(t.empresa_nif) + "&" : "") + "q=" + encodeURIComponent(t.empresa_adjudicataria)) +
+        (nifPublicable(t.empresa_nif) ? "nif=" + encodeURIComponent(t.empresa_nif) + "&" : "") + "q=" + encodeURIComponent(t.empresa_adjudicataria)) +
         '">Historial de la empresa' + Nav.icono("flecha") + "</a>";
     }
     if (!esCall && esOrganismoEspanol(t)) {

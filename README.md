@@ -456,7 +456,7 @@ Cómo se construye (`scrapers/historico_adjudicaciones.py` +
 - **El NIF también se escribe de varias formas.** Con prefijo de IVA
   ("ESB28016970"), con puntos, comas o guiones. Hasta octubre de 2026 eso
   partía a 36 empresas en dos fichas (Uniprex, Radio Popular, Diario
-  ABC...). `normalizar._nif_limpio` deja solo letras y cifras y quita el
+  ABC...). `nif.limpiar` deja solo letras y cifras y quita el
   "ES". Las fichas ya publicadas se fusionan sin borrar ninguna: borrar una
   correría los índices de todas las siguientes y con ellos los enlaces del
   radar, así que la sobrante se queda como `[null, nombre, id de la buena]`
@@ -467,6 +467,14 @@ Cómo se construye (`scrapers/historico_adjudicaciones.py` +
   físicas ("***9688**" en PLACSP, "XXXXX155F" en Euskadi) solo enseñan tres
   o cuatro cifras y los comparten personas distintas: con esos se exige
   además el mismo nombre, sin tildes, puntuación ni orden.
+- **DNI y NIE completos: nunca se guardan.** Los contratos menores de PLACSP
+  publican entero el DNI de los autónomos, y hasta octubre de 2026 el
+  histórico servía en la web 7.675. Desde entonces `nif.py` los enmascara
+  en cuanto llegan, en los propios scrapers (también acaban en cachés que se
+  versionan), con el mismo criterio que PLACSP y la AEPD: `***4567**` para
+  un DNI y `****4567*` para un NIE. Esas personas se agrupan como cualquier
+  otro NIF enmascarado. El dashboard no enseña el NIF de una persona ni lo
+  pone en direcciones; el de las sociedades, sí.
 - **Provincia de cada expediente** (`dic.lugar`, séptima columna de `exp`):
   lugar de ejecución y, si no lo hay, código postal del organismo, como en
   el radar (`territorio.py`). En Euskadi, la región del organismo; en TED,
@@ -559,6 +567,20 @@ una ventana propia y mucho más amplia para contratos menores
 legal de un contrato menor más el margen de aviso), guardada en un crudo
 aparte (`euskadi_menores_*.json`, no el de adjudicaciones). Resultado real:
 de 1 a 18 contratos menores por vencer solo con este fix.
+
+**Tercer arreglo (octubre de 2026): Euskadi leía alrededor del 9 %.** En 15
+meses hay unos 85.000 contratos de servicios (1.700 páginas) y el scraper
+paraba en 150: solo veía los menores adjudicados en los últimos 3-4 meses,
+justo no los que vencen ahora (21 por vencer frente a 298 del Estado). La
+API no deja filtrar por fecha de fin, pero sí por menor
+(`minor-contract=true`) y por mes de adjudicación. `euskadi.actualizar_menores()`
+pide cada noche el mes en curso y el anterior, más los meses de la ventana
+que no se han leído nunca (tres por noche, unos 6 minutos) o, cuando ya están todos, uno en
+rotación, y acumula solo lo que encaja con la taxonomía en
+`data/euskadi_menores_acumulado.json`. Al releer un mes, lo que había de ese
+mes se sustituye (un contrato anulado desaparece). Ojo con las fechas de la
+API: `award-date.gt` excluye su día y `.lt` incluye el suyo
+(`euskadi.rango_mes_api`); pedir desde el día 1 perdía los de ese día.
 
 **Segundo bug, más grave, encontrado al revisar por qué el Estado casi no
 aportaba nada**: `extraer_contratos_menores()` de PLACSP solo leía el
@@ -1233,6 +1255,22 @@ la noche del 2026-10-03). Ahora, si una fuente se pasa de su límite, ese día
 se queda con lo acumulado y el resto se publica. La caché del scraper de la
 UE se guarda justo después de su paso (`actions/cache/save`), no al final
 del job: la noche del 2026-10-03 el job se cortó y no llegó a guardarse.
+Clasificar (10 min) y Normalizar (15) también tienen límite, y en la misma
+caché van las traducciones automáticas de las convocatorias UE: si MyMemory
+falla tres veces seguidas, `normalizar.py` deja de llamarlo hasta la noche
+siguiente y esos textos salen en inglés.
+
+**Reintentos.** Todas las peticiones a las API pasan por
+`scrapers/peticiones.py`: reintenta los cortes de red, los 429 y los 5xx, y
+no los 4xx. Los ZIP de PLACSP no, porque repetir 300 MB a ciegas puede
+costar más que el límite del paso.
+
+**Pruebas.** `tests/` tiene pruebas de regresión sin red, con muestras
+reales guardadas en `tests/fixtures/` (sin teléfonos, correos ni nombres de
+personas): taxonomía, NIF, fechas, provincia, lectura de PLACSP y de la
+ficha de Euskadi, histórico, reintentos y menores de Euskadi. Se ejecutan
+con `python -m pytest` y en GitHub Actions cada vez que se sube código
+(`pruebas.yml`), no en la actualización nocturna.
 
 El pipeline completo (scrapers + clasificar + normalizar) no depende de
 ningún ordenador encendido: corre a diario en GitHub Actions, gratis, y el

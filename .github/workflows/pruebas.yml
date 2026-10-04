@@ -1,0 +1,25 @@
+name: Pruebas
+
+# Pruebas de regresión (tests/) cada vez que se sube código. No van dentro de
+# la actualización nocturna a propósito: el código no cambia de noche, y un
+# fallo aquí no debe dejar el día sin datos. Sin red: usan muestras guardadas.
+on:
+  push:
+    branches: [main]
+    paths: ["**.py", "tests/**", "requirements.txt", "pytest.ini", ".github/workflows/pruebas.yml"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest

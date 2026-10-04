@@ -70,7 +70,7 @@ from xml.etree import ElementTree as ET
 import requests
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-import config  # noqa: E402
+from nif import limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
 
 FUENTE = "Estado"
 
@@ -86,6 +86,17 @@ NS = {
 def _texto(el, path) -> str | None:
     nodo = el.find(path, NS)
     return nodo.text.strip() if nodo is not None and nodo.text else None
+
+
+def limpiar_texto(texto: str | None) -> str | None:
+    """La plataforma de Navarra cambia "&" por "&' || '" (un trozo de su
+    propio código): en las direcciones ("...cod=8071&' || 'Ticket=...", que
+    así no abren la ficha; sin ese trozo sí, comprobado el 2026-10-04) y en
+    los nombres ("CULTURE &' || ' SPORT")."""
+    return re.sub(r"'\s*\|\|\s*'", "", texto) if texto else texto
+
+
+limpiar_enlace = limpiar_texto
 
 
 def _fecha_anuncio(cfs, tipos: tuple[str, ...]) -> str | None:
@@ -138,7 +149,7 @@ def _documentos_adjudicacion(cfs) -> list[dict]:
         # Algunos expedientes llegan sin código: se reconocen por el nombre
         # oficial del tipo, que PLACSP pone como nombre del fichero.
         if tipo is None and not codigo:
-            if nombre.startswith("Acta del órgano"):
+            if re.match(r"acta\b", nombre, re.I):  # "Acta del órgano...", "acta", "Acta 2"
                 tipo = "acta"
             elif nombre.startswith("Informe de valoración"):
                 tipo = "informe_valoracion"
@@ -223,7 +234,7 @@ def _parsear_entry(entry) -> dict:
     enlace = None
     link_nodo = entry.find("atom:link", NS)
     if link_nodo is not None:
-        enlace = link_nodo.attrib.get("href")
+        enlace = limpiar_enlace(link_nodo.attrib.get("href"))
 
     # Bloque de resultado/adjudicación: presente en el mismo feed general
     # para expedientes en estado ADJ/RES (confirmado con datos reales, no
@@ -238,10 +249,11 @@ def _parsear_entry(entry) -> dict:
     if tender_result is not None:
         nombre_ganador = tender_result.find("cac:WinningParty/cac:PartyName/cbc:Name", NS)
         if nombre_ganador is not None and nombre_ganador.text:
-            empresa_adjudicataria = nombre_ganador.text.strip()
+            empresa_adjudicataria = ocultar_en_texto(limpiar_texto(nombre_ganador.text.strip()))
         # NIF del ganador: para quedarse solo con empresas españolas (ver
-        # normalizar.es_empresa_espanola).
-        empresa_nif = _texto(tender_result, "cac:WinningParty/cac:PartyIdentification/cbc:ID")
+        # nif.es_espanola). El DNI de una persona física se enmascara ya
+        # aquí: el crudo acaba en cachés que se versionan.
+        empresa_nif = limpiar_nif(_texto(tender_result, "cac:WinningParty/cac:PartyIdentification/cbc:ID"))
         fecha_adjudicacion = _texto(tender_result, "cbc:AwardDate")
         importe_nodo = tender_result.find(
             "cac:AwardedTenderedProject/cac:LegalMonetaryTotal/cbc:PayableAmount", NS
@@ -273,8 +285,8 @@ def _parsear_entry(entry) -> dict:
     return {
         "expediente": expediente,
         "estado": estado,
-        "titulo": objeto or _texto(entry, "atom:title"),
-        "organismo": organismo,
+        "titulo": limpiar_texto(objeto or _texto(entry, "atom:title")),
+        "organismo": limpiar_texto(organismo),
         "lugar_nuts": lugar_nuts,
         "lugar_nombre": lugar_nombre,
         "organismo_cp": organismo_cp,
