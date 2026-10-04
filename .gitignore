@@ -20,3 +20,12 @@ references/
 
 # Cachés de los scrapers entre ejecuciones (en CI las conserva actions/cache).
 data/cache/
+
+# Datos internos del pipeline: viven en la rama "estado" (ver README, "Datos").
+data/historico_adjudicaciones.json
+data/ultimo_bueno_por_fuente.json
+data/primera_aparicion.json
+data/placsp_web_acumulado.json
+data/euskadi_menores_acumulado.json
+# Lo mismo que dashboard/tenders-data.js, que es lo que se publica.
+data/tenders.json

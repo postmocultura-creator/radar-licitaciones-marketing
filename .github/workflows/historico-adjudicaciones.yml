@@ -37,8 +37,9 @@ on:
 permissions:
   contents: write
 
+# Mismo grupo que actualizar-datos.yml: los dos escriben la rama "estado".
 concurrency:
-  group: historico-adjudicaciones
+  group: datos-radar
   cancel-in-progress: false
 
 jobs:
@@ -121,6 +122,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Datos internos del pipeline (histórico completo, cachés, acumulados):
+      # viven en la rama "estado", no en main, para que el repositorio no
+      # crezca cada noche (ver README, "Datos"). Si la rama no existe aún, el
+      # pipeline arranca sin ellos.
+      - name: Recuperar estado
+        run: |
+          if git fetch --depth=1 origin "+estado:refs/remotes/origin/estado"; then
+            git archive refs/remotes/origin/estado | tar -x
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -134,8 +144,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          sh .github/publicar_estado.sh data/historico_adjudicaciones.json
           git fetch origin main
           git reset origin/main  # no --soft: revertiría código subido mientras corría
-          git add data/historico_adjudicaciones.json dashboard/historico-data.js dashboard/historico-detalle
+          git add dashboard/historico-data.js dashboard/historico-detalle
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Histórico de adjudicaciones $(date -u +%Y-%m-%d)"
           git push origin HEAD:main

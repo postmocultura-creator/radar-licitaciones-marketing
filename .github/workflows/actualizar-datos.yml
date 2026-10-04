@@ -25,8 +25,10 @@ permissions:
 # lanzamiento manual justo cuando toca el cron) y se pisen entre sí al hacer
 # push casi al mismo tiempo. En cola, no cancelado, porque cada ejecución
 # hace su propio scraping — no tiene sentido tirar el trabajo de una a medias.
+# Mismo grupo que historico-adjudicaciones.yml: los dos escriben la rama
+# "estado" y el histórico, y no deben correr a la vez.
 concurrency:
-  group: actualizar-datos
+  group: datos-radar
   cancel-in-progress: false
 
 jobs:
@@ -51,6 +53,16 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+
+      # Datos internos del pipeline (histórico completo, cachés, acumulados):
+      # viven en la rama "estado", no en main, para que el repositorio no
+      # crezca cada noche (ver README, "Datos"). Si la rama no existe aún, el
+      # pipeline arranca sin ellos.
+      - name: Recuperar estado
+        run: |
+          if git fetch --depth=1 origin "+estado:refs/remotes/origin/estado"; then
+            git archive refs/remotes/origin/estado | tar -x
+          fi
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -193,16 +205,17 @@ jobs:
           # código nuevo, el commit de datos lo revertía en silencio (pasó el
           # 2026-09-30; GitHub lo rechazó solo porque tocaba este workflow).
           # Así el commit parte de origin/main y solo añade los datos.
+          # Primero el estado interno (rama "estado", un solo commit que
+          # sustituye al anterior). El histórico completo, solo si su paso
+          # terminó bien: si se cortó a medias, no se publica a medio escribir.
+          estado="data/ultimo_bueno_por_fuente.json data/primera_aparicion.json data/placsp_web_acumulado.json data/euskadi_menores_acumulado.json"
+          if [ "${{ steps.historico.outcome }}" = "success" ]; then estado="$estado data/historico_adjudicaciones.json"; fi
+          sh .github/publicar_estado.sh $estado
+          # Después lo que sirve la web (main, que Vercel publica).
           git reset origin/main
-          git add data/tenders.json dashboard/tenders-data.js data/primera_aparicion.json data/ultimo_bueno_por_fuente.json
-          # Solo existe si el scraper web ha funcionado alguna vez.
-          if [ -f data/placsp_web_acumulado.json ]; then git add data/placsp_web_acumulado.json; fi
-          # Menores de Euskadi leídos por meses (euskadi.actualizar_menores).
-          if [ -f data/euskadi_menores_acumulado.json ]; then git add data/euskadi_menores_acumulado.json; fi
-          # Solo si el paso del histórico terminó bien: si se cortó a medias,
-          # no se publican ficheros a medio escribir.
+          git add dashboard/tenders-data.js
           if [ "${{ steps.historico.outcome }}" = "success" ]; then
-            git add data/historico_adjudicaciones.json dashboard/historico-data.js dashboard/historico-detalle
+            git add dashboard/historico-data.js dashboard/historico-detalle
           fi
           git diff --cached --quiet && echo "Sin cambios que publicar" || git commit -m "Actualización automática de datos $(date -u +%Y-%m-%d)"
           git push origin HEAD:main

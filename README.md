@@ -42,6 +42,15 @@ python clasificar.py
 python normalizar.py
 ```
 
+Para que la ejecución en local parta de lo acumulado (histórico, cachés,
+"Nuevo hoy"...), antes hay que traer los datos internos de la rama
+`estado` (ver "Datos"):
+
+```bash
+git fetch origin estado
+git archive origin/estado | tar -x
+```
+
 Después, `dashboard/index.html` se abre con doble clic (no necesita
 servidor). Si una fuente falla, su scraper deja
 `data/raw/<fuente>_..._error.json` con el motivo y el resto sigue:
@@ -126,19 +135,30 @@ nuevos se comprueban antes en
 
 ## Datos
 
-| Fichero | Qué es | Quién lo escribe | ¿Versionado? |
+| Fichero | Qué es | Quién lo escribe | Dónde se guarda |
 |---|---|---|---|
-| `data/raw/` | crudo de cada pasada | scrapers | no |
-| `data/clasificado.json` | lo que entra, por fuente | clasificar.py | no |
-| `data/tenders.json`, `dashboard/tenders-data.js` | el radar (el dashboard lee el `.js`) | normalizar.py | sí |
-| `data/ultimo_bueno_por_fuente.json` | lo último bueno de cada fuente, y lo acumulado de PLACSP (sus ZIP traen solo lo actualizado ese mes) | clasificar.py | sí |
-| `data/primera_aparicion.json` | cuándo vio el radar cada registro por primera vez ("Nuevo hoy") | normalizar.py | sí |
-| `data/placsp_web_acumulado.json` | lo del buscador web, hasta que vence su plazo | placsp_web.py | sí |
-| `data/euskadi_menores_acumulado.json` | menores de Euskadi de agencia, por mes de adjudicación | euskadi.py | sí |
-| `data/historico_adjudicaciones.json` | histórico completo (base de cada actualización) | historico_adjudicaciones.py | sí |
-| `dashboard/historico-data.js`, `historico-detalle/` | lo que lee Competencia | historico_adjudicaciones.py | sí |
-| `data/cache/` | detalle de las convocatorias UE y traducciones automáticas | eu_grants.py, normalizar.py | no (actions/cache) |
-| `data/traducciones_manuales.json` | traducciones revisadas a mano | a mano | sí |
+| `data/raw/` | crudo de cada pasada | scrapers | no se guarda |
+| `data/clasificado.json` | lo que entra, por fuente | clasificar.py | no se guarda |
+| `data/tenders.json` | el radar en JSON (comprobación antes de publicar) | normalizar.py | no se guarda |
+| `dashboard/tenders-data.js` | el radar, lo que lee el dashboard | normalizar.py | `main` |
+| `dashboard/historico-data.js`, `historico-detalle/` | lo que lee Competencia | historico_adjudicaciones.py | `main` |
+| `data/historico_adjudicaciones.json` | histórico completo (base de cada actualización) | historico_adjudicaciones.py | rama `estado` |
+| `data/ultimo_bueno_por_fuente.json` | lo último bueno de cada fuente, y lo acumulado de PLACSP (sus ZIP traen solo lo actualizado ese mes) | clasificar.py | rama `estado` |
+| `data/primera_aparicion.json` | cuándo vio el radar cada registro por primera vez ("Nuevo hoy") | normalizar.py | rama `estado` |
+| `data/placsp_web_acumulado.json` | lo del buscador web, hasta que vence su plazo | placsp_web.py | rama `estado` |
+| `data/euskadi_menores_acumulado.json` | menores de Euskadi de agencia, por mes de adjudicación | euskadi.py | rama `estado` |
+| `data/cache/` | detalle de las convocatorias UE y traducciones automáticas | eu_grants.py, normalizar.py | actions/cache |
+| `data/traducciones_manuales.json` | traducciones revisadas a mano | a mano | `main` |
+
+**Rama `estado`.** Los datos internos del pipeline pesan unos 60 MB y se
+reescriben cada noche: en `main` hacían crecer el repositorio entre 2 y 5 MB
+por actualización. Ahora viven en la rama `estado`, que cada noche se
+sustituye por un único commit sin historia (`.github/publicar_estado.sh`):
+no crece. Los workflows la descargan al empezar (`git archive | tar -x`) y la
+vuelven a publicar al terminar; los dos comparten grupo de concurrencia, así
+que nunca la escriben a la vez (una reconstrucción del histórico deja en
+cola la actualización nocturna hasta que termina). En `main` solo queda el
+código y lo que sirve la web.
 
 **Datos personales.** Los DNI y NIE de personas físicas no se guardan nunca
 enteros: `nif.py` los enmascara en cuanto llegan, como lo hace PLACSP
@@ -189,8 +209,9 @@ reintentan: repetir 300 MB a ciegas puede costar más que el límite del paso.
 - **Importes del histórico**: incluyen algún contrato enorme que no es de
   agencia aunque su título encaje (Competencia permite quitar los de más de
   1 M€).
-- **El repositorio crece cada noche** porque los datos se versionan; ver la
-  auditoría de octubre de 2026 en `docs/DECISIONES.md`.
+- **El repositorio aún crece algo cada noche** (1-2 MB): los ficheros que
+  sirve la web siguen en `main` porque Vercel publica desde git. Para
+  quitarlos habría que publicar en Vercel desde Actions.
 
 ## Si una fuente cambia de formato
 
