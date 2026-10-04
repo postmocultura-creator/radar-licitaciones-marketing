@@ -16,19 +16,11 @@ name: Histórico de adjudicaciones (reparación manual)
 #   por fuente y periodo: cada uno filtra y sube solo lo relevante.
 # - "reciente": solo el mes en curso y el anterior (6 meses para Euskadi).
 #
-# UNA EXCEPCIÓN AL "SOLO MANUAL": la reconstrucción completa de la madrugada
-# del domingo 2026-10-04, para que todo el histórico quede clasificado con
-# la taxonomía de octubre de 2026 (catalán, gallego y euskera), con la
-# provincia de cada expediente y con los NIF unificados. Aprobada con
-# el repositorio en público, es decir, sin coste. Se programa en vez de
-# lanzarse a mano porque de día PLACSP sirve a 0,1 MB/s, y a las 03:23 UTC la
-# actualización diaria (cron de las 22:47, que suele arrancar hacia las
-# 01:30-02:00 UTC) ya ha terminado y faltan casi 20 horas para la siguiente.
-# El trabajo "preparar" comprueba la fecha: cualquier otro día el disparo
-# programado no hace nada. QUITAR el bloque "schedule" después de esa fecha.
+# La última reconstrucción completa fue la del 2026-10-04 (68 trabajos, 2 h
+# 40 min; GitHub la arrancó con 6 horas y media de retraso): taxonomía de
+# octubre de 2026, provincia, NIF unificados y DNI enmascarados. Si hay que
+# repetirla, mejor de noche: de día PLACSP sirve a 0,1 MB/s.
 on:
-  schedule:
-    - cron: "23 3 4 10 *"
   workflow_dispatch:
     inputs:
       modo:
@@ -62,11 +54,6 @@ jobs:
           from datetime import date
           modo = "${{ github.event.inputs.modo || 'reciente' }}"
           hoy = date.today()
-          # Disparo programado: solo la reconstrucción completa del
-          # 2026-10-04 (ver arriba). Otro día, ninguna pieza.
-          programado = "${{ github.event_name }}" == "schedule"
-          if programado:
-              modo = "completo"
           # euskadi_menores: los organismos vascos publican sus contratos
           # menores en su plataforma, no en PLACSP (API de Euskadi, sin ZIP).
           feeds = ["licitaciones", "agregadas", "menores", "euskadi_menores"]
@@ -93,8 +80,6 @@ jobs:
           piezas += [{"feed": "ted", "periodo": a} for a in anios_ted]
           if solo:
               piezas = [p for p in piezas if p["feed"] in solo]
-          if programado and hoy != date(2026, 10, 4):
-              piezas = []
           print("piezas=" + json.dumps(piezas))
           EOF
 
