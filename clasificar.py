@@ -144,7 +144,7 @@ def _titulo_ted(item: dict) -> str:
     return str(titulos)
 
 
-def clasificar_texto(titulo: str, cpv_list: list[str]) -> dict:
+def clasificar_texto(titulo: str) -> dict:
     texto_norm = _normalizar_texto(titulo)
     categorias = [
         categoria
@@ -169,7 +169,7 @@ def clasificar_ted(items: list[dict]) -> list[dict]:
     for item in items:
         titulo = _titulo_ted(item)
         cpv_list = item.get("classification-cpv") or []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "UE", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -195,7 +195,7 @@ def clasificar_placsp(items: list[dict]) -> list[dict]:
             continue
         titulo = item.get("titulo") or ""
         cpv_list = item.get("cpv") or []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -210,7 +210,7 @@ def clasificar_placsp_web(items: list[dict]) -> list[dict]:
     salida = []
     for item in items:
         titulo = item.get("titulo") or ""
-        resultado = clasificar_texto(titulo, [])
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Estado-web", "original": item, "titulo": titulo, "cpv": [], **resultado})
@@ -234,7 +234,7 @@ def clasificar_euskadi(items: list[dict]) -> list[dict]:
             continue
         titulo = item.get("object") or ""
         cpv_list: list[str] = []  # Euskadi no expone CPV, ver docstring del módulo
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -254,7 +254,7 @@ def clasificar_ted_adjudicaciones(items: list[dict]) -> list[dict]:
     for item in items:
         titulo = _titulo_ted(item)
         cpv_list = item.get("classification-cpv") or []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "UE", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -278,7 +278,7 @@ def clasificar_placsp_adjudicaciones(items: list[dict]) -> list[dict]:
             continue
         titulo = item.get("titulo") or ""
         cpv_list = item.get("cpv") or []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -317,7 +317,7 @@ def clasificar_euskadi_adjudicaciones(items: list[dict]) -> list[dict]:
         titulo = item.get("object") or ""
         cpv = item.get("CPV")
         cpv_list = [cpv] if cpv else []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -337,7 +337,7 @@ def clasificar_placsp_contratos_menores(items: list[dict]) -> list[dict]:
             continue
         titulo = item.get("titulo") or ""
         cpv_list = item.get("cpv") or []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -354,7 +354,7 @@ def clasificar_euskadi_contratos_menores(items: list[dict]) -> list[dict]:
         titulo = item.get("object") or ""
         cpv = item.get("CPV")
         cpv_list = [cpv] if cpv else []
-        resultado = clasificar_texto(titulo, cpv_list)
+        resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
@@ -436,7 +436,15 @@ def _clave_placsp(original: dict) -> str | None:
     return original.get("enlace") or original.get("expediente")
 
 
-def _acumular(previos: list[dict], items_nuevos: list[dict], clasificados: list[dict]) -> list[dict]:
+# Las adjudicaciones solo se enseñan si son de los últimos
+# DIAS_ANTIGUEDAD_MAXIMA días (normalizar._adjudicacion_reciente): guardar
+# más solo engordaba la caché (de 441 adjudicaciones guardadas, 174 estaban
+# en ventana el 2026-10-04). Margen por si se amplía la ventana.
+DIAS_MAX_ADJUDICACIONES = config.DIAS_ANTIGUEDAD_MAXIMA + 15
+
+
+def _acumular(previos: list[dict], items_nuevos: list[dict], clasificados: list[dict],
+              tipo_registro: str = "licitacion") -> list[dict]:
     """Lo clasificado ahora + lo anterior que NO viene en el crudo nuevo.
 
     Un expediente que sí viene en el crudo nuevo -en el estado que sea- deja
@@ -444,11 +452,15 @@ def _acumular(previos: list[dict], items_nuevos: list[dict], clasificados: list[
     evaluación" o "anulado", clasificar ya no lo devuelve y aquí tampoco se
     conserva. normalizar.py sigue descartando lo caducado en cada pasada."""
     vistos = {_clave_placsp(it) for it in items_nuevos}
-    corte = (date.today() - timedelta(days=DIAS_MAX_ACUMULADO)).isoformat()
+    if tipo_registro == "adjudicacion":
+        campo, dias = "fecha_adjudicacion", DIAS_MAX_ADJUDICACIONES
+    else:
+        campo, dias = "fecha_actualizacion", DIAS_MAX_ACUMULADO
+    corte = (date.today() - timedelta(days=dias)).isoformat()
     conservados = [
         c for c in previos
         if _clave_placsp(c["original"]) not in vistos
-        and (c["original"].get("fecha_actualizacion") or "9999") >= corte
+        and (c["original"].get(campo) or c["original"].get("fecha_actualizacion") or "9999")[:10] >= corte
     ]
     return clasificados + conservados
 
@@ -511,7 +523,7 @@ def main() -> None:
             c["tipo_registro"] = tipo_registro
         if prefijo in FUENTES_ACUMULATIVAS:
             nuevos = len(clasificados)
-            clasificados = _acumular(cache_previo.get(clave_cache) or [], items, clasificados)
+            clasificados = _acumular(cache_previo.get(clave_cache) or [], items, clasificados, tipo_registro)
             print(f"[clasificar] {prefijo} ({tipo_registro}): {nuevos} del crudo nuevo + {len(clasificados) - nuevos} conservados de ejecuciones anteriores")
         print(f"[clasificar] {prefijo} ({tipo_registro}): {len(items)} extraídas -> {len(clasificados)} relevantes (de {ruta.name})")
         resultado_final.extend(clasificados)

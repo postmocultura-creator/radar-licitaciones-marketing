@@ -52,11 +52,12 @@ import re
 import sys
 import time
 import zlib
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
 
 import requests
 
+import comun
 import peticiones
 
 FUENTE = "UE-subvenciones"
@@ -239,20 +240,7 @@ def extraer() -> list[dict]:
 
 
 def guardar_crudo(items: list[dict]) -> Path:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    nombre = f"eu_grants_{ahora.strftime('%Y%m%dT%H%M%SZ')}.json"
-    ruta = raw_dir / nombre
-
-    payload = {
-        "fuente": FUENTE,
-        "timestamp": ahora.isoformat(),
-        "num_resultados": len(items),
-        "resultados": items,
-    }
-    ruta.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return ruta
+    return comun.guardar_crudo(FUENTE, "eu_grants", items)
 
 
 def main() -> None:
@@ -260,14 +248,7 @@ def main() -> None:
         items = extraer()
     except requests.RequestException as exc:
         print(f"[eu_grants] ERROR al consultar la API SEDIA: {exc}", file=sys.stderr)
-        ahora = datetime.now(timezone.utc)
-        raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-        raw_dir.mkdir(parents=True, exist_ok=True)
-        ruta = raw_dir / f"eu_grants_{ahora.strftime('%Y%m%dT%H%M%SZ')}_error.json"
-        ruta.write_text(
-            json.dumps({"fuente": FUENTE, "timestamp": ahora.isoformat(), "error": str(exc)}, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        comun.guardar_error(FUENTE, "eu_grants", exc)
         sys.exit(1)
 
     ruta = guardar_crudo(items)

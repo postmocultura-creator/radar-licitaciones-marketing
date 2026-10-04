@@ -15,13 +15,12 @@ la carpeta licitaciones_marketing/):
 
 from __future__ import annotations
 
-import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
 
+import comun
 import peticiones
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -63,6 +62,31 @@ CAMPOS = [
 # usa el que venga relleno, priorizando el de eForms.
 
 
+def consulta_cpv() -> str:
+    """OR de los rangos CPV de config.py en sintaxis experta de TED. TED no
+    admite rangos numéricos sobre classification-cpv: cada rango se expresa
+    como comodín sobre los grupos de 5 cifras que cubre (lo/hi son códigos
+    de 8 cifras; dividir por 1000 deja las 5 primeras exactas, sin ceros de
+    más que harían que el prefijo no exista)."""
+    return " OR ".join(f"classification-cpv={grupo:05d}*"
+                       for lo, hi, _ in config.CPV_RANGOS for grupo in range(lo // 1000, hi // 1000 + 1))
+
+
+# Títulos, organismos y adjudicatarias llegan en todos los idiomas de la UE
+# (5,9 MB de la caché para 540 avisos, medido el 2026-10-04). El radar solo
+# usa el español o, si no hay, el inglés o el primero que venga.
+CAMPOS_MULTILINGUES = ("notice-title", "buyer-name", "winner-name")
+
+
+def _solo_idiomas_utiles(aviso: dict) -> dict:
+    for campo in CAMPOS_MULTILINGUES:
+        valores = aviso.get(campo)
+        if isinstance(valores, dict) and len(valores) > 1:
+            utiles = {k: valores[k] for k in ("spa", "eng") if k in valores}
+            aviso[campo] = utiles or dict([next(iter(valores.items()))])
+    return aviso
+
+
 def _construir_query() -> str:
     """Construye la query de sintaxis experta de TED: un OR de todos los
     rangos CPV amplios de config.py, acotado a notificaciones recientes Y
@@ -82,21 +106,11 @@ def _construir_query() -> str:
     punto de vencer y anticipar relicitaciones; se descartó a petición del
     usuario: en cuanto la relicitación se publica de verdad, ya aparece
     aquí por su cuenta — la señal de "vence pronto" solo añadía ruido sin
-    aportar nada que el radar no fuera a mostrar igualmente después.)"""
+    aportar nada que el radar no fuera a mostrar igualmente después. Los
+    avisos "result" sí se traen, para otra cosa: ver
+    _construir_query_adjudicaciones.)"""
     fecha_desde = config.fecha_corte().strftime("%Y%m%d")
-    partes_cpv = []
-    for lo, hi, _ in config.CPV_RANGOS:
-        # TED no soporta rangos numéricos directos sobre classification-cpv;
-        # se expresa como wildcard sobre el prefijo de división/grupo cuando
-        # el rango cubre una división/grupo completo de 3 dígitos, y si no,
-        # se listan los códigos de grupo (6 dígitos) que caen en el rango.
-        for grupo in range(lo // 1000, hi // 1000 + 1):
-            # lo/hi son códigos CPV de 8 dígitos: dividir por 1000 deja los
-            # primeros 5 dígitos exactos (nunca hay que rellenar con un cero
-            # de más, o el prefijo deja de existir en la nomenclatura CPV).
-            partes_cpv.append(f'classification-cpv={grupo:05d}*')
-    cpv_query = " OR ".join(partes_cpv)
-    return f"({cpv_query}) AND publication-date>={fecha_desde} AND form-type=competition"
+    return f"({consulta_cpv()}) AND publication-date>={fecha_desde} AND form-type=competition"
 
 
 def _consultar(query: str, campos: list[str], limite_paginas: int, scope: str = "ACTIVE") -> list[dict]:
@@ -133,7 +147,7 @@ def _consultar(query: str, campos: list[str], limite_paginas: int, scope: str = 
 def extraer(limite_paginas: int = 20) -> list[dict]:
     """Consulta la API de TED con paginación por iteración. Devuelve una
     lista de notices en formato semi-crudo (ya con nombres de campo TED)."""
-    return _consultar(_construir_query(), CAMPOS, limite_paginas)
+    return [_solo_idiomas_utiles(n) for n in _consultar(_construir_query(), CAMPOS, limite_paginas)]
 
 
 CAMPOS_ADJUDICACIONES = [
@@ -164,44 +178,20 @@ def _construir_query_adjudicaciones() -> str:
     redundante. Este es distinto -mostrar quién gana, no adivinar cuándo
     relicita- así que no aplica la misma objeción."""
     fecha_desde = config.fecha_corte().strftime("%Y%m%d")
-    partes_cpv = []
-    for lo, hi, _ in config.CPV_RANGOS:
-        for grupo in range(lo // 1000, hi // 1000 + 1):
-            partes_cpv.append(f'classification-cpv={grupo:05d}*')
-    cpv_query = " OR ".join(partes_cpv)
-    return f"({cpv_query}) AND publication-date>={fecha_desde} AND form-type=result"
+    return f"({consulta_cpv()}) AND publication-date>={fecha_desde} AND form-type=result"
 
 
 def extraer_adjudicaciones(limite_paginas: int = 20) -> list[dict]:
-    return _consultar(_construir_query_adjudicaciones(), CAMPOS_ADJUDICACIONES, limite_paginas)
+    avisos = _consultar(_construir_query_adjudicaciones(), CAMPOS_ADJUDICACIONES, limite_paginas)
+    return [_solo_idiomas_utiles(n) for n in avisos]
 
 
 def guardar_crudo(notices: list[dict], prefijo: str = "ted") -> Path:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    nombre = f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}.json"
-    ruta = raw_dir / nombre
-
-    payload = {
-        "fuente": FUENTE,
-        "timestamp": ahora.isoformat(),
-        "num_resultados": len(notices),
-        "resultados": notices,
-    }
-    ruta.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return ruta
+    return comun.guardar_crudo(FUENTE, prefijo, notices)
 
 
 def _guardar_error(prefijo: str, exc: Exception) -> None:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    ruta = raw_dir / f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}_error.json"
-    ruta.write_text(
-        json.dumps({"fuente": FUENTE, "timestamp": ahora.isoformat(), "error": str(exc)}, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    comun.guardar_error(FUENTE, prefijo, exc)
 
 
 def main() -> None:

@@ -99,6 +99,21 @@ def test_presupuesto_cero_es_no_publicado():
     assert _parsear_presupuesto("15000.5") == (15000.5, "15,000 EUR")
 
 
+def test_campos_multilingues_de_ted():
+    import ted
+    from normalizar import _texto_ted
+
+    aviso = {"buyer-name": {"deu": ["Stadt"], "spa": ["Ayuntamiento de Bilbao"], "eus": ["Bilboko Udala"]},
+             "winner-name": {"fra": ["Agence"], "ita": ["Agenzia"]},
+             "notice-title": {"eng": ["Campaign"]}}
+    ted._solo_idiomas_utiles(aviso)
+    assert aviso["buyer-name"] == {"spa": ["Ayuntamiento de Bilbao"]}
+    assert aviso["winner-name"] == {"fra": ["Agence"]}         # sin español ni inglés: el primero
+    assert _texto_ted(aviso["buyer-name"]) == "Ayuntamiento de Bilbao"
+    assert _texto_ted(aviso["winner-name"], idiomas=()) == "Agence"
+    assert _texto_ted(None) == NO_PUBLICADO
+
+
 def test_titulo_ted_sin_prefijo():
     assert _titulo_ted_sin_prefijo("España – Servicios de publicidad – Difusión de la campaña") == "Difusión de la campaña"
     assert _titulo_ted_sin_prefijo("Título sin prefijo") == "Título sin prefijo"

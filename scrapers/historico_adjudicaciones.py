@@ -60,7 +60,7 @@ import territorio  # noqa: E402
 from nif import enmascarado as nif_enmascarado, es_relleno, limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
 from clasificar import clasificar_texto, _normalizar_texto, _titulo_ted  # noqa: E402
 import peticiones  # noqa: E402
-from placsp import NS, limpiar_enlace, limpiar_texto  # noqa: E402
+from placsp import NS, _fecha_anuncio, _texto, limpiar_enlace, limpiar_texto  # noqa: E402
 
 SALIDA = BASE / "data" / "historico_adjudicaciones.json"
 SALIDA_DETALLE = BASE / "dashboard" / "historico-detalle"
@@ -94,13 +94,6 @@ PROCEDIMIENTOS = {
 CP_EUSKADI = ("01", "20", "48")
 
 
-def _texto(el, path) -> str | None:
-    if el is None:
-        return None
-    nodo = el.find(path, NS)
-    return nodo.text.strip() if nodo is not None and nodo.text and nodo.text.strip() else None
-
-
 def _importe(texto: str | None) -> float | None:
     """0 en PLACSP significa "no publicado", no "gratis" (mismo criterio que
     normalizar._parsear_presupuesto)."""
@@ -113,23 +106,6 @@ def _importe(texto: str | None) -> float | None:
 
 def _id(*partes: str | None) -> str:
     return hashlib.sha1("|".join(p or "" for p in partes).encode("utf-8")).hexdigest()[:16]
-
-
-def _fecha_anuncio(cfs, tipos: tuple[str, ...]) -> str | None:
-    """Fecha del primer anuncio publicado de alguno de estos tipos
-    (DOC_CAN_ADJ = adjudicación, DOC_FORM = formalización). Las plataformas
-    agregadas -verificado con la de Euskadi- no rellenan AwardDate en el
-    lote, pero sí publican el anuncio de adjudicación con su fecha."""
-    for tipo in tipos:
-        for info in cfs.findall("cac-place-ext:ValidNoticeInfo", NS):
-            if _texto(info, "cbc-place-ext:NoticeTypeCode") != tipo:
-                continue
-            fechas = [n.text.strip() for n in info.findall(
-                "cac-place-ext:AdditionalPublicationStatus/cac-place-ext:AdditionalPublicationDocumentReference/cbc:IssueDate", NS)
-                if n.text]
-            if fechas:
-                return min(fechas)[:10]
-    return None
 
 
 def _es_euskadi(cp: str, nuts_ejecucion: str, enlace: str | None) -> bool:
@@ -186,7 +162,7 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
 
     proyecto = cfs.find("cac:ProcurementProject", NS)
     titulo = _texto(proyecto, "cbc:Name") or _texto(entry, "atom:title") or ""
-    clasif = clasificar_texto(titulo, [])
+    clasif = clasificar_texto(titulo)
     if not clasif["incluir"]:
         return None
 
@@ -366,7 +342,7 @@ def pieza_euskadi_menores(periodo: str) -> list[dict]:
             empresa = item.get("socialReason")
             if not empresa or not _ALGUNA_KEYWORD.search(_normalizar_texto(titulo)):
                 continue
-            clasif = clasificar_texto(titulo, [])
+            clasif = clasificar_texto(titulo)
             if not clasif["incluir"]:
                 continue
             href = (item.get("_links") or {}).get("contractingAuthority", {}).get("href")
@@ -412,9 +388,7 @@ def pieza_ted(anio: str) -> list[dict]:
     los que coinciden por título y organismo y deja solo los que no."""
     import ted  # noqa: E402  (mismo cliente que el radar diario)
 
-    partes_cpv = [f"classification-cpv={g:05d}*" for lo, hi, _ in config.CPV_RANGOS
-                  for g in range(lo // 1000, hi // 1000 + 1)]
-    query = (f"({' OR '.join(partes_cpv)}) AND buyer-country=ESP AND form-type=result "
+    query = (f"({ted.consulta_cpv()}) AND buyer-country=ESP AND form-type=result "
              f"AND publication-date>={anio}0101 AND publication-date<={anio}1231")
     campos = ["publication-number", "notice-title", "buyer-name", "buyer-country-sub",
               "publication-date", "winner-name", "winner-identifier", "winner-country", "result-value-lot",
@@ -422,7 +396,7 @@ def pieza_ted(anio: str) -> list[dict]:
     salida = []
     for n in ted._consultar(query, campos, limite_paginas=200, scope="ALL"):
         titulo = _titulo_ted(n)
-        clasif = clasificar_texto(titulo, [])
+        clasif = clasificar_texto(titulo)
         if not clasif["incluir"]:
             continue
         nombres = next(iter((n.get("buyer-name") or {}).values()), None) or ["no publicado"]

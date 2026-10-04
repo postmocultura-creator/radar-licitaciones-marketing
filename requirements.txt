@@ -1,4 +1,8 @@
-requests>=2.31
-deep-translator>=1.11
-playwright>=1.47
-tzdata>=2024.1
+# Versiones fijas: las que instaló GitHub Actions el 2026-10-02 en una noche
+# que fue bien. Con ">=" cada noche se instalaba la última, y un cambio de
+# Playwright o requests podía romper el radar sin tocar nada nuestro. Para
+# actualizar: subir la versión aquí, pasar las pruebas y lanzar el workflow.
+requests==2.34.2
+deep-translator==1.11.4
+playwright==1.63.0
+tzdata==2026.4

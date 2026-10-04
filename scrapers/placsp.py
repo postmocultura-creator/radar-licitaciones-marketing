@@ -1,65 +1,37 @@
 # -*- coding: utf-8 -*-
 """
-Cliente del feed de sindicación de PLACSP (Plataforma de Contratación del
-Sector Público, Estado español).
-
-Método de acceso: PLACSP NO tiene una API REST pública documentada como la
-de TED. Lo que publica es un feed ATOM con extensión CODICE 2.07,
-confirmado navegando el XML real. Namespaces reales verificados:
+Cliente de los ZIP de sindicación de PLACSP (Plataforma de Contratación del
+Sector Público, Estado español). PLACSP no tiene API REST: publica ficheros
+ATOM con extensión CODICE 2.07, empaquetados en un ZIP por mes, con estos
+namespaces (verificados contra el XML real):
 
     cbc:          urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2
     cac:          urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2
     cac-place-ext: urn:dgpe:names:draft:codice-place-ext:schema:xsd:CommonAggregateComponents-2
     cbc-place-ext: urn:dgpe:names:draft:codice-place-ext:schema:xsd:CommonBasicComponents-2
 
-HISTORIAL — de ATOM paginado a ZIP mensual (el cambio importante de este
-módulo). La primera versión leía el feed ATOM paginable
-(.../sindicacion_643/licitacionesPerfilesContratanteCompleto3.atom) siguiendo
-<link rel="next">. Se verificó en vivo (curl + cache-busting en peticiones
-separadas por >15 minutos) que la página 1 de ese ATOM es un ancla FIJA que
-no avanza sola, y que en la práctica iba entre 18 y 21 días por detrás del
-reloj real -de ahí que una licitación con plazo corto pudiera llegarnos con
-menos días de los que en realidad tenía, o directamente ya cerrada-. Subir
-`MAX_PAGINAS` no arreglaba esto: `rel="next"` retrocede en el tiempo desde
-esa ancla desfasada, así que por muchas páginas que se pidieran nunca se
-llegaba a nada más reciente que el ancla.
+Tres feeds, los tres como ZIP mensual con varios .atom (lotes con la hora
+en el nombre):
 
-La solución, descubierta por analogía con el ZIP de contratos menores de
-más abajo: sindicacion_643 TAMBIÉN publica un ZIP mensual con el mismo
-patrón de URL que sindicacion_1143
-(.../sindicacion_643/licitacionesPerfilesContratanteCompleto3_{AAAAMM}.zip),
-no documentado en ningún sitio de prosa pero confirmado en vivo (HTTP 200,
-content-type application/zip). Cada ZIP mensual trae un fichero histórico
-completo (partido en varios .atom, con expedientes desde 2021) MÁS varios
-ficheros incrementales con timestamp real en el nombre
-(licitacionesPerfilesContratanteCompleto3_20260923_211008_9.atom, etc.).
-Verificado con datos reales del mes en curso: la entrada más reciente del
-ZIP llegaba a 5 días de retraso frente a los 18-21 días del ATOM paginado, y
-el número de licitaciones "PUB" con plazo todavía genuinamente abierto hoy
-pasó de 998 a 3.202 sobre el mismo universo de datos -exactamente el
-problema que preocupaba: menos días reales para preparar la documentación
-de una licitación con plazo corto-. Por eso `extraer()` usa ahora el mismo
-mecanismo de ZIP mensual que `extraer_contratos_menores()` (ver
-`_extraer_zip_mensual()`, compartida por ambas).
+- sindicacion_643: organismos con perfil propio en PLACSP. Licitaciones y,
+  en el mismo feed, adjudicaciones con sus documentos (actas, informes de
+  valoración).
+- sindicacion_1044: plataformas autonómicas agregadas (Cataluña, Euskadi,
+  Andalucía, Madrid, Galicia, Navarra, La Rioja).
+- sindicacion_1143: contratos menores, para los que vencen pronto.
 
-Segundo feed, sindicacion_1143, para CONTRATOS MENORES (adjudicación
-directa): se probó, se quitó (un contrato menor se publica SIEMPRE ya
-adjudicado, nunca es una oportunidad a la que presentarse) y se ha vuelto
-a añadir con otro objetivo -prospección comercial sobre contratos que
-vencen pronto, ver extraer_contratos_menores() y el README-.
+Cada ZIP trae los expedientes ACTUALIZADOS ese mes, no una foto completa:
+por eso clasificar.py acumula el resultado entre ejecuciones. Hay que leer
+todos los ficheros del ZIP y quedarse con la versión más reciente de cada
+expediente. Por qué ZIP y no el ATOM paginado (iba ~3 semanas por detrás):
+ver docs/DECISIONES.md.
 
-Tercer feed, sindicacion_1044, con las PLATAFORMAS AUTONÓMICAS agregadas en
-PLACSP (ver FEED_AGREGADAS_ZIP): licitaciones y adjudicaciones de los
-organismos que publican en la plataforma de su comunidad y no en PLACSP.
-
-Ejecutar directamente para lanzar la extracción y guardar el crudo (desde
-la carpeta licitaciones_marketing/):
+Ejecutar desde licitaciones_marketing/:
     python scrapers/placsp.py
 """
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 import zipfile
@@ -68,6 +40,8 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import requests
+
+import comun
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from nif import limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
@@ -84,8 +58,12 @@ NS = {
 
 
 def _texto(el, path) -> str | None:
+    """Texto de un nodo CODICE, o None si falta el elemento, el nodo o el
+    texto (también si solo son espacios). Lo comparte el histórico."""
+    if el is None:
+        return None
     nodo = el.find(path, NS)
-    return nodo.text.strip() if nodo is not None and nodo.text else None
+    return nodo.text.strip() if nodo is not None and nodo.text and nodo.text.strip() else None
 
 
 def limpiar_texto(texto: str | None) -> str | None:
@@ -101,8 +79,10 @@ limpiar_enlace = limpiar_texto
 
 def _fecha_anuncio(cfs, tipos: tuple[str, ...]) -> str | None:
     """Fecha del primer anuncio publicado de alguno de estos tipos
-    (DOC_CAN_ADJ = adjudicación, DOC_FORM = formalización). Misma lógica que
-    scrapers/historico_adjudicaciones._fecha_anuncio."""
+    (DOC_CAN_ADJ = adjudicación, DOC_FORM = formalización). Las plataformas
+    agregadas -verificado con la de Euskadi- no rellenan AwardDate en el
+    lote, pero sí publican el anuncio de adjudicación con su fecha. Lo
+    comparte el histórico."""
     for tipo in tipos:
         for info in cfs.findall("cac-place-ext:ValidNoticeInfo", NS):
             if _texto(info, "cbc-place-ext:NoticeTypeCode") != tipo:
@@ -429,31 +409,11 @@ def extraer_agregadas() -> list[dict]:
 
 
 def guardar_crudo(items: list[dict], prefijo: str = "placsp") -> Path:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    nombre = f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}.json"
-    ruta = raw_dir / nombre
-
-    payload = {
-        "fuente": FUENTE,
-        "timestamp": ahora.isoformat(),
-        "num_resultados": len(items),
-        "resultados": items,
-    }
-    ruta.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return ruta
+    return comun.guardar_crudo(FUENTE, prefijo, items)
 
 
 def _guardar_error(prefijo: str, exc: Exception) -> None:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    ruta = raw_dir / f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}_error.json"
-    ruta.write_text(
-        json.dumps({"fuente": FUENTE, "timestamp": ahora.isoformat(), "error": str(exc)}, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    comun.guardar_error(FUENTE, prefijo, exc)
 
 
 def main() -> None:

@@ -39,6 +39,7 @@ from pathlib import Path
 
 import requests
 
+import comun
 import peticiones
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -233,8 +234,7 @@ def _menores_del_mes(periodo: str) -> list[dict]:
         datos = peticiones.pedir("GET", BASE_URL_CONTRATOS, params=params, headers={"Accept": "application/json"}).json()
         items = datos.get("items", [])
         for item in items:
-            cpv = [item["CPV"]] if item.get("CPV") else []
-            if item.get("contractEndDate") and clasificar_texto(item.get("object") or "", cpv)["incluir"]:
+            if item.get("contractEndDate") and clasificar_texto(item.get("object") or "")["incluir"]:
                 relevantes.append(item)
         total_paginas = datos.get("totalPages", 1)
         if not items:
@@ -426,8 +426,7 @@ def anadir_fichas(items: list[dict]) -> None:
     leidas = vacias = 0
     for item in items:
         url = item.get("mainEntityOfPage")
-        cpv = [item["CPV"]] if item.get("CPV") else []
-        if not url or not clasificar_texto(item.get("object") or "", cpv)["incluir"]:
+        if not url or not clasificar_texto(item.get("object") or "")["incluir"]:
             continue
         try:
             item["ficha"] = leer_ficha(url)
@@ -445,31 +444,11 @@ def anadir_fichas(items: list[dict]) -> None:
 
 
 def guardar_crudo(items: list[dict], prefijo: str = "euskadi") -> Path:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    nombre = f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}.json"
-    ruta = raw_dir / nombre
-
-    payload = {
-        "fuente": FUENTE,
-        "timestamp": ahora.isoformat(),
-        "num_resultados": len(items),
-        "resultados": items,
-    }
-    ruta.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return ruta
+    return comun.guardar_crudo(FUENTE, prefijo, items)
 
 
 def _guardar_error(prefijo: str, exc: Exception) -> None:
-    ahora = datetime.now(timezone.utc)
-    raw_dir = Path(__file__).resolve().parent.parent / "data" / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    ruta = raw_dir / f"{prefijo}_{ahora.strftime('%Y%m%dT%H%M%SZ')}_error.json"
-    ruta.write_text(
-        json.dumps({"fuente": FUENTE, "timestamp": ahora.isoformat(), "error": str(exc)}, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    comun.guardar_error(FUENTE, prefijo, exc)
 
 
 def main() -> None:

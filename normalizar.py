@@ -272,18 +272,21 @@ def _dentro_de_ventana_temporal(registro: dict) -> bool:
     return publicacion is not None and publicacion >= cutoff
 
 
+def _texto_ted(valor, idiomas: tuple[str, ...] = ("spa", "eng")) -> str:
+    """Texto de un campo multilingüe de TED ({"spa": ["..."], "eng": [...]}):
+    el del primer idioma preferido que venga o, si no, el primero que haya."""
+    if not isinstance(valor, dict):
+        return NO_PUBLICADO
+    textos = next((valor[i] for i in idiomas if valor.get(i)), None) or next(iter(valor.values()), None)
+    if isinstance(textos, list):
+        textos = textos[0] if textos else None
+    return textos if isinstance(textos, str) and textos else NO_PUBLICADO
+
+
 def _from_ted(registro: dict) -> dict:
     item = registro["original"]
 
-    nombres = item.get("buyer-name") or {}
-    organismo = None
-    if isinstance(nombres, dict):
-        valores = nombres.get("spa") or nombres.get("eng") or next(iter(nombres.values()), None)
-        if isinstance(valores, list) and valores:
-            organismo = valores[0]
-        elif isinstance(valores, str):
-            organismo = valores
-    organismo = organismo or NO_PUBLICADO
+    organismo = _texto_ted(item.get("buyer-name"))
 
     paises = item.get("buyer-country") or []
     codigo_pais = paises[0] if paises else None
@@ -675,25 +678,9 @@ es_empresa_espanola = nif.es_espanola
 def _from_ted_adjudicacion(registro: dict) -> dict:
     item = registro["original"]
 
-    nombres = item.get("buyer-name") or {}
-    organismo = None
-    if isinstance(nombres, dict):
-        valores = nombres.get("spa") or nombres.get("eng") or next(iter(nombres.values()), None)
-        if isinstance(valores, list) and valores:
-            organismo = valores[0]
-        elif isinstance(valores, str):
-            organismo = valores
-    organismo = organismo or NO_PUBLICADO
+    organismo = _texto_ted(item.get("buyer-name"))
 
-    ganador = item.get("winner-name") or {}
-    empresa = None
-    if isinstance(ganador, dict):
-        valores = next(iter(ganador.values()), None)
-        if isinstance(valores, list) and valores:
-            empresa = valores[0]
-        elif isinstance(valores, str):
-            empresa = valores
-    empresa = empresa or NO_PUBLICADO
+    empresa = _texto_ted(item.get("winner-name"), idiomas=())
 
     paises = item.get("buyer-country") or []
     codigo_pais = paises[0] if paises else None
