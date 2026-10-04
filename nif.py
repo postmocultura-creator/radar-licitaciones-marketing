@@ -68,8 +68,9 @@ _DNI_EN_TEXTO = re.compile(r"(?<![\w/.\-])(?:\d{8}|[XYZ]\d{7})[A-Z](?![\w/\-])")
 
 def ocultar_en_texto(texto: str | None) -> str | None:
     """Enmascara los DNI y NIE que aparecen dentro de un texto: hay
-    organismos que los pegan al nombre del autónomo ("Ana Martín
-    Ruiz 12345678Z", visto en el histórico el 2026-10-04)."""
+    organismos que los pegan al nombre del autónomo, p. ej. "Ana Martín
+    Ruiz 12345678Z" (ejemplo inventado; el caso real se vio en el histórico
+    el 2026-10-04)."""
     return _DNI_EN_TEXTO.sub(lambda m: enmascarar_persona(m.group(0)), texto) if texto else texto
 
 
