@@ -565,7 +565,7 @@ def _historiales(registros: list[dict]) -> None:
                     for i_emp, (n, importe) in principales
                 ],
             }
-        if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo", "contrato_venciendo"):
+        if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo"):
             continue
         nombre_empresa = r.get("empresa_adjudicataria") or NO_PUBLICADO
         i_emp = buscar_empresa(r.get("empresa_nif") or "", nombre_empresa)
@@ -597,103 +597,6 @@ _PALABRAS_VACIAS_TITULO = frozenset(
 _RE_PREFIJO_TED = re.compile(r"^[^–]{2,40}\s–\s[^–]{2,90}\s–\s")
 
 
-_HISTORICO_COMPLETO_CACHE: dict | None | bool = False  # False = todavía no se ha intentado leer
-
-
-def _historico_completo() -> dict | None:
-    """data/historico_adjudicaciones.json (con títulos y fechas de fin), o
-    None si no está o no se puede leer. Se lee una sola vez: son 40 MB."""
-    global _HISTORICO_COMPLETO_CACHE
-    if _HISTORICO_COMPLETO_CACHE is False:
-        _HISTORICO_COMPLETO_CACHE = None
-        if HISTORICO_COMPLETO.exists():
-            try:
-                _HISTORICO_COMPLETO_CACHE = json.loads(HISTORICO_COMPLETO.read_text(encoding="utf-8"))
-            except (ValueError, OSError):
-                pass
-    return _HISTORICO_COMPLETO_CACHE
-
-
-def _contratos_por_vencer(hoy: date | None = None) -> list[dict]:
-    """Contratos con concurso (no menores) del histórico de adjudicaciones
-    que terminan en los próximos config.DIAS_AVISO_CONTRATO días: la
-    oportunidad de preparar la siguiente licitación antes de que salga. Los
-    menores van aparte (contrato_menor_venciendo), desde las fuentes del día.
-
-    La fecha de fin es estimada (adjudicación + duración en PLACSP; la que
-    publican TED y Euskadi) y puede alargarse si el contrato prevé prórroga:
-    se dice en "prorrogable". Solo tienen fecha los expedientes leídos desde
-    octubre de 2026 o en una reconstrucción posterior del histórico."""
-    c = _historico_completo()
-    if c is None:
-        return []
-    hoy = hoy or date.today()
-    desde, hasta = hoy.isoformat(), (hoy + timedelta(days=config.DIAS_AVISO_CONTRATO)).isoformat()
-    try:
-        d = c["dic"]
-        prefijo = c.get("prefijo_enlace") or ""
-        lotes_por_exp: dict[int, list] = {}
-        for l in c["lotes"]:  # [exp, empresa, fecha, importe, ofertas, pyme]
-            lotes_por_exp.setdefault(l[0], []).append(l)
-        salida = []
-        for i, e in enumerate(c["exp"]):
-            fin = e[13] if len(e) > 13 else None
-            if e[6] or not fin or not (desde <= fin <= hasta) or i not in lotes_por_exp:
-                continue
-            lotes = lotes_por_exp[i]
-            empresas = []
-            for l in lotes:
-                datos = d["empresa"][l[1]]
-                if len(datos) > 2:  # ficha fusionada: [None, nombre, índice de la buena]
-                    datos = d["empresa"][datos[2]]
-                if datos[1] not in [x[1] for x in empresas]:
-                    empresas.append(datos)
-            importes = [l[3] for l in lotes if l[3]]
-            importe = sum(importes) if importes else None
-            importe_valor, importe_display = _parsear_presupuesto(importe, "EUR")
-            presupuesto_valor, presupuesto_display = _parsear_presupuesto(e[11], "EUR")
-            provincia, comunidad = d["lugar"][e[12]] if len(e) > 12 else (None, None)
-            adjudicada = max((l[2] or "" for l in lotes), default="") or NO_PUBLICADO
-            enlace = e[8] if e[8].startswith("http") or not e[8] else prefijo + e[8]
-            empresa = empresas[0][1] if empresas else NO_PUBLICADO
-            salida.append({
-                "id": "vence-" + e[0],
-                "titulo": " ".join(e[1].split()),
-                "organismo": d["organismo"][e[2]],
-                "fuente": "Euskadi" if e[3] else ("UE" if e[9] else "Estado"),
-                "pais_territorio": "España",
-                "provincia": provincia,
-                "comunidad": comunidad,
-                "fecha_publicacion": adjudicada,
-                "fecha_limite": NO_PUBLICADO,
-                "presupuesto_valor": presupuesto_valor,
-                "presupuesto_display": presupuesto_display,
-                "cpv": [],
-                "categorias": [cat for b, cat in enumerate(c["categorias"]) if e[7] >> b & 1],
-                "revisar_manual": False,
-                "enlace": enlace or NO_PUBLICADO,
-                "enlace_directo": True,
-                "codigo_expediente": None,
-                "resumen": " ".join(e[1].split()),
-                "tipo_contrato": d["tipo"][e[4]],
-                "procedimiento": d["procedimiento"][e[5]],
-                "tipo_registro": "contrato_venciendo",
-                # Con varias adjudicatarias (lotes), la primera y cuántas más.
-                "empresa_adjudicataria": empresa + (f" y {len(empresas) - 1} más" if len(empresas) > 1 else ""),
-                "empresa_nif": _nif_limpio(empresas[0][0]) if len(empresas) == 1 else None,
-                "fecha_adjudicacion": adjudicada,
-                "fecha_fin_estimada": fin,
-                "prorrogable": None if len(e) <= 14 or e[14] is None else bool(e[14]),
-                "importe_adjudicado_valor": importe_valor,
-                "importe_adjudicado_display": importe_display,
-                "ofertas": max((l[4] for l in lotes if l[4]), default=None),
-            })
-    except (KeyError, IndexError, TypeError, ValueError) as exc:
-        print(f"[normalizar] AVISO: contratos por vencer no disponibles ({exc})", file=sys.stderr)
-        return []
-    return salida
-
-
 def _palabras_titulo(titulo: str) -> frozenset[str]:
     titulo = _RE_PREFIJO_TED.sub("", titulo or "")
     return frozenset(w for w in _normalizar_clave(titulo).split()
@@ -716,10 +619,10 @@ def _antecedentes(registros: list[dict]) -> None:
     en historico.html. El organismo se busca por nombre normalizado, como en
     _historiales. Las licitaciones extranjeras de TED y las calls no tienen
     histórico."""
-    c = _historico_completo()
-    if c is None:
+    if not HISTORICO_COMPLETO.exists():
         return
     try:
+        c = json.loads(HISTORICO_COMPLETO.read_text(encoding="utf-8"))
         organismos = c["dic"]["organismo"]
         empresas = c["dic"]["empresa"]
         exp = c["exp"]  # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
@@ -1935,17 +1838,6 @@ def main() -> None:
     # nuevo siempre-. Se reconstruye desde cero en cada ejecución a partir
     # de "finales", así que un id que deja de aparecer (licitación cerrada,
     # etc.) se poda solo del fichero, sin crecer indefinidamente.
-    # Contratos con concurso que terminan pronto: salen del histórico, no de
-    # las fuentes del día, y no pasan por la deduplicación (cada expediente
-    # está una sola vez en el histórico).
-    vencen = _contratos_por_vencer()
-    for r in vencen:
-        _sin_dni(r)
-    finales.extend(vencen)
-    etapas["clasificadas"]["contrato_venciendo"] = len(vencen)
-    etapas["empresas_espanolas"]["contrato_venciendo"] = len(vencen)
-    etapas["en_ventana"]["contrato_venciendo"] = len(vencen)
-
     hoy_iso = date.today().isoformat()
     mapa_previo = {}
     if PRIMERA_APARICION.exists():
