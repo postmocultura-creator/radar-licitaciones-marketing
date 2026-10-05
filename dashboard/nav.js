@@ -45,7 +45,7 @@
     },
     {
       titulo: "Prospección comercial",
-      items: [["menores", "Contratos menores por vencer", "index.html", "#/menores", "reloj"]],
+      items: [["menores", "Contratos que terminan", "index.html", "#/menores", "reloj"]],
     },
     {
       titulo: "Competencia",

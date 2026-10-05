@@ -29,6 +29,10 @@ def fecha_corte() -> date:
 # terminar" y merece una visita comercial. Ver README, sección "Contratos
 # menores".
 DIAS_AVISO_CONTRATO_MENOR = 90
+# Lo mismo para los contratos con concurso (normalizar._contratos_por_vencer):
+# más margen, porque el organismo prepara la siguiente licitación con meses
+# de antelación.
+DIAS_AVISO_CONTRATO = 120
 
 # Cuánto hay que mirar hacia ATRÁS al pedir contratos menores a Euskadi para
 # no perderse ninguno que venza pronto. No es lo mismo que "adjudicado

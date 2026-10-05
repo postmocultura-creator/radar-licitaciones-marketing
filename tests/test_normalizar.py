@@ -364,6 +364,7 @@ def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
     ruta = tmp_path / "historico.json"
     ruta.write_text(json.dumps(historico), encoding="utf-8")
     monkeypatch.setattr(normalizar, "HISTORICO_COMPLETO", ruta)
+    monkeypatch.setattr(normalizar, "_HISTORICO_COMPLETO_CACHE", False)
     registros = [{"tipo_registro": "licitacion", "organismo": "AYUNTAMIENTO DE EJEMPLO", "enlace": "https://otro",
                   "titulo": "Servicio de gestión de las redes sociales del Ayuntamiento de Ejemplo 2026"},
                  {"tipo_registro": "licitacion", "organismo": "Ayuntamiento de Ejemplo", "enlace": "https://otro",
@@ -393,3 +394,32 @@ def test_documentos_de_adjudicacion_al_fusionar_ted_con_placsp_y_euskadi():
     otro = {"documentos_adjudicacion": [{"tipo": "acta", "url": "https://propia"}]}
     normalizar._heredar_hora_y_pliegos(otro, {"documentos_adjudicacion": [{"tipo": "expediente", "url": "https://exp"}]})
     assert [d["url"] for d in otro["documentos_adjudicacion"]] == ["https://propia"]
+
+
+def test_contratos_con_concurso_que_terminan(tmp_path, monkeypatch):
+    from datetime import date as fecha
+    historico = {
+        "prefijo_enlace": "https://contrataciondelestado.es/x?id=", "categorias": ["Publicidad y comunicación (general)"],
+        "dic": {"organismo": ["Ayuntamiento de Ejemplo"], "empresa": [["B00000001", "Agencia Uno SL"], ["B00000002", "Agencia Dos SL"]],
+                "tipo": ["Servicios"], "procedimiento": ["Abierto"], "lugar": [["Bizkaia", "País Vasco"]]},
+        "exp": [
+            # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar, fin, prorroga]
+            ["a", "Gestión de redes sociales", 0, 1, 0, 0, 0, 1, "111", 0, "2025-10-01", 50000.0, 0, "2026-11-30", 1],
+            ["b", "Campaña de verano", 0, 0, 0, 0, 0, 1, "222", 0, "2025-06-01", None, 0, "2027-06-01", 0],    # demasiado lejos
+            ["c", "Diseño de cartelería", 0, 0, 0, 0, 1, 1, "333", 0, "2025-10-01", None, 0, "2026-11-01", 0],  # menor
+            ["d", "Web municipal", 0, 0, 0, 0, 0, 1, "444", 1, "2025-10-01", None, 0],                           # sin fin
+        ],
+        "lotes": [[0, 0, "2025-10-01", 40000, 5, 1], [0, 1, "2025-10-01", 9000, 5, 1], [1, 0, "2025-06-01", 1, 2, 1],
+                  [2, 0, "2025-10-01", 3000, None, None], [3, 0, "2025-10-01", 3000, None, None]],
+    }
+    ruta = tmp_path / "historico.json"
+    ruta.write_text(json.dumps(historico), encoding="utf-8")
+    monkeypatch.setattr(normalizar, "HISTORICO_COMPLETO", ruta)
+    monkeypatch.setattr(normalizar, "_HISTORICO_COMPLETO_CACHE", False)
+    vencen = normalizar._contratos_por_vencer(fecha(2026, 10, 5))
+    assert len(vencen) == 1
+    v = vencen[0]
+    assert (v["tipo_registro"], v["fuente"], v["fecha_fin_estimada"], v["prorrogable"]) == ("contrato_venciendo", "Euskadi", "2026-11-30", True)
+    assert v["empresa_adjudicataria"] == "Agencia Uno SL y 1 más" and v["empresa_nif"] is None
+    assert (v["importe_adjudicado_valor"], v["ofertas"], v["provincia"]) == (49000.0, 5, "Bizkaia")
+    assert v["enlace"] == "https://contrataciondelestado.es/x?id=111"

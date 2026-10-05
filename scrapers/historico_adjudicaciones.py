@@ -46,7 +46,7 @@ import sys
 import tempfile
 import time
 import zipfile
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -117,6 +117,38 @@ def _es_euskadi(cp: str, nuts_ejecucion: str, enlace: str | None) -> bool:
             or "contratacion.euskadi.eus" in (enlace or ""))
 
 
+# Duración planeada en PLACSP (DAY/MON/ANN): MON y ANN se aproximan a 30 y
+# 365 días, igual que normalizar._fecha_fin_estimada_placsp. Basta para
+# decidir "está a punto de terminar".
+_DIAS_POR_UNIDAD = {"DAY": 1, "MON": 30, "ANN": 365}
+
+
+def _fin_contrato(proyecto, lotes: list[dict]) -> tuple[str | None, bool | None]:
+    """(fecha de fin estimada, si prevé prórroga) de un expediente de PLACSP.
+    La fecha de fin publicada si la hay; si no, el inicio (o, si falta, la
+    fecha de adjudicación más reciente) más la duración. Medido en las
+    adjudicaciones de agencia de septiembre de 2026: 90 % con duración y 40 %
+    con prórroga prevista (cac:ContractExtension), que puede alargarlo."""
+    if proyecto is None:
+        return None, None
+    prorroga = proyecto.find("cac:ContractExtension", NS) is not None
+    periodo = proyecto.find("cac:PlannedPeriod", NS)
+    if periodo is None:
+        return None, prorroga
+    fin = (_texto(periodo, "cbc:EndDate") or "")[:10]
+    if fin:
+        return fin, prorroga
+    nodo = periodo.find("cbc:DurationMeasure", NS)
+    if nodo is None or not nodo.text or nodo.attrib.get("unitCode") not in _DIAS_POR_UNIDAD:
+        return None, prorroga
+    inicio = (_texto(periodo, "cbc:StartDate") or "")[:10] or max((l["fecha"] or "" for l in lotes), default="")
+    try:
+        dias = int(float(nodo.text)) * _DIAS_POR_UNIDAD[nodo.attrib["unitCode"]]
+        return (date.fromisoformat(inicio) + timedelta(days=dias)).isoformat(), prorroga
+    except (ValueError, OverflowError):
+        return None, prorroga
+
+
 def _parsear_entry(entry, es_menor: bool) -> dict | None:
     cfs = entry.find("cac-place-ext:ContractFolderStatus", NS)
     if cfs is None:
@@ -176,6 +208,7 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
     # Mismo criterio que el radar (normalizar._lugar): lugar de ejecución y,
     # si no lo hay, código postal del organismo.
     provincia, comunidad = territorio.lugar(nuts, None, cp)
+    fin, prorroga = _fin_contrato(proyecto, lotes)
 
     return {
         "id": _id(enlace or expediente, organismo),
@@ -197,6 +230,8 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
         "enlace": enlace,
         "fuente": "PLACSP",
         "actualizado": (_texto(entry, "atom:updated") or "")[:19],
+        "fin": fin,
+        "prorroga": prorroga,
         "lotes": lotes,
     }
 
@@ -392,7 +427,8 @@ def pieza_ted(anio: str) -> list[dict]:
              f"AND publication-date>={anio}0101 AND publication-date<={anio}1231")
     campos = ["publication-number", "notice-title", "buyer-name", "buyer-country-sub",
               "publication-date", "winner-name", "winner-identifier", "winner-country", "result-value-lot",
-              "result-value-cur-lot", "classification-cpv", "received-submissions-type-val"]
+              "result-value-cur-lot", "classification-cpv", "received-submissions-type-val",
+              "contract-duration-end-date-lot"]
     salida = []
     for n in ted._consultar(query, campos, limite_paginas=200, scope="ALL"):
         titulo = _titulo_ted(n)
@@ -428,6 +464,9 @@ def pieza_ted(anio: str) -> list[dict]:
             "enlace": f"https://ted.europa.eu/es/notice/-/detail/{numero}",
             "fuente": "TED",
             "actualizado": fecha,
+            # La fecha de fin que publica TED (la más tardía si hay lotes).
+            "fin": max((str(f)[:10] for f in n.get("contract-duration-end-date-lot") or [] if f), default=None),
+            "prorroga": None,
             "lotes": [{
                 "empresa": g,
                 "nif": limpiar_nif(nifs[i]) if i < len(nifs) else None,
@@ -547,6 +586,9 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
             # [provincia, comunidad]; [None, None] = la fuente no publica el
             # lugar, o el expediente es anterior a que se recogiera.
             idx("lugar", lugar, list(lugar)),
+            # Fecha de fin estimada del contrato y si prevé prórroga (1/0);
+            # None si la fuente no lo dice o es anterior a octubre de 2026.
+            r.get("fin"), None if r.get("prorroga") is None else int(r["prorroga"]),
         ])
         for l in r["lotes"]:
             nombre = _publicable(l["empresa"])
@@ -580,6 +622,9 @@ def _expandir(c: dict) -> list[dict]:
             "menor": bool(e[6]), "presupuesto": e[11],
             "categorias": [cat for i, cat in enumerate(c["categorias"]) if e[7] >> i & 1],
             "enlace": enlace, "fuente": "TED" if e[9] else "PLACSP", "actualizado": e[10], "lotes": [],
+            # Lo publicado antes de octubre de 2026 no tiene fin ni prórroga.
+            "fin": e[13] if len(e) > 13 else None,
+            "prorroga": None if len(e) <= 14 or e[14] is None else bool(e[14]),
         })
     for l in c["lotes"]:
         nif, nombre = d["empresa"][l[1]][:2]

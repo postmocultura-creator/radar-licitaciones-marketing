@@ -131,6 +131,15 @@ nuevos se comprueban antes en
 - **Contratos menores por vencer**: fecha de fin entre hoy y 90 días
   (`DIAS_AVISO_CONTRATO_MENOR`). Euskadi la publica; en PLACSP se calcula con
   la fecha de adjudicación y la duración.
+- **Contratos con concurso que terminan** (`normalizar._contratos_por_vencer`,
+  pestaña "Contratos con concurso" de "Contratos que terminan"): contratos
+  no menores del histórico de adjudicaciones con fecha de fin entre hoy y
+  120 días (`DIAS_AVISO_CONTRATO`). El histórico guarda por expediente la
+  fecha de fin estimada y si prevé prórroga (`historico_adjudicaciones._fin_contrato`:
+  fecha de fin publicada, o inicio o adjudicación más la duración en PLACSP;
+  la que publica TED), en las columnas 13 y 14 de `exp`. Solo la tienen los
+  expedientes leídos desde octubre de 2026 o en una reconstrucción posterior
+  del histórico.
 - **Calls for proposals UE**: abiertas o próximas, traducidas al español
   (MyMemory, o `data/traducciones_manuales.json`).
 - **Cómo se puntúa**: los criterios de adjudicación con su peso, con lo que

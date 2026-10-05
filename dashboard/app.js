@@ -14,17 +14,25 @@
     "licitaciones/abiertas": { tipo: "licitacion", nav: "licitaciones", titulo: "Licitaciones" },
     "licitaciones/plazo-largo": { tipo: "plazo_largo", nav: "licitaciones", titulo: "Licitaciones" },
     "calls": { tipo: "convocatoria_ue", nav: "calls", titulo: "Calls for proposals UE" },
-    "menores": { tipo: "contrato_menor_venciendo", nav: "menores", titulo: "Contratos menores por vencer" },
+    "menores": { tipo: "contrato_menor_venciendo", nav: "menores", titulo: "Contratos que terminan" },
+    "menores/concurso": { tipo: "contrato_venciendo", nav: "menores", titulo: "Contratos que terminan" },
     "adjudicaciones": { tipo: "adjudicacion", nav: "adjudicaciones", titulo: "Adjudicaciones recientes" },
   };
   var RUTA_POR_TIPO = {};
   Object.keys(VISTAS).forEach(function (ruta) { RUTA_POR_TIPO[VISTAS[ruta].tipo] = ruta; });
 
-  var PESTANAS_LICITACIONES = [
-    ["licitaciones/recientes", "Publicadas recientemente", "recientes"],
-    ["licitaciones/abiertas", "Licitaciones abiertas", "licitacion"],
-    ["licitaciones/plazo-largo", "Sistemas dinámicos y plazo largo", "plazo_largo"],
-  ];
+  // Pestañas de las secciones con varias vistas: [ruta, etiqueta, tipo].
+  var PESTANAS_POR_NAV = {
+    licitaciones: [
+      ["licitaciones/recientes", "Publicadas recientemente", "recientes"],
+      ["licitaciones/abiertas", "Licitaciones abiertas", "licitacion"],
+      ["licitaciones/plazo-largo", "Sistemas dinámicos y plazo largo", "plazo_largo"],
+    ],
+    menores: [
+      ["menores", "Contratos menores", "contrato_menor_venciendo"],
+      ["menores/concurso", "Contratos con concurso", "contrato_venciendo"],
+    ],
+  };
 
   // Lista completa de categorías de la taxonomía (debe reflejar las claves
   // de config.CATEGORIAS en el proyecto Python — el dashboard es JS estático
@@ -68,6 +76,7 @@
     plazo_largo: ["Estado", "Euskadi", "UE"],
     adjudicacion: ["Estado", "Euskadi", "UE"],
     contrato_menor_venciendo: ["Estado", "Euskadi"],
+    contrato_venciendo: ["Estado", "Euskadi", "UE"],
     convocatoria_ue: ["UE-subvenciones"],
   };
   // Países que publican en TED: UE-27 + EEE + Suiza y Reino Unido. Debe
@@ -103,6 +112,7 @@
     plazo_largo: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     adjudicacion: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
     contrato_menor_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: [3000, 5000, 10000, 15000] },
+    contrato_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
   };
 
   // Opciones de "Ordenar por" de cada vista: [clave, etiqueta]. La primera
@@ -129,6 +139,11 @@
       ["importe-desc", "Importe adjudicado (mayor primero)"],
       ["fecha-desc", "Adjudicación (más reciente)"],
     ],
+    contrato_venciendo: [
+      ["vencimiento", "Vencimiento (más próximo)"],
+      ["importe-desc", "Importe adjudicado (mayor primero)"],
+      ["fecha-desc", "Adjudicación (más reciente)"],
+    ],
     convocatoria_ue: [
       ["plazo", "Fecha límite de solicitud (más próxima)"],
       ["fecha-desc", "Apertura (más reciente)"],
@@ -144,6 +159,7 @@
   var BUSQUEDA_POR_TIPO = {
     adjudicacion: "Buscar por título, organismo o empresa…",
     contrato_menor_venciendo: "Buscar por título, organismo o empresa…",
+    contrato_venciendo: "Buscar por título, organismo o empresa…",
   };
   var BUSQUEDA_GENERAL = "Buscar por título u organismo…";
 
@@ -169,6 +185,8 @@
       "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando la fuente los publica, el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación: PLACSP (perfiles propios del organismo, no plataformas autonómicas) y el portal de Euskadi, que además dice qué empresas se presentaron. En las de TED, que no publica esos documentos, enlaza la documentación del expediente en la plataforma del organismo.",
     contrato_menor_venciendo:
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
+    contrato_venciendo:
+      "Contratos adjudicados por concurso (no menores) del Estado, Euskadi y TED que terminan en los próximos 120 días: el organismo suele preparar entonces la siguiente licitación. Salen del histórico de adjudicaciones. La fecha de fin es estimada (en PLACSP, adjudicación más duración) y puede alargarse si el contrato prevé prórroga.",
     convocatoria_ue:
       "Convocatorias de subvención de la Comisión Europea (Horizon Europe, Digital Europe...) abiertas o próximas a abrir, filtradas por las que incluyen un componente de comunicación o difusión en su descripción. Título y resumen traducidos automáticamente del inglés (la fuente no los publica en español).",
   };
@@ -179,6 +197,7 @@
     plazo_largo: "de plazo largo",
     adjudicacion: "adjudicaciones",
     contrato_menor_venciendo: "contratos menores",
+    contrato_venciendo: "contratos con concurso",
     convocatoria_ue: "calls for proposals",
   };
 
@@ -774,7 +793,8 @@
   function plantillaTarjeta(t, abierta) {
     var tipo = t.tipo_registro;
     var esAdjudicacion = tipo === "adjudicacion";
-    var esMenor = tipo === "contrato_menor_venciendo";
+    // Contratos que terminan: menores y con concurso se enseñan igual.
+    var esMenor = tipo === "contrato_menor_venciendo" || tipo === "contrato_venciendo";
     var esCall = tipo === "convocatoria_ue";
     var conEmpresa = esAdjudicacion || esMenor;
 
@@ -805,7 +825,9 @@
         (t.rebaja ? "<span>Rebaja: <strong>" + numeroEs(t.rebaja) + " %</strong></span>" : "");
     } else if (esMenor) {
       pie = '<span class="tarjeta__pie-dato">Lo tiene: <strong>' + escaparHtml(empresa) + "</strong></span>" +
-        "<span>Vence (estimado): <strong>" + finEstimado + "</strong></span>";
+        "<span>Vence (estimado): <strong>" + finEstimado + "</strong></span>" +
+        (t.ofertas ? "<span>Ofertas: <strong>" + t.ofertas + "</strong></span>" : "") +
+        (t.prorrogable ? "<span>Puede prorrogarse</span>" : "");
     } else if (esCall) {
       pie = "<span>Fecha límite de solicitud: <strong>" + fechaLarga(t.fecha_limite) + "</strong></span>" +
         "<span>Apertura: <strong>" + fechaLarga(t.fecha_publicacion) + "</strong></span>";
@@ -837,6 +859,7 @@
       fechas = [par("Fecha de adjudicación", fechaLarga(t.fecha_adjudicacion), true), par("Vigente hasta", finEstimado, true)];
     } else if (esMenor) {
       fechas = [par("Adjudicado el", fechaLarga(t.fecha_adjudicacion), true), par("Vence el (estimado)", finEstimado, true)];
+      if (t.prorrogable != null) fechas.push(par("Prórroga", t.prorrogable ? "Prevista: puede terminar más tarde" : "No prevista", true));
     } else if (esCall) {
       fechas = [par("Apertura", fechaLarga(t.fecha_publicacion), true), par("Fecha límite de solicitud", fechaLarga(t.fecha_limite), true)];
     } else {
@@ -1187,7 +1210,7 @@
       return;
     }
 
-    if (estado.tipoRegistro === "contrato_menor_venciendo") {
+    if (estado.tipoRegistro === "contrato_menor_venciendo" || estado.tipoRegistro === "contrato_venciendo") {
       var venceEn30 = subconjunto.filter(function (t) {
         var d = diasRestantes(t.fecha_fin_estimada);
         return d !== null && d >= 0 && d <= 30;
@@ -1211,10 +1234,11 @@
   }
 
   function pintarPestanas(rutaActiva) {
-    var esLicitaciones = VISTAS[rutaActiva].nav === "licitaciones";
-    elPestanas.hidden = !esLicitaciones;
-    if (!esLicitaciones) return;
-    elPestanas.innerHTML = PESTANAS_LICITACIONES.map(function (p) {
+    var pestanas = PESTANAS_POR_NAV[VISTAS[rutaActiva].nav];
+    elPestanas.hidden = !pestanas;
+    if (!pestanas) return;
+    elPestanas.setAttribute("aria-label", "Vista de " + VISTAS[rutaActiva].titulo.toLowerCase());
+    elPestanas.innerHTML = pestanas.map(function (p) {
       return '<a class="pestana" href="#/' + p[0] + '"' + (p[0] === rutaActiva ? ' aria-current="page"' : "") + ">" +
         p[1] + ' <span class="pestana__conteo">' + deTipo(p[2]).length + "</span></a>";
     }).join("");
@@ -1399,7 +1423,7 @@
     Nav.guardarConteos({
       licitaciones: deTipo("licitacion").length,
       calls: deTipo("convocatoria_ue").length,
-      menores: deTipo("contrato_menor_venciendo").length,
+      menores: deTipo("contrato_menor_venciendo").length + deTipo("contrato_venciendo").length,
       adjudicaciones: deTipo("adjudicacion").length,
     });
 

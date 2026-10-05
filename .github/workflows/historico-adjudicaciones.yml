@@ -33,6 +33,14 @@ on:
         description: "Opcional: solo estas fuentes, separadas por comas (licitaciones, agregadas, menores, euskadi_menores, ted). Se suman a lo ya publicado."
         required: false
         default: ""
+  # DISPARO ÚNICO (quitar después): reconstrucción del 2026-10-06 para que
+  # todos los expedientes guarden la fecha de fin del contrato (pestaña
+  # "Contratos con concurso"). Solo licitaciones, agregadas y TED: los
+  # contratos menores no la necesitan. Después de la actualización nocturna;
+  # si coinciden, espera (mismo grupo de concurrencia). Cualquier otro día,
+  # "preparar" no devuelve piezas y no se hace nada.
+  schedule:
+    - cron: "23 3 6 10 *"
 
 permissions:
   contents: write
@@ -59,6 +67,12 @@ jobs:
           # menores en su plataforma, no en PLACSP (API de Euskadi, sin ZIP).
           feeds = ["licitaciones", "agregadas", "menores", "euskadi_menores"]
           solo = [f.strip() for f in "${{ github.event.inputs.fuentes }}".split(",") if f.strip()]
+          programado = "${{ github.event_name }}" == "schedule"
+          if programado:
+              # Disparo único (ver "schedule"): GitHub lo puede arrancar con
+              # horas de retraso, así que vale el 6 de octubre entero (UTC).
+              modo = "completo"
+              solo = ["licitaciones", "agregadas", "ted"]
           mes_anterior = date(hoy.year - (hoy.month == 1), (hoy.month - 2) % 12 + 1, 1)
           if modo == "completo":
               periodos = [str(a) for a in range(2021, hoy.year)]
@@ -81,6 +95,8 @@ jobs:
           piezas += [{"feed": "ted", "periodo": a} for a in anios_ted]
           if solo:
               piezas = [p for p in piezas if p["feed"] in solo]
+          if programado and hoy.isoformat() != "2026-10-06":
+              piezas = []
           print("piezas=" + json.dumps(piezas))
           EOF
 

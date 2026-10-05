@@ -97,3 +97,35 @@ def test_compactar_repara_enlaces_ya_publicados():
     roto = "https://hacienda.navarra.es/sicpportal/ctaDatosAdjudicacion.aspx?cod=1&' || 'Ticket=X"
     compacto = h._compactar([_registro("a", "Uniprex SA", "B28016970", enlace=roto)])
     assert "' || '" not in compacto["exp"][0][8]
+
+
+def test_fin_del_contrato_por_fecha_o_por_duracion():
+    from xml.etree import ElementTree as ET
+
+    ns = ('xmlns:cac="urn:dgpe:names:draft:codice:schema:xsd:CommonAggregateComponents-2" '
+          'xmlns:cbc="urn:dgpe:names:draft:codice:schema:xsd:CommonBasicComponents-2"')
+
+    def proyecto(periodo, prorroga=False):
+        return ET.fromstring(f'<cac:ProcurementProject {ns}><cac:PlannedPeriod>{periodo}</cac:PlannedPeriod>'
+                             + ("<cac:ContractExtension><cbc:OptionsDescription>1 año</cbc:OptionsDescription></cac:ContractExtension>" if prorroga else "")
+                             + "</cac:ProcurementProject>")
+
+    lotes = [{"fecha": "2025-03-01"}, {"fecha": "2025-04-01"}]
+    # Duración en meses desde la adjudicación más reciente (30 días por mes).
+    assert h._fin_contrato(proyecto('<cbc:DurationMeasure unitCode="MON">12</cbc:DurationMeasure>', True), lotes) == ("2026-03-27", True)
+    # Con fecha de inicio, desde el inicio.
+    assert h._fin_contrato(proyecto('<cbc:StartDate>2025-06-01</cbc:StartDate><cbc:DurationMeasure unitCode="ANN">1</cbc:DurationMeasure>'), lotes) == ("2026-06-01", False)
+    # La fecha de fin publicada manda.
+    assert h._fin_contrato(proyecto('<cbc:EndDate>2026-12-31</cbc:EndDate><cbc:DurationMeasure unitCode="MON">3</cbc:DurationMeasure>'), lotes) == ("2026-12-31", False)
+    assert h._fin_contrato(proyecto(""), lotes) == (None, False)
+
+
+def test_fin_y_prorroga_sobreviven_al_formato_compacto():
+    r = _registro("a", "Uniprex SA", "B28016970")
+    r["fin"], r["prorroga"] = "2026-12-31", True
+    vuelto = h._expandir(h._compactar([r]))[0]
+    assert (vuelto["fin"], vuelto["prorroga"]) == ("2026-12-31", True)
+    # Lo publicado antes, sin esas columnas, se lee sin fin.
+    compacto = h._compactar([_registro("b", "Uniprex SA", "B28016970")])
+    compacto["exp"] = [e[:13] for e in compacto["exp"]]
+    assert h._expandir(compacto)[0]["fin"] is None
