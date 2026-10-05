@@ -95,6 +95,31 @@ CPV_RANGOS = [
 # obra civil o cursos de conducción por cada uno relevante). Con el resto
 # de términos se ha preferido ampliar aunque cuele algún falso positivo
 # ocasional (p. ej. "influencer"/"marketplace"/"chatbot" sueltos).
+# "seo" suelto (sin "posicionamiento", "auditoria seo"...) solo cuenta si el
+# título dice algo más del mundo digital (SEO_CONTEXTO) y no es uno de los
+# otros "seo" (SEO_NO). Medido el 2026-10-05 sobre 64.000 títulos y el
+# histórico: 153 entraban solo por "seo" y la mitad eran ruido, sobre todo
+# contratos técnicos de navegación aérea que empiezan por "Seo de..." (una
+# sigla), la Seo de Urgell, SEO/BirdLife y los congresos de la Sociedad
+# Española de Oftalmología. Ver clasificar._coincide.
+SEO_CONTEXTO = [
+    "web", "webs", "pagina", "paginas", "portal", "posicionamiento", "posicionament", "posicionamento",
+    "buscador", "buscadores", "cercadors", "google", "digital", "digitales", "online", "internet",
+    "sem", "rrss", "redes", "contenido", "contenidos", "optimizacion", "optimizar", "optimizado",
+    "optimizados", "optimitzacio", "optimizazioa", "blog", "wordpress", "youtube", "trafico", "marketing",
+    "analitica", "keywords", "publireportaje", "publirreportaje", "banner", "articulos", "redaccion",
+    "campana", "promocion", "difusion", "estrategia", "auditoria", "informes", "asesoramiento",
+    "formacion", "curso", "taller", "jornada", "ia", "chatgpt", "reputacion", "patrocinio", "canales",
+    "informativas", "mensual", "eus", "com",
+]
+SEO_NO = [
+    "calle seo", "calle de la seo", "plaza de la seo", "pza la seo", "plaza la seo",
+    "seo de urgel", "seo de urgell", "seo d urgell", "seo birdlife", "seo bird life",
+    "congreso seo", "congreso de la seo", "socio de la seo", "socios de la seo",
+    # Navegación aérea: dicen "digital" o "canales" sin ser de agencia.
+    "tacc", "sacta", "acc cats", "comunicaciones voz", "grabacion digital de comunicaciones",
+]
+
 CATEGORIAS = {
     "SEO / posicionamiento en buscadores": [
         "seo", "posicionamiento en buscadores", "posicionamiento web",

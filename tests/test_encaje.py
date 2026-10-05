@@ -59,6 +59,26 @@ def test_comunidad_con_todas_sus_provincias_prioritarias():
     assert "Comunidad prioritaria: País Vasco" not in encaje.nota(licitacion(provincia=None, comunidad="País Vasco"), perfil, HOY)["motivos"]
 
 
+def test_poca_competencia_en_la_provincia():
+    def exp(i, provincia, proc=0):
+        # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
+        return [str(i), "t", 0, 0, 0, proc, 0, 0, "", 0, "2025-01-01", None, provincia]
+    historico = {"dic": {"procedimiento": ["Abierto", "Negociado sin publicidad"], "lugar": [["Soria", "Castilla y León"], ["Madrid", "Madrid"]]},
+                 "exp": [], "lotes": []}
+    # 40 concursos abiertos en Soria con 2 ofertas y 40 en Madrid con 6;
+    # los negociados (1 oferta) no cuentan.
+    for i in range(40):
+        historico["exp"].append(exp(len(historico["exp"]), 0)); historico["lotes"].append([len(historico["exp"]) - 1, 0, "2025-01-01", 1, 2, 1])
+        historico["exp"].append(exp(len(historico["exp"]), 1)); historico["lotes"].append([len(historico["exp"]) - 1, 0, "2025-01-01", 1, 6, 1])
+        historico["exp"].append(exp(len(historico["exp"]), 0, proc=1)); historico["lotes"].append([len(historico["exp"]) - 1, 0, "2025-01-01", 1, 1, 1])
+    competencia = encaje.competencia_por_provincia(historico, HOY)
+    assert competencia["media"] == 4 and competencia["provincias"] == {"Soria": (2, 40), "Madrid": (6, 40)}
+    soria = encaje.nota(licitacion(provincia="Soria"), PERFIL, HOY, competencia)
+    assert "Poca competencia en Soria: 2,0 ofertas de media por concurso (España: 4,0)" in soria["motivos"]
+    madrid = encaje.nota(licitacion(provincia="Madrid"), PERFIL, HOY, competencia)
+    assert soria["nota"] == madrid["nota"] + 2
+
+
 def test_sin_perfil_no_hay_nota(monkeypatch, tmp_path):
     monkeypatch.delenv("PERFIL_AGENCIA", raising=False)
     monkeypatch.setattr(encaje, "PERFIL_LOCAL", tmp_path / "no_existe.json")

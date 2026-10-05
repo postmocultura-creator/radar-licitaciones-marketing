@@ -127,6 +127,18 @@ def _contiene_keyword(texto_norm: str, keyword: str) -> bool:
     return patron.search(texto_norm) is not None
 
 
+def _coincide(texto_norm: str, keyword: str) -> bool:
+    """_contiene_keyword con una excepción: "seo" suelto solo cuenta con
+    contexto digital y fuera de los otros "seo" (ver config.SEO_CONTEXTO)."""
+    if not _contiene_keyword(texto_norm, keyword):
+        return False
+    if keyword != "seo":
+        return True
+    if any(_contiene_keyword(texto_norm, no) for no in config.SEO_NO):
+        return False
+    return any(_contiene_keyword(texto_norm, palabra) for palabra in config.SEO_CONTEXTO)
+
+
 def _ultimo_raw(fuente_prefijo: str) -> Path | None:
     # El patrón exige un dígito justo después del guion bajo (el timestamp)
     # para que "euskadi_*.json"/"ted_*.json" no capturen también
@@ -181,7 +193,7 @@ def clasificar_texto(titulo: str, ted: bool = False) -> dict:
     categorias = [
         categoria
         for categoria, keywords in config.CATEGORIAS.items()
-        if any(_contiene_keyword(texto_norm, kw) for kw in keywords)
+        if any(_coincide(texto_norm, kw) for kw in keywords)
     ]
 
     if not categorias:
@@ -234,7 +246,7 @@ def terminos_que_encajan(texto: str, categorias: dict[str, list[str]] | None = N
     for keywords in (categorias or config.CATEGORIAS).values():
         # La más larga primero: "redes sociales" dice más que "redes".
         for kw in sorted(keywords, key=len, reverse=True):
-            if _contiene_keyword(texto_norm, kw):
+            if _coincide(texto_norm, kw):
                 fragmento = _fragmento(texto, kw) or kw
                 if fragmento.lower() not in (t.lower() for t in terminos):
                     terminos.append(fragmento)
@@ -277,7 +289,7 @@ def _apuntar_descarte(item: dict, titulo: str, cpv_list: list, motivo: str | Non
                             if _contiene_keyword(_normalizar_texto(texto_exclusiones), kw)), None)
         texto_norm = _normalizar_texto(texto_categorias)
         hay_categoria = no_ofrecido is not None and any(
-            _contiene_keyword(texto_norm, kw) for kws in config.CATEGORIAS.values() for kw in kws)
+            _coincide(texto_norm, kw) for kws in config.CATEGORIAS.values() for kw in kws)
         if hay_categoria:
             motivo, termino = "servicio_no_ofrecido", _fragmento(texto_exclusiones, no_ofrecido) or no_ofrecido
         else:

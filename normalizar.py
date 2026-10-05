@@ -597,6 +597,24 @@ _PALABRAS_VACIAS_TITULO = frozenset(
 _RE_PREFIJO_TED = re.compile(r"^[^–]{2,40}\s–\s[^–]{2,90}\s–\s")
 
 
+_HISTORICO_COMPLETO_CACHE: dict | None | bool = False  # False = todavía no se ha intentado leer
+
+
+def _historico_completo() -> dict | None:
+    """data/historico_adjudicaciones.json (con títulos), o None si no está o
+    no se puede leer. Lo usan los contratos parecidos y la nota de encaje;
+    se lee una sola vez: son 40 MB."""
+    global _HISTORICO_COMPLETO_CACHE
+    if _HISTORICO_COMPLETO_CACHE is False:
+        _HISTORICO_COMPLETO_CACHE = None
+        if HISTORICO_COMPLETO.exists():
+            try:
+                _HISTORICO_COMPLETO_CACHE = json.loads(HISTORICO_COMPLETO.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                pass
+    return _HISTORICO_COMPLETO_CACHE
+
+
 def _palabras_titulo(titulo: str) -> frozenset[str]:
     titulo = _RE_PREFIJO_TED.sub("", titulo or "")
     return frozenset(w for w in _normalizar_clave(titulo).split()
@@ -619,10 +637,10 @@ def _antecedentes(registros: list[dict]) -> None:
     en historico.html. El organismo se busca por nombre normalizado, como en
     _historiales. Las licitaciones extranjeras de TED y las calls no tienen
     histórico."""
-    if not HISTORICO_COMPLETO.exists():
+    c = _historico_completo()
+    if c is None:
         return
     try:
-        c = json.loads(HISTORICO_COMPLETO.read_text(encoding="utf-8"))
         organismos = c["dic"]["organismo"]
         empresas = c["dic"]["empresa"]
         exp = c["exp"]  # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
@@ -1875,7 +1893,7 @@ def main() -> None:
     _antecedentes(finales)
     # Después de los antecedentes: la nota los usa (misma empresa ganando).
     import encaje
-    print(f"[normalizar] {encaje.anadir_notas(finales)} licitaciones con nota de encaje")
+    print(f"[normalizar] {encaje.anadir_notas(finales, historico=_historico_completo())} licitaciones con nota de encaje")
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna

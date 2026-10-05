@@ -31,6 +31,16 @@ PUNTOS_EXTRANJERA = 2         # se restan
 IMPORTE_ALTO = 1_000_000      # a partir de aquí la solvencia exigida suele dejar fuera a una agencia mediana
 DIAS_PLAZO_CORTO = 3
 EDICIONES_MISMA_EMPRESA = 2   # la misma adjudicataria en las N últimas ediciones parecidas
+# Poca competencia: provincias donde los concursos abiertos de agencia
+# reciben de media un 20 % menos de ofertas que en España (medido el
+# 2026-10-05 sobre 10.685 concursos desde 2023: España 4,2 de media;
+# Gipuzkoa 2,8, Cantabria 3,2, La Rioja 3,3...). Con menos de
+# MIN_CONCURSOS_PROVINCIA concursos la media dice poco.
+PUNTOS_POCA_COMPETENCIA = 2
+FACTOR_POCA_COMPETENCIA = 0.8
+MIN_CONCURSOS_PROVINCIA = 30
+ANIOS_COMPETENCIA = 3
+PROCEDIMIENTOS_ABIERTOS = ("Abierto", "Abierto simplificado")
 
 
 def leer_perfil() -> dict | None:
@@ -61,12 +71,50 @@ def _comunidad_prioritaria(comunidad: str | None, provincias: set[str]) -> bool:
     return bool(suyas) and suyas <= provincias
 
 
+def competencia_por_provincia(historico: dict | None, hoy: date | None = None) -> dict:
+    """{"media": ofertas por concurso en España, "provincias": {provincia:
+    (media, concursos)}} con los concursos abiertos (no menores) de los
+    últimos ANIOS_COMPETENCIA años del histórico de adjudicaciones que
+    publican cuántas ofertas recibieron. Solo provincias con al menos
+    MIN_CONCURSOS_PROVINCIA concursos."""
+    if not historico:
+        return {}
+    hoy = hoy or date.today()
+    desde = str(hoy.year - ANIOS_COMPETENCIA)
+    try:
+        d = historico["dic"]
+        abiertos = {i for i, p in enumerate(d["procedimiento"]) if p in PROCEDIMIENTOS_ABIERTOS}
+        ofertas: dict[int, int] = {}
+        for l in historico["lotes"]:  # [exp, empresa, fecha, importe, ofertas, pyme]
+            if l[4]:
+                ofertas[l[0]] = max(ofertas.get(l[0], 0), l[4])
+        por_provincia: dict[str, list[int]] = {}
+        for i, e in enumerate(historico["exp"]):
+            if e[6] or e[5] not in abiertos or i not in ofertas or e[10][:4] < desde or len(e) <= 12:
+                continue
+            provincia = d["lugar"][e[12]][0]
+            if provincia:
+                por_provincia.setdefault(provincia, []).append(ofertas[i])
+    except (KeyError, IndexError, TypeError):
+        return {}
+    todas = [x for v in por_provincia.values() for x in v]
+    if not todas:
+        return {}
+    return {"media": sum(todas) / len(todas),
+            "provincias": {p: (sum(v) / len(v), len(v)) for p, v in por_provincia.items() if len(v) >= MIN_CONCURSOS_PROVINCIA}}
+
+
 def _miles(valor: float) -> str:
     return f"{round(valor):,}".replace(",", ".")
 
 
-def nota(r: dict, perfil: dict, hoy: date | None = None) -> dict:
-    """{"nota": 0-10, "motivos": [...], "riesgos": [...]} de una licitación."""
+def _decimal(valor: float) -> str:
+    return f"{valor:.1f}".replace(".", ",")
+
+
+def nota(r: dict, perfil: dict, hoy: date | None = None, competencia: dict | None = None) -> dict:
+    """{"nota": 0-10, "motivos": [...], "riesgos": [...]} de una licitación.
+    competencia: lo que devuelve competencia_por_provincia."""
     hoy = hoy or date.today()
     puntos = NOTA_BASE
     motivos: list[str] = []
@@ -101,6 +149,13 @@ def nota(r: dict, perfil: dict, hoy: date | None = None) -> dict:
         # casi lo mismo que una española fuera de las provincias prioritarias.
         puntos -= PUNTOS_EXTRANJERA
         riesgos.append(f"Fuera de España ({r.get('pais_territorio')}): idioma y presencia local")
+
+    # Poca competencia en la provincia: se suma a lo anterior.
+    dato = ((competencia or {}).get("provincias") or {}).get(r.get("provincia"))
+    if dato and dato[0] <= FACTOR_POCA_COMPETENCIA * competencia["media"]:
+        puntos += PUNTOS_POCA_COMPETENCIA
+        motivos.append(f"Poca competencia en {r['provincia']}: {_decimal(dato[0])} ofertas de media por concurso "
+                       f"(España: {_decimal(competencia['media'])})")
 
     cr = r.get("criterios")
     if cr and cr.get("precio") is not None:
@@ -143,15 +198,22 @@ def nota(r: dict, perfil: dict, hoy: date | None = None) -> dict:
     return {"nota": max(0, min(10, round(puntos))), "motivos": motivos, "riesgos": riesgos}
 
 
-def anadir_notas(registros: list[dict], hoy: date | None = None) -> int:
-    """Añade "encaje" a cada licitación. Devuelve cuántas se han puntuado."""
+def anadir_notas(registros: list[dict], hoy: date | None = None, historico: dict | None = None) -> int:
+    """Añade "encaje" a cada licitación. Devuelve cuántas se han puntuado.
+    historico: el histórico completo de adjudicaciones, para la competencia
+    por provincia (sin él, la nota no la tiene en cuenta)."""
     perfil = leer_perfil()
     if perfil is None:
         print("[encaje] Sin perfil de la agencia (PERFIL_AGENCIA o perfil_agencia.json): sin nota de encaje")
         return 0
+    competencia = competencia_por_provincia(historico, hoy)
+    if competencia:
+        pocas = sorted(p for p, (media, _) in competencia["provincias"].items()
+                       if media <= FACTOR_POCA_COMPETENCIA * competencia["media"])
+        print(f"[encaje] provincias con poca competencia: {len(pocas)} ({', '.join(pocas)})")
     n = 0
     for r in registros:
         if r.get("tipo_registro") == "licitacion":
-            r["encaje"] = nota(r, perfil, hoy)
+            r["encaje"] = nota(r, perfil, hoy, competencia)
             n += 1
     return n

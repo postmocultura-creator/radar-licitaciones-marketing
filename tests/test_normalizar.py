@@ -364,6 +364,7 @@ def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
     ruta = tmp_path / "historico.json"
     ruta.write_text(json.dumps(historico), encoding="utf-8")
     monkeypatch.setattr(normalizar, "HISTORICO_COMPLETO", ruta)
+    monkeypatch.setattr(normalizar, "_HISTORICO_COMPLETO_CACHE", False)
     registros = [{"tipo_registro": "licitacion", "organismo": "AYUNTAMIENTO DE EJEMPLO", "enlace": "https://otro",
                   "titulo": "Servicio de gestión de las redes sociales del Ayuntamiento de Ejemplo 2026"},
                  {"tipo_registro": "licitacion", "organismo": "Ayuntamiento de Ejemplo", "enlace": "https://otro",

@@ -182,7 +182,10 @@ nuevos se comprueban antes en
   código: `HORIZON-CL6`, `CREA-MEDIA`).
 - **Encaje con la agencia** (`encaje.py`): nota de 0 a 10 en cada
   licitación, con lo que suma y los riesgos: servicio principal o
-  secundario, provincia o comunidad prioritaria, cuánto pesa el precio,
+  secundario, provincia o comunidad prioritaria, poca competencia en la
+  provincia (media de ofertas de sus concursos abiertos de los últimos 3
+  años un 20 % por debajo de la de España, calculada cada noche con el
+  histórico: `encaje.competencia_por_provincia`), cuánto pesa el precio,
   la misma empresa ganando las últimas ediciones, mezcla con servicios que
   no son de agencia, importe muy alto y plazo de menos de 3 días. Por reglas,
   con los datos de la ficha; no lee el pliego. El perfil de la agencia

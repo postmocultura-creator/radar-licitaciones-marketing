@@ -61,6 +61,25 @@ def test_titulos_de_ted(titulo, entra):
     assert clasificar_texto(titulo, ted=True)["incluir"] is entra
 
 
+@pytest.mark.parametrize("titulo, entra", [
+    # "seo" suelto solo con contexto digital (config.SEO_CONTEXTO)...
+    ("Posicionamiento SEO de la web de SODERCAN", True),
+    ("Mantenimiento SEO web", True),
+    ("Seo y reputación II", True),
+    ("Campaña RRSS y SEO máster", True),
+    # ...y nunca los otros "seo": catedrales, calles, ornitología,
+    # oftalmología, siglas de navegación aérea.
+    ("Seo sistema visual tacc valencia", False),
+    ("Seo de un radar modo s en Taborno (Tenerife)", False),
+    ("Urbanización Pza LA Seo, sector Occidental", False),
+    ("Inscripción 100 congreso SEO socio de la SEO", False),
+    ("Desayuno actividad con Seo-Birdlife en el PCT", False),
+    ("Reforma del vertedero en la SEO DE URGEL, LERIDA", False),
+])
+def test_seo_suelto(titulo, entra):
+    assert clasificar_texto(titulo)["incluir"] is entra
+
+
 def test_mezcla_con_exclusion_entra_para_revisar():
     resultado = clasificar_texto("Contrato de servicio de comunicación y limpieza de edificios municipales")
     assert resultado["incluir"] is True
