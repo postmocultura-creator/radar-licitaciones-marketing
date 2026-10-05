@@ -114,15 +114,18 @@
       ["fecha-desc", "Publicación (más reciente)"],
       ["plazo", "Fecha límite (más próxima)"],
       ["importe-desc", "Presupuesto (mayor primero)"],
+      ["encaje-desc", "Encaje con la agencia (mejor primero)"],
     ],
     licitacion: [
       ["plazo", "Fecha límite (más próxima)"],
       ["fecha-desc", "Publicación (más reciente)"],
       ["importe-desc", "Presupuesto (mayor primero)"],
+      ["encaje-desc", "Encaje con la agencia (mejor primero)"],
     ],
     plazo_largo: [
       ["plazo", "Fecha límite (más próxima)"],
       ["importe-desc", "Presupuesto (mayor primero)"],
+      ["encaje-desc", "Encaje con la agencia (mejor primero)"],
     ],
     contrato_menor_venciendo: [
       ["vencimiento", "Vencimiento (más próximo)"],
@@ -736,6 +739,11 @@
       var ia = a[campo] === null || a[campo] === undefined ? -Infinity : a[campo];
       var ib = b[campo] === null || b[campo] === undefined ? -Infinity : b[campo];
       resultado = ib === ia ? 0 : (ib > ia ? 1 : -1);
+    } else if (estado.orden === "encaje-desc") {
+      // Mejor nota primero; a igual nota, la que cierra antes.
+      var na = a.encaje ? a.encaje.nota : -1;
+      var nb = b.encaje ? b.encaje.nota : -1;
+      resultado = nb - na || porFechaProxima("fecha_limite", a, b);
     }
     return resultado || porFechaDesc(a, b);
   }
@@ -748,6 +756,11 @@
     if (dias === null || dias > 0 || dias < -DIAS_VENTANA_RECIENTES) return "";
     var texto = dias === 0 ? "Nuevo hoy" : (dias === -1 ? "Nuevo ayer" : "Hace " + (-dias) + " días");
     return '<span class="chip chip--nuevo">' + texto + "</span>";
+  }
+
+  // Nota de encaje (normalizar -> encaje.py): alta 7-10, media 4-6, baja 0-3.
+  function nivelEncaje(nota) {
+    return nota >= 7 ? "alto" : nota >= 4 ? "medio" : "bajo";
   }
 
   function par(etiqueta, valor, numerico) {
@@ -790,6 +803,7 @@
       (t.codigo_expediente ? '<span class="chip chip--codigo" title="Expediente">' + escaparHtml(t.codigo_expediente) + "</span>" : "") +
       '<span class="chip">' + escaparHtml(t.fuente) + "</span>" +
       chipNovedad(t) +
+      (t.encaje ? '<span class="chip chip--encaje chip--encaje-' + nivelEncaje(t.encaje.nota) + '" title="Encaje con la agencia (0-10)">Encaje ' + t.encaje.nota + "/10</span>" : "") +
       (t.revisar_manual ? '<span class="chip chip--aviso">Revisar</span>' : "") +
       (t.criterios
         ? '<span class="chip' + (pesaLaPropuesta(t) ? " chip--propuesta" : "") + '" title="Peso del precio en la puntuación">Precio ' + t.criterios.precio + " %</span>"
@@ -903,6 +917,18 @@
             }).join("") + "</ol>"
           : "") +
         "</div>";
+    }
+
+    // Encaje con la agencia: nota, por qué y riesgos (encaje.py).
+    var encajeHtml = "";
+    if (t.encaje) {
+      var lista = function (items, clase) {
+        return items.length ? '<ul class="tarjeta__encaje-lista tarjeta__encaje-lista--' + clase + '">' +
+          items.map(function (x) { return "<li>" + escaparHtml(x) + "</li>"; }).join("") + "</ul>" : "";
+      };
+      encajeHtml = '<div class="tarjeta__bloque"><h4>Encaje con la agencia: ' + t.encaje.nota + "/10</h4>" +
+        lista(t.encaje.motivos, "a-favor") + lista(t.encaje.riesgos, "riesgo") +
+        '<p class="tarjeta__nota">Nota orientativa con los datos de la ficha (servicio, provincia, cómo se puntúa, competencia, plazo). No lee el pliego: la solvencia y los requisitos hay que mirarlos en él.</p></div>';
     }
 
     // Contratos anteriores parecidos del mismo organismo (casi siempre,
@@ -1126,6 +1152,7 @@
             "</div>" +
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
+          encajeHtml +
           lotesHtml +
           criteriosHtml +
           pliegosHtml +

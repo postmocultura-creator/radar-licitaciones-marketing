@@ -180,6 +180,16 @@ nuevos se comprueban antes en
   licitación, las demás en plazo del mismo organismo; en cada call for
   proposals, las demás del mismo programa (las dos primeras partes del
   código: `HORIZON-CL6`, `CREA-MEDIA`).
+- **Encaje con la agencia** (`encaje.py`): nota de 0 a 10 en cada
+  licitación, con lo que suma y los riesgos: servicio principal o
+  secundario, provincia o comunidad prioritaria, cuánto pesa el precio,
+  la misma empresa ganando las últimas ediciones, mezcla con servicios que
+  no son de agencia, importe muy alto y plazo de menos de 3 días. Por reglas,
+  con los datos de la ficha; no lee el pliego. El perfil de la agencia
+  (servicios y provincias) no está en el repositorio: se lee del secreto
+  `PERFIL_AGENCIA` o de `perfil_agencia.json` (ignorado por git); el formato,
+  en `perfil_agencia.ejemplo.json`. Sin perfil no hay nota. Sale en la
+  tarjeta, en la ficha, en el correo y como orden "Encaje con la agencia".
 - **Alerta diaria por correo** (`alertas.py`, paso "Alerta por correo" de la
   actualización nocturna): solo las licitaciones que no se han enviado
   nunca, en tres bloques por este orden: Euskadi (también las vascas que

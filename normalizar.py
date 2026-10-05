@@ -1873,6 +1873,9 @@ def main() -> None:
 
     _historiales(finales)
     _antecedentes(finales)
+    # Después de los antecedentes: la nota los usa (misma empresa ganando).
+    import encaje
+    print(f"[normalizar] {encaje.anadir_notas(finales)} licitaciones con nota de encaje")
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna

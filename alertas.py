@@ -146,6 +146,10 @@ def _fila(r: dict, hoy: date) -> str:
     filas: list[tuple[str, str]] = [
         ("Objeto", f'<a href="{_e(_enlace_radar(r))}" style="{ESTILO_ENLACE}font-weight:600;">{_e(r["titulo"])}</a>'),
     ]
+    en = r.get("encaje")
+    if en:
+        detalle = "; ".join((en.get("riesgos") or [])[:2])
+        filas.append(("Encaje", f"<strong>{en['nota']}/10</strong>" + (f" · {_e(detalle)}" if detalle else "")))
     if r.get("organismo") and r["organismo"] != NO_PUBLICADO:
         filas.append(("Organismo", _e(r["organismo"])))
     if r.get("pais_territorio") in ESPANA:

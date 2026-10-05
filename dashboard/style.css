@@ -531,6 +531,11 @@ select:hover { border-color: var(--color-border-strong); }
 .chip--nuevo { border-color: transparent; background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
 /* El precio pesa la mitad o menos: la propuesta cuenta. */
 .chip--propuesta { border-color: transparent; background: var(--color-success-bg); color: var(--color-success); font-weight: 600; }
+/* Nota de encaje: verde 7-10, ámbar 4-6, gris 0-3. */
+.chip--encaje { font-weight: 600; font-variant-numeric: tabular-nums; }
+.chip--encaje-alto { border-color: transparent; background: var(--color-success-bg); color: var(--color-success); }
+.chip--encaje-medio { border-color: transparent; background: var(--color-warning-bg); color: var(--color-warning); }
+.chip--encaje-bajo { color: var(--color-muted); }
 
 /* ---------- Cabecera de página ---------- */
 
@@ -1009,6 +1014,13 @@ a.kpi:active { transform: scale(.99); }
   .tabla-embudo td::before { content: attr(data-etiqueta); display: block; font-size: 11.5px; font-weight: 400; color: var(--color-muted); }
   .tabla-embudo__aviso { grid-column: 1 / -1; }
 }
+
+/* Encaje con la agencia: a favor (✓) y riesgos (!). */
+.tarjeta__encaje-lista { display: grid; gap: 4px; max-width: 90ch; margin: 6px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
+.tarjeta__encaje-lista li { position: relative; padding-left: 20px; }
+.tarjeta__encaje-lista li::before { position: absolute; left: 0; font-weight: 700; }
+.tarjeta__encaje-lista--a-favor li::before { content: "✓"; color: var(--color-success); }
+.tarjeta__encaje-lista--riesgo li::before { content: "!"; left: 5px; color: var(--color-warning); }
 
 /* Contratos anteriores parecidos y otras abiertas: título y, debajo, los datos. */
 .tarjeta__antecedentes {

@@ -1,0 +1,6 @@
+{
+  "_comentario": "Formato del perfil para la nota de encaje (encaje.py). Valores inventados: el perfil real va en el secreto PERFIL_AGENCIA de GitHub o en perfil_agencia.json, que git ignora. Las categorías deben escribirse igual que en config.CATEGORIAS.",
+  "servicios_principales": ["Redes sociales / community management", "Diseño y desarrollo web"],
+  "servicios_secundarios": ["Producción de vídeo / contenido audiovisual"],
+  "provincias_prioritarias": ["Zaragoza", "Huesca"]
+}

@@ -162,6 +162,12 @@ jobs:
       # Normal: menos de un minuto. El límite cubre un traductor lento.
       - name: Normalizar
         timeout-minutes: 15
+        env:
+          # Perfil de la agencia para la nota de encaje (encaje.py). Secreto y
+          # no variable: con el repositorio público, los registros de Actions
+          # son públicos y enseñan el valor de las variables, no el de los
+          # secretos.
+          PERFIL_AGENCIA: ${{ secrets.PERFIL_AGENCIA }}
         run: python normalizar.py
 
       - name: Guardar cachés (traducciones)

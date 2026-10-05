@@ -30,6 +30,9 @@ data/placsp_web_acumulado.json
 data/euskadi_menores_acumulado.json
 data/euskadi_licitadoras.json
 data/alertas_enviadas.json
+# Perfil real de la agencia para la nota de encaje: no se publica mientras
+# el repositorio sea público (en GitHub va en el secreto PERFIL_AGENCIA).
+perfil_agencia.json
 # Vista previa del correo (python alertas.py --prueba).
 data/alerta_prueba.html
 # Lo mismo que dashboard/tenders-data.js, que es lo que se publica.
