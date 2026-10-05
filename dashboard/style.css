@@ -560,7 +560,6 @@ select:hover { border-color: var(--color-border-strong); }
 
 .pagina__descripcion {
   margin-top: 6px;
-  max-width: 78ch;
   font-size: 13px;
   line-height: 1.55;
   color: var(--color-muted);
@@ -974,13 +973,12 @@ a.kpi:active { transform: scale(.99); }
 
 .tarjeta__bloque { margin-top: 20px; }
 .tarjeta__bloque h4 { margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--color-ink); }
-.tarjeta__resumen-texto { max-width: 90ch; font-size: 13.5px; line-height: 1.6; color: var(--color-foreground); }
+.tarjeta__resumen-texto { font-size: 13.5px; line-height: 1.6; color: var(--color-foreground); }
 
 /* Empresas que más han ganado en el organismo (resumen del histórico). */
 .tarjeta__principales {
   display: grid;
   gap: 6px;
-  max-width: 90ch;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
@@ -995,7 +993,7 @@ a.kpi:active { transform: scale(.99); }
 .filtro__seccion { margin-bottom: 16px; }
 .filtro__seccion h2 { margin-bottom: 8px; }
 .filtro__total { font-size: 13px; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
-.filtro__reglas { display: grid; gap: 8px; max-width: 95ch; margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--color-ink); }
+.filtro__reglas { display: grid; gap: 8px; margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--color-ink); }
 .tabla-embudo__marco { overflow-x: auto; margin: 4px 0 0; }
 .tabla-embudo { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
 .tabla-embudo th, .tabla-embudo td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); text-align: right; vertical-align: top; }
@@ -1016,7 +1014,7 @@ a.kpi:active { transform: scale(.99); }
 }
 
 /* Encaje con la agencia: a favor (✓) y riesgos (!). */
-.tarjeta__encaje-lista { display: grid; gap: 4px; max-width: 90ch; margin: 6px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
+.tarjeta__encaje-lista { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
 .tarjeta__encaje-lista li { position: relative; padding-left: 20px; }
 .tarjeta__encaje-lista li::before { position: absolute; left: 0; font-weight: 700; }
 .tarjeta__encaje-lista--a-favor li::before { content: "✓"; color: var(--color-success); }
@@ -1026,7 +1024,6 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__antecedentes {
   display: grid;
   gap: 10px;
-  max-width: 90ch;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
@@ -1039,7 +1036,6 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__pliegos {
   display: grid;
   gap: 6px;
-  max-width: 90ch;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1070,7 +1066,6 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__criterios {
   display: grid;
   gap: 6px;
-  max-width: 90ch;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
@@ -1102,7 +1097,6 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__lotes {
   display: grid;
   gap: 6px;
-  max-width: 100ch;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1119,7 +1113,7 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__lote-precio { font-size: 12px; color: var(--color-muted); white-space: nowrap; }
 .tarjeta__lotes .dato-numerico { text-align: right; font-variant-numeric: tabular-nums; color: var(--color-ink); white-space: nowrap; }
 
-.tarjeta__nota { margin-top: 8px; max-width: 90ch; font-size: 12.5px; color: var(--color-muted); }
+.tarjeta__nota { margin-top: 8px; font-size: 12.5px; color: var(--color-muted); }
 
 .tarjeta__categorias { display: flex; flex-wrap: wrap; gap: 6px; }
 

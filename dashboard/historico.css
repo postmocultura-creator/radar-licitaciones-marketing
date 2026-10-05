@@ -10,7 +10,6 @@
 .conclusiones__lista {
   display: grid;
   gap: 8px;
-  max-width: 95ch;
   margin: 8px 0 4px;
   padding-left: 18px;
   font-size: 14px;
