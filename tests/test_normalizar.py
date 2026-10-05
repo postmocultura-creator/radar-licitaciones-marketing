@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """NIF, fechas, horas, importes y lugar: las conversiones que comparten el
 radar diario y el histórico."""
+import json
+
 import pytest
 
 import normalizar
@@ -328,3 +330,52 @@ def test_lotes_ted_y_euskadi():
 def test_un_solo_lote_no_se_ensena():
     assert normalizar._lotes({"fuente": "UE", "original": {"identifier-lot": ["LOT-0000"], "title-lot": {"spa": ["Todo"]}}}) == []
     assert normalizar._lotes({"fuente": "Estado-web", "original": {}}) == []
+
+
+def test_por_que_entra_por_el_titulo_o_por_el_tipo_de_ted():
+    placsp = {"fuente": "Estado", "tipo_registro": "licitacion", "titulo": "Gestión de redes sociales del Ayuntamiento"}
+    assert normalizar._por_que(placsp) == {"terminos": ["Gestión de redes sociales"]}
+    # TED en otro idioma: decide el tipo de servicio que TED antepone.
+    ted = {"fuente": "UE", "tipo_registro": "licitacion",
+           "titulo": "Letonia – Servicios de relaciones públicas – Komunikācijas aktivitāšu nodrošināšana"}
+    assert normalizar._por_que(ted) == {"terminos": ["relaciones públicas"], "tipo_ted": "Servicios de relaciones públicas"}
+    # Si el título también lo dice, no hace falta mencionar el tipo.
+    ted["titulo"] = "España – Servicios de publicidad – Campaña de publicidad institucional"
+    assert "tipo_ted" not in normalizar._por_que(ted)
+    assert normalizar._por_que({"fuente": "Estado", "tipo_registro": "licitacion", "titulo": "Obras"}) is None
+
+
+def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
+    historico = {
+        "prefijo_enlace": "https://contrataciondelestado.es/x?id=",
+        "dic": {"organismo": ["Ayuntamiento de Ejemplo", "Otro Organismo"],
+                "empresa": [["B00000001", "Agencia Uno SL"], ["B00000002", "Agencia Dos SL"], [None, "AGENCIA UNO", 0]]},
+        "exp": [
+            ["a", "Servicio de gestión de redes sociales del Ayuntamiento de Ejemplo 2024", 0, 0, 0, 0, 0, 0, "111", 0, "2024-03-01", 50000.0, 0],
+            ["b", "Gestión de redes sociales del Ayuntamiento de Ejemplo", 0, 0, 0, 0, 0, 0, "222", 0, "2022-03-01", None, 0],
+            ["c", "Mantenimiento de la web municipal", 0, 0, 0, 0, 0, 0, "333", 0, "2025-03-01", None, 0],
+            ["d", "Servicio de gestión de redes sociales del Ayuntamiento de Ejemplo", 1, 0, 0, 0, 0, 0, "444", 0, "2025-03-01", None, 0],
+            # El mismo contrato que "b", repetido en el histórico, con un salto de línea.
+            ["e", "Gestión de redes sociales\r\ndel Ayuntamiento de Ejemplo", 0, 0, 0, 0, 0, 0, "555", 1, "2022-03-01", None, 0],
+        ],
+        "lotes": [[0, 0, "2024-03-01", 40000, 5, 1], [1, 2, "2022-03-01", 30000, None, None],
+                  [2, 1, "2025-03-01", 9000, 2, 1], [3, 1, "2025-03-01", 9000, 2, 1], [4, 0, "2022-03-01", 30000, None, None]],
+    }
+    ruta = tmp_path / "historico.json"
+    ruta.write_text(json.dumps(historico), encoding="utf-8")
+    monkeypatch.setattr(normalizar, "HISTORICO_COMPLETO", ruta)
+    registros = [{"tipo_registro": "licitacion", "organismo": "AYUNTAMIENTO DE EJEMPLO", "enlace": "https://otro",
+                  "titulo": "Servicio de gestión de las redes sociales del Ayuntamiento de Ejemplo 2026"},
+                 {"tipo_registro": "licitacion", "organismo": "Ayuntamiento de Ejemplo", "enlace": "https://otro",
+                  "titulo": "Suministro de papel"}]
+    normalizar._antecedentes(registros)
+    a = registros[0]["antecedentes"]
+    # La más reciente primero; la web no se parece; el otro organismo no cuenta.
+    assert [x["anio"] for x in a] == ["2024", "2022"]
+    assert a[0] == {"titulo": historico["exp"][0][1], "anio": "2024", "enlace": "https://contrataciondelestado.es/x?id=111",
+                    "importe": 40000, "ofertas": 5, "rebaja": 20.0,
+                    "empresas": [{"id": 0, "nombre": "Agencia Uno SL"}]}
+    # Una ficha de empresa fusionada lleva a la buena.
+    assert a[1]["empresas"] == [{"id": 0, "nombre": "Agencia Uno SL"}]
+    assert registros[0]["antecedentes_total"] == 2
+    assert "antecedentes" not in registros[1]

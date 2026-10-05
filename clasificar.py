@@ -69,6 +69,9 @@ import nif
 RAW_DIR = Path(__file__).resolve().parent / "data" / "raw"
 SALIDA = Path(__file__).resolve().parent / "data" / "clasificado.json"
 CACHE_FUENTES = Path(__file__).resolve().parent / "data" / "ultimo_bueno_por_fuente.json"
+# Embudo de esta pasada y descartes revisables (lo lee normalizar.py para la
+# página "Cómo se filtra"). No se guarda entre ejecuciones.
+FILTRO = Path(__file__).resolve().parent / "data" / "filtro.json"
 
 _CACHE_PATRONES: dict[str, re.Pattern] = {}
 
@@ -144,8 +147,37 @@ def _titulo_ted(item: dict) -> str:
     return str(titulos)
 
 
-def clasificar_texto(titulo: str) -> dict:
-    texto_norm = _normalizar_texto(titulo)
+# TED antepone al título el país y el tipo de servicio, sacado del CPV:
+# "España – Servicios de diseño gráfico – <título>". Ese tipo cuenta para
+# las categorías (así entran las licitaciones con el título en su idioma),
+# pero no para las exclusiones: "Servicios de impresión y servicios conexos
+# – Diseño gráfico y producción de elementos de comunicación" se descartaba
+# por imprenta sin que el título la mencionara, y el grupo genérico de abajo
+# tumbaba hasta "Servicios especializados de agencia de publicidad"
+# (medido el 2026-10-04: 8 licitaciones y 9 adjudicaciones en una noche).
+_RE_TIPO_TED = re.compile(r"^([^–]{2,40})\s–\s([^–]{2,120})\s–\s(.*)$", re.S)
+# "Servicios a empresas: legislación, mercadotecnia, asesoría, selección de
+# personal, imprenta y seguridad" (CPV 79000000) es un cajón de sastre: su
+# "mercadotecnia" no dice nada. En ese grupo, el título tiene que decirlo
+# (sin esto entraban guías de viaje, talleres o gestión de ciudad).
+TIPOS_TED_GENERICOS = ("servicios a empresas",)
+
+
+def textos_ted(titulo: str) -> tuple[str, str]:
+    """(texto donde buscar las categorías, texto donde buscar exclusiones)
+    de un título de TED. Sin el prefijo de TED, el título en los dos."""
+    m = _RE_TIPO_TED.match(titulo or "")
+    if not m:
+        return titulo, titulo
+    real = m.group(3)
+    generico = _normalizar_texto(m.group(2)).strip().startswith(TIPOS_TED_GENERICOS)
+    return (real if generico else titulo), real
+
+
+def clasificar_texto(titulo: str, ted: bool = False) -> dict:
+    """ted=True: título de TED con su prefijo (ver textos_ted)."""
+    texto_categorias, texto_exclusiones = textos_ted(titulo) if ted else (titulo, titulo)
+    texto_norm = _normalizar_texto(texto_categorias)
     categorias = [
         categoria
         for categoria, keywords in config.CATEGORIAS.items()
@@ -155,6 +187,7 @@ def clasificar_texto(titulo: str) -> dict:
     if not categorias:
         return {"incluir": False, "categorias": [], "revisar_manual": False}
 
+    texto_norm = _normalizar_texto(texto_exclusiones)
     tiene_servicio_no_ofrecido = any(_contiene_keyword(texto_norm, kw) for kw in config.SERVICIOS_NO_OFRECIDOS)
     if tiene_servicio_no_ofrecido:
         return {"incluir": False, "categorias": [], "revisar_manual": False}
@@ -164,13 +197,107 @@ def clasificar_texto(titulo: str) -> dict:
     return {"incluir": True, "categorias": categorias, "revisar_manual": tiene_exclusion}
 
 
+# ---------------------------------------------------------------------------
+# Transparencia del filtro: por qué entra cada licitación y qué se queda
+# fuera. Lo enseña la página "Cómo se filtra" del dashboard (filtro.html).
+# ---------------------------------------------------------------------------
+
+def _normalizar_con_mapa(texto: str) -> tuple[str, list[int]]:
+    """Lo mismo que _normalizar_texto (sin quitar el ruido procedimental) y,
+    para cada carácter del resultado, su posición en el texto original: así
+    una palabra clave encontrada se puede enseñar tal como está escrita."""
+    letras: list[str] = []
+    mapa: list[int] = []
+    for i, original in enumerate(texto or ""):
+        for c in unicodedata.normalize("NFKD", original):
+            if unicodedata.combining(c) or c == "·":
+                continue
+            letras.append((c if ord(c) < 128 else " ").lower())
+            mapa.append(i)
+    return "".join(letras), mapa
+
+
+def _fragmento(texto: str, keyword: str) -> str | None:
+    normal, mapa = _normalizar_con_mapa(texto)
+    m = re.search(r"\b" + re.escape(keyword) + r"\b", normal)
+    return texto[mapa[m.start()]:mapa[m.end() - 1] + 1] if m else None
+
+
+MAX_TERMINOS = 4
+
+
+def terminos_que_encajan(texto: str, categorias: dict[str, list[str]] | None = None) -> list[str]:
+    """Las palabras clave que hacen entrar el texto, una por categoría y tal
+    como se escriben en él ("Diseño gráfico", no "diseno grafico")."""
+    texto_norm = _normalizar_texto(texto)
+    terminos: list[str] = []
+    for keywords in (categorias or config.CATEGORIAS).values():
+        # La más larga primero: "redes sociales" dice más que "redes".
+        for kw in sorted(keywords, key=len, reverse=True):
+            if _contiene_keyword(texto_norm, kw):
+                fragmento = _fragmento(texto, kw) or kw
+                if fragmento.lower() not in (t.lower() for t in terminos):
+                    terminos.append(fragmento)
+                break
+        if len(terminos) == MAX_TERMINOS:
+            break
+    return terminos
+
+
+def _cpv_de_marketing(cpv_list: list) -> bool:
+    for cpv in cpv_list or []:
+        try:
+            n = int(str(cpv).replace("-", "")[:8])
+        except ValueError:
+            continue
+        if any(desde <= n <= hasta for desde, hasta, _ in config.CPV_RANGOS):
+            return True
+    return False
+
+
+# Descartes del filtro de texto de la fuente que se está clasificando (lo
+# prepara main antes de llamar a cada función): cuántos por cada motivo y,
+# si guardar_lista, los que merece la pena poder revisar a mano.
+_descartes: dict | None = None
+
+
+def _apuntar_descarte(item: dict, titulo: str, cpv_list: list, motivo: str | None = None, ted: bool = False) -> None:
+    """Motivos: "servicio_no_ofrecido" (el título es de agencia pero también
+    dice imprenta, rotulación...: config.SERVICIOS_NO_OFRECIDOS) o
+    "sin_categoria" (ninguna palabra clave). De los segundos solo se guardan
+    los que tienen un CPV de marketing (config.CPV_RANGOS): son los que
+    pueden ser un hueco de la taxonomía; el resto son miles de contratos de
+    obras, limpieza o suministros."""
+    if _descartes is None:
+        return
+    termino = None
+    if motivo is None:
+        texto_categorias, texto_exclusiones = textos_ted(titulo) if ted else (titulo, titulo)
+        no_ofrecido = next((kw for kw in config.SERVICIOS_NO_OFRECIDOS
+                            if _contiene_keyword(_normalizar_texto(texto_exclusiones), kw)), None)
+        texto_norm = _normalizar_texto(texto_categorias)
+        hay_categoria = no_ofrecido is not None and any(
+            _contiene_keyword(texto_norm, kw) for kws in config.CATEGORIAS.values() for kw in kws)
+        if hay_categoria:
+            motivo, termino = "servicio_no_ofrecido", _fragmento(texto_exclusiones, no_ofrecido) or no_ofrecido
+        else:
+            motivo = "sin_categoria"
+    _descartes[motivo] = _descartes.get(motivo, 0) + 1
+    if _descartes.get("lista") is None:
+        return
+    if motivo == "servicio_no_ofrecido" or _cpv_de_marketing(cpv_list):
+        _descartes["lista"].append({"original": item, "titulo": titulo, "cpv": cpv_list,
+                                    "motivo": motivo, "termino": termino})
+
+
 def clasificar_ted(items: list[dict]) -> list[dict]:
     salida = []
     for item in items:
         titulo = _titulo_ted(item)
         cpv_list = item.get("classification-cpv") or []
-        resultado = clasificar_texto(titulo)
+        resultado = clasificar_texto(titulo, ted=True)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list, ted=True)
             continue
         salida.append({"fuente": "UE", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -197,6 +324,7 @@ def clasificar_placsp(items: list[dict]) -> list[dict]:
         cpv_list = item.get("cpv") or []
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -212,6 +340,7 @@ def clasificar_placsp_web(items: list[dict]) -> list[dict]:
         titulo = item.get("titulo") or ""
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, [])
             continue
         salida.append({"fuente": "Estado-web", "original": item, "titulo": titulo, "cpv": [], **resultado})
     return salida
@@ -236,6 +365,7 @@ def clasificar_euskadi(items: list[dict]) -> list[dict]:
         cpv_list: list[str] = []  # Euskadi no expone CPV, ver docstring del módulo
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -254,8 +384,9 @@ def clasificar_ted_adjudicaciones(items: list[dict]) -> list[dict]:
     for item in items:
         titulo = _titulo_ted(item)
         cpv_list = item.get("classification-cpv") or []
-        resultado = clasificar_texto(titulo)
+        resultado = clasificar_texto(titulo, ted=True)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list, ted=True)
             continue
         salida.append({"fuente": "UE", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -280,6 +411,7 @@ def clasificar_placsp_adjudicaciones(items: list[dict]) -> list[dict]:
         cpv_list = item.get("cpv") or []
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -319,6 +451,7 @@ def clasificar_euskadi_adjudicaciones(items: list[dict]) -> list[dict]:
         cpv_list = [cpv] if cpv else []
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -339,6 +472,7 @@ def clasificar_placsp_contratos_menores(items: list[dict]) -> list[dict]:
         cpv_list = item.get("cpv") or []
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Estado", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -356,6 +490,7 @@ def clasificar_euskadi_contratos_menores(items: list[dict]) -> list[dict]:
         cpv_list = [cpv] if cpv else []
         resultado = clasificar_texto(titulo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, cpv_list)
             continue
         salida.append({"fuente": "Euskadi", "original": item, "titulo": titulo, "cpv": cpv_list, **resultado})
     return salida
@@ -391,6 +526,7 @@ def clasificar_eu_grants(items: list[dict]) -> list[dict]:
         ])
         resultado = clasificar_texto_calls_ue(texto_completo)
         if not resultado["incluir"]:
+            _apuntar_descarte(item, titulo, [], motivo="sin_categoria")
             continue
         salida.append({"fuente": "UE-subvenciones", "original": item, "titulo": titulo, "cpv": [], **resultado})
     return salida
@@ -501,11 +637,16 @@ def main() -> None:
         ("eu_grants", "convocatoria_ue", clasificar_eu_grants),
     ]
 
+    global _descartes
+    embudo: list[dict] = []
+    lista_descartes: list[dict] = []
     for prefijo, tipo_registro, funcion in fuentes:
         clave_cache = f"{prefijo}|{tipo_registro}"
         ruta = _ultimo_raw(prefijo)
         if ruta is None:
             previos = cache_previo.get(clave_cache)
+            embudo.append({"prefijo": prefijo, "tipo": tipo_registro, "sin_datos_nuevos": True,
+                           "relevantes": len(previos or [])})
             if previos:
                 print(
                     f"[clasificar] AVISO: no hay crudo de '{prefijo}' en data/raw/. "
@@ -518,20 +659,43 @@ def main() -> None:
                 print(f"[clasificar] AVISO: no hay crudo de '{prefijo}' en data/raw/ y tampoco hay un resultado anterior en caché. Se omite esta fuente en esta pasada.", file=sys.stderr)
             continue
         items = _cargar_resultados(ruta)
+        # Las listas de descartes, solo de licitaciones: es donde un hueco de
+        # la taxonomía hace perder una oportunidad.
+        _descartes = {"lista": [] if tipo_registro == "licitacion" else None}
         clasificados = funcion(items)
+        descartes, _descartes = _descartes, None
+        for d in descartes.get("lista") or []:
+            d["fuente_prefijo"] = prefijo
+            lista_descartes.append(d)
+        nuevos = len(clasificados)
         for c in clasificados:
             c["tipo_registro"] = tipo_registro
         if prefijo in FUENTES_ACUMULATIVAS:
-            nuevos = len(clasificados)
             clasificados = _acumular(cache_previo.get(clave_cache) or [], items, clasificados, tipo_registro)
             print(f"[clasificar] {prefijo} ({tipo_registro}): {nuevos} del crudo nuevo + {len(clasificados) - nuevos} conservados de ejecuciones anteriores")
         print(f"[clasificar] {prefijo} ({tipo_registro}): {len(items)} extraídas -> {len(clasificados)} relevantes (de {ruta.name})")
+        sin_categoria = descartes.get("sin_categoria", 0)
+        no_ofrecido = descartes.get("servicio_no_ofrecido", 0)
+        embudo.append({
+            "prefijo": prefijo, "tipo": tipo_registro, "extraidas": len(items),
+            # Estado no abierto, contrato menor, plataforma de Euskadi
+            # repetida, sin adjudicataria...: lo que cada función mira antes
+            # del texto.
+            "otros_filtros": len(items) - nuevos - sin_categoria - no_ofrecido,
+            "sin_categoria": sin_categoria, "servicio_no_ofrecido": no_ofrecido,
+            "relevantes_nuevas": nuevos, "conservadas": len(clasificados) - nuevos,
+            "relevantes": len(clasificados),
+        })
         resultado_final.extend(clasificados)
         cache_nuevo[clave_cache] = clasificados
 
     SALIDA.parent.mkdir(parents=True, exist_ok=True)
     SALIDA.write_text(json.dumps(resultado_final, ensure_ascii=False, indent=2), encoding="utf-8")
     CACHE_FUENTES.write_text(json.dumps(cache_nuevo, ensure_ascii=False, indent=2), encoding="utf-8")
+    for d in lista_descartes:
+        _sin_dni(d)
+    FILTRO.write_text(json.dumps({"fecha": date.today().isoformat(), "embudo": embudo, "descartes": lista_descartes},
+                                 ensure_ascii=False), encoding="utf-8")
     n_revisar = sum(1 for r in resultado_final if r["revisar_manual"])
     print(f"[clasificar] Total: {len(resultado_final)} licitaciones relevantes ({n_revisar} para revisar manualmente) -> {SALIDA}")
 

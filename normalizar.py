@@ -581,6 +581,227 @@ def _historiales(registros: list[dict]) -> None:
             }
 
 
+HISTORICO_COMPLETO = Path(__file__).resolve().parent / "data" / "historico_adjudicaciones.json"
+MAX_ANTECEDENTES = 3
+# Dos títulos son "el mismo contrato" si comparten al menos el 30 % de sus
+# palabras con contenido y dos como mínimo. Medido el 2026-10-04 sobre las
+# licitaciones abiertas: con 0,3 salen sobre todo ediciones anteriores del
+# mismo servicio; por debajo de 0,25 empiezan a colarse contratos del mismo
+# organismo que no se parecen (mantenimiento web frente a montaje de stands).
+UMBRAL_PARECIDO = 0.3
+_PALABRAS_VACIAS_TITULO = frozenset(
+    "para del las los con por una unos unas sus servicio servicios contrato contratacion contratos "
+    "suministro realizacion prestacion asistencia tecnica tecnicos anos lote lotes mediante procedimiento "
+    "abierto simplificado durante diferentes diversas diversos".split())
+# TED antepone país y tipo de servicio: "España – Servicios de promoción – <título>".
+_RE_PREFIJO_TED = re.compile(r"^[^–]{2,40}\s–\s[^–]{2,90}\s–\s")
+
+
+def _palabras_titulo(titulo: str) -> frozenset[str]:
+    titulo = _RE_PREFIJO_TED.sub("", titulo or "")
+    return frozenset(w for w in _normalizar_clave(titulo).split()
+                     if len(w) >= 4 and not w.isdigit() and w not in _PALABRAS_VACIAS_TITULO)
+
+
+def _antecedentes(registros: list[dict]) -> None:
+    """Añade a cada licitación española en plazo los contratos anteriores
+    parecidos del mismo organismo que hay en el histórico de adjudicaciones
+    (casi siempre, ediciones anteriores del mismo servicio): título, año,
+    quién lo ganó, por cuánto y con cuántas ofertas.
+
+      antecedentes: [{titulo, anio, enlace, importe, ofertas, rebaja,
+                      empresas: [{id, nombre}]}, ...]  (los más recientes)
+      antecedentes_total: cuántos parecidos hay en total
+
+    Usa el histórico completo (data/historico_adjudicaciones.json), que
+    tiene los títulos; el del dashboard no. Mismos índices de expediente y
+    empresa que historico-data.js, así que el id de la empresa abre su ficha
+    en historico.html. El organismo se busca por nombre normalizado, como en
+    _historiales. Las licitaciones extranjeras de TED y las calls no tienen
+    histórico."""
+    if not HISTORICO_COMPLETO.exists():
+        return
+    try:
+        c = json.loads(HISTORICO_COMPLETO.read_text(encoding="utf-8"))
+        organismos = c["dic"]["organismo"]
+        empresas = c["dic"]["empresa"]
+        exp = c["exp"]  # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
+        prefijo = c.get("prefijo_enlace") or ""
+        lotes_por_exp: dict[int, list] = {}
+        for l in c["lotes"]:  # [exp, empresa, fecha, importe, ofertas, pyme]
+            lotes_por_exp.setdefault(l[0], []).append(l)
+    except (ValueError, KeyError, TypeError, OSError):
+        return
+
+    clave_org = [_normalizar_clave(o) for o in organismos]
+    por_organismo: dict[str, list[int]] = {}
+    for i, e in enumerate(exp):
+        if i in lotes_por_exp:
+            por_organismo.setdefault(clave_org[e[2]], []).append(i)
+    por_organismo.pop("", None)
+
+    def empresa(i_emp: int) -> dict:
+        datos = empresas[i_emp]
+        if len(datos) > 2:  # ficha fusionada: [None, nombre, índice de la buena]
+            i_emp = datos[2]
+            datos = empresas[i_emp]
+        return {"id": i_emp, "nombre": datos[1]}
+
+    palabras_exp: dict[int, frozenset[str]] = {}
+    for r in registros:
+        if r["tipo_registro"] != "licitacion" or r["organismo"] == NO_PUBLICADO:
+            continue
+        candidatos = por_organismo.get(_normalizar_clave(r["organismo"]))
+        # El nombre del organismo dentro del título no dice nada del servicio
+        # y hacía parecer iguales "mantenimiento de la web de la Agencia
+        # Española de X" y "montaje de escaparates de la Agencia Española de X".
+        del_organismo = _palabras_titulo(r["organismo"])
+        palabras = _palabras_titulo(r["titulo"]) - del_organismo
+        if not candidatos or len(palabras) < 2:
+            continue
+        propio = r.get("enlace") or ""
+        parecidos = []
+        for i in candidatos:
+            if propio and propio.endswith(exp[i][8] or "\0"):
+                continue  # el propio expediente, adjudicado ya en algún lote
+            if i not in palabras_exp:
+                palabras_exp[i] = _palabras_titulo(exp[i][1])
+            otras = palabras_exp[i] - del_organismo
+            comunes = len(palabras & otras)
+            if comunes >= 2 and comunes / len(palabras | otras) >= UMBRAL_PARECIDO:
+                parecidos.append(i)
+        if not parecidos:
+            continue
+        fechas = {i: max(l[2] or "" for l in lotes_por_exp[i]) for i in parecidos}
+        parecidos.sort(key=lambda i: fechas[i], reverse=True)
+        lista = []
+        repetidos = set()  # el histórico tiene algún contrato dos veces (mismo título, empresa e importe)
+        for i in parecidos:
+            e = exp[i]
+            lotes = lotes_por_exp[i]
+            # Por debajo de 100 € no es el importe del contrato sino un precio
+            # unitario o una errata de la fuente ("4 €" en una compra de medios).
+            importes = [l[3] for l in lotes if l[3]]
+            importe = sum(importes) if importes and sum(importes) >= 100 else None
+            ofertas = max((l[4] for l in lotes if l[4]), default=None)
+            rebaja = None
+            if len(lotes) == 1 and importe and e[11] and 0.005 <= 1 - importe / e[11] < 0.9:
+                rebaja = round((1 - importe / e[11]) * 100, 1)
+            nombres_vistos = set()
+            lista_empresas = []
+            for l in lotes:
+                emp = empresa(l[1])
+                if emp["id"] not in nombres_vistos:
+                    nombres_vistos.add(emp["id"])
+                    lista_empresas.append(emp)
+            titulo = " ".join(e[1].split())
+            firma = (_normalizar_clave(titulo), tuple(x["id"] for x in lista_empresas), importe)
+            if firma in repetidos:
+                continue
+            repetidos.add(firma)
+            enlace = e[8] if e[8].startswith("http") or not e[8] else prefijo + e[8]
+            lista.append({
+                "titulo": titulo, "anio": fechas[i][:4] or None, "enlace": enlace or None,
+                "importe": importe, "ofertas": ofertas, "rebaja": rebaja, "empresas": lista_empresas[:3],
+            })
+        r["antecedentes"] = lista[:MAX_ANTECEDENTES]
+        r["antecedentes_total"] = len(lista)
+
+
+# ---------------------------------------------------------------------------
+# Transparencia del filtro (página "Cómo se filtra", dashboard/filtro.html)
+# ---------------------------------------------------------------------------
+FILTRO = Path(__file__).resolve().parent / "data" / "filtro.json"
+SALIDA_FILTRO = Path(__file__).resolve().parent / "dashboard" / "filtro-data.js"
+
+def _por_que(registro: dict) -> dict | None:
+    """Las palabras clave que hicieron entrar el registro, como se escriben
+    en él. En TED, si ninguna está en el título propiamente dicho, también
+    el tipo de servicio que TED antepone (el que decidió)."""
+    from clasificar import _RE_TIPO_TED, terminos_que_encajan, textos_ted
+
+    if registro.get("tipo_registro") == "convocatoria_ue":
+        item = registro["original"]
+        texto = " ".join([registro["titulo"], item.get("descripcion") or "",
+                          item.get("destino_descripcion") or "", item.get("destino_detalle") or ""])
+        terminos = terminos_que_encajan(texto, config.CATEGORIAS_CALLS_UE)
+        return {"terminos": terminos} if terminos else None
+    titulo = registro.get("titulo") or ""
+    # TED: con el mismo criterio que clasificar (textos_ted), así que en el
+    # grupo genérico "Servicios a empresas" solo cuenta el título.
+    texto, real = textos_ted(titulo) if registro["fuente"] == "UE" else (titulo, titulo)
+    terminos = terminos_que_encajan(texto)
+    if not terminos:
+        return None
+    salida = {"terminos": terminos}
+    m = _RE_TIPO_TED.match(titulo) if texto != real else None
+    if m and not terminos_que_encajan(real):
+        salida["tipo_ted"] = m.group(2).strip()
+    return salida
+
+
+ETIQUETAS_PREFIJO = {
+    "ted": "TED (UE)", "placsp": "PLACSP, perfiles propios", "placsp_agregadas": "PLACSP, plataformas autonómicas",
+    "placsp_web": "PLACSP, buscador web", "euskadi": "Euskadi", "ted_adjudicaciones": "TED (UE)",
+    "euskadi_adjudicaciones": "Euskadi", "placsp_menores": "PLACSP, contratos menores",
+    "euskadi_menores": "Euskadi, contratos menores", "eu_grants": "EU Funding & Tenders",
+}
+FUENTE_POR_PREFIJO = {"ted": "UE", "placsp": "Estado", "placsp_agregadas": "Estado-agregadas",
+                      "placsp_web": "Estado-web", "euskadi": "Euskadi"}
+MAX_DESCARTES = 300
+
+
+def _publicar_filtro(etapas: dict) -> None:
+    """dashboard/filtro-data.js: el embudo de esta ejecución (lo que
+    clasificar.py dejó en data/filtro.json más las etapas de normalizar) y
+    los descartes revisables de licitaciones en plazo, ya convertidos al
+    formato de las tarjetas. De TED, solo los de organismos españoles: los
+    extranjeros con CPV de marketing y sin palabra clave son cientos y casi
+    siempre tienen el título en su idioma."""
+    datos = {"fecha": date.today().isoformat(), "embudo": [], "etapas": etapas, "descartes": []}
+    if FILTRO.exists():
+        try:
+            filtro = json.loads(FILTRO.read_text(encoding="utf-8"))
+            datos["embudo"] = [dict(e, etiqueta=ETIQUETAS_PREFIJO.get(e["prefijo"], e["prefijo"])) for e in filtro["embudo"]]
+            vistos = set()
+            for d in filtro["descartes"]:
+                fuente = FUENTE_POR_PREFIJO.get(d.get("fuente_prefijo"))
+                if fuente is None:
+                    continue
+                registro = {"fuente": fuente, "original": d["original"], "titulo": d["titulo"], "cpv": d["cpv"],
+                            "categorias": [], "revisar_manual": False, "tipo_registro": "licitacion"}
+                try:
+                    r = CONVERSORES[(fuente, "licitacion")](registro)
+                except (KeyError, TypeError, ValueError, AttributeError):
+                    continue
+                if not _dentro_de_ventana_temporal(r):
+                    continue
+                if fuente == "UE" and r["pais_territorio"] != "España":
+                    continue
+                # Mismo id, o mismo título y organismo (TED publica a veces
+                # el mismo anuncio varias veces, una por modificación).
+                claves = {r["id"], _normalizar_clave(r["titulo"]) + "|" + _normalizar_clave(r["organismo"])}
+                if claves & vistos:
+                    continue
+                vistos |= claves
+                datos["descartes"].append({
+                    "id": r["id"], "titulo": r["titulo"], "organismo": r["organismo"],
+                    "fuente": "Estado" if fuente.startswith("Estado") else fuente,
+                    "enlace": r["enlace"], "fecha_limite": r["fecha_limite"],
+                    "presupuesto": r.get("presupuesto_valor"), "cpv": list(dict.fromkeys(r.get("cpv") or []))[:3],
+                    "motivo": d["motivo"], "termino": d.get("termino"),
+                })
+        except (ValueError, KeyError, TypeError, OSError) as e:
+            print(f"[normalizar] AVISO: no se pudo leer {FILTRO.name}: {e}", file=sys.stderr)
+    datos["descartes"].sort(key=lambda d: (d["motivo"] != "servicio_no_ofrecido", d["fecha_limite"]))
+    datos["descartes"] = datos["descartes"][:MAX_DESCARTES]
+    for d in datos["descartes"]:
+        _sin_dni(d)
+    SALIDA_FILTRO.write_text(
+        "// Generado por normalizar.py (_publicar_filtro). No editar a mano.\n"
+        "window.FILTRO_DATA = " + json.dumps(datos, ensure_ascii=False) + ";\n", encoding="utf-8")
+
+
 def _es_organismo_vasco(organismo: str, vascos: set[str]) -> bool:
     """Por topónimo, o porque el nombre es exactamente el de un organismo
     vasco conocido. Antes bastaba con que el nombre EMPEZARA igual
@@ -1473,6 +1694,9 @@ def main() -> None:
         if conversor is None:
             continue
         salida = conversor(registro)
+        por_que = _por_que(registro)
+        if por_que:
+            salida["por_que"] = por_que
         salida["provincia"], salida["comunidad"] = _lugar(registro)
         if tipo_registro == "licitacion":
             salida["hora_limite"], salida["pliegos"] = _hora_y_pliegos(registro)
@@ -1518,12 +1742,22 @@ def main() -> None:
     }
     # Adjudicaciones: solo las ganadas por empresas españolas (ver
     # es_empresa_espanola).
+    def por_tipo(registros: list[dict]) -> dict[str, int]:
+        cuenta: dict[str, int] = {}
+        for r in registros:
+            cuenta[r["tipo_registro"]] = cuenta.get(r["tipo_registro"], 0) + 1
+        return cuenta
+
+    # Recuento de cada etapa, para la página "Cómo se filtra".
+    etapas = {"clasificadas": por_tipo(normalizados)}
     antes_nacionalidad = len(normalizados)
     normalizados = [r for r in normalizados if r.pop("_empresa_espanola", True)]
     print(f"[normalizar] {antes_nacionalidad - len(normalizados)} adjudicaciones descartadas por ser de empresas no españolas")
+    etapas["empresas_espanolas"] = por_tipo(normalizados)
 
     antes_ventana = len(normalizados)
     normalizados = [r for r in normalizados if _FILTROS_VENTANA[r["tipo_registro"]](r)]
+    etapas["en_ventana"] = por_tipo(normalizados)
     fuera_de_ventana = antes_ventana - len(normalizados)
 
     # Deduplicación conservadora: mismo título+organismo normalizados,
@@ -1622,6 +1856,7 @@ def main() -> None:
             r["comunidad"] = r["comunidad"] or "País Vasco"
 
     _historiales(finales)
+    _antecedentes(finales)
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro
     # del bloque sin plazo (todos los contratos menores, y alguna
@@ -1644,6 +1879,9 @@ def main() -> None:
     SALIDA_DASHBOARD.parent.mkdir(parents=True, exist_ok=True)
     contenido_js = "window.TENDERS_DATA = " + json.dumps(finales, ensure_ascii=False, indent=2) + ";\n"
     SALIDA_DASHBOARD.write_text(contenido_js, encoding="utf-8")
+
+    etapas["publicadas"] = por_tipo(finales)
+    _publicar_filtro(etapas)
 
     _guardar_cache_traduccion()
 

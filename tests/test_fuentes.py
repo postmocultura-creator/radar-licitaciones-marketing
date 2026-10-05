@@ -203,11 +203,17 @@ def test_euskadi_fichas_solo_de_licitaciones_en_plazo_y_de_agencia(monkeypatch):
         {"object": "Servicio de gestión de redes sociales", "deadlineDate": "2026-10-20T00:00:00", "mainEntityOfPage": "u1"},
         {"object": "Servicio de gestión de redes sociales", "deadlineDate": "2026-09-01T00:00:00", "mainEntityOfPage": "u2"},
         {"object": "Suministro de gasóleo", "deadlineDate": "2026-10-20T00:00:00", "mainEntityOfPage": "u3"},
+        # Contrato menor: el radar no lo enseña, no se lee su ficha.
+        {"object": "Servicio de gestión de redes sociales", "deadlineDate": "2026-10-20T00:00:00", "mainEntityOfPage": "u4",
+         "minorContract": True},
+        # Otro anuncio del mismo expediente: misma ficha, se lee una vez.
+        {"object": "Servicio de gestión de redes sociales (corrección)", "deadlineDate": "2026-10-20T00:00:00", "mainEntityOfPage": "u1"},
     ]
     euskadi.anadir_fichas_licitaciones(items, hoy="2026-10-04")
     assert leidas == ["u1"]
     # De la ficha de una licitación solo se guardan pliegos, criterios y lotes.
     assert items[0]["ficha"] == {"pliegos": [{"tipo": "tecnico"}], "criterios": [], "lotes": []}
+    assert items[4]["ficha"] == items[0]["ficha"] and "ficha" not in items[3]
 
 
 @pytest.mark.parametrize("texto,de_la_mesa,tipo", [

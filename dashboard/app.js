@@ -337,6 +337,42 @@
   }
 
   // Minúsculas y sin tildes, para que "comunicacion" encuentre "Comunicación".
+  // Otras licitaciones en plazo del mismo organismo y otras calls del mismo
+  // programa (las dos primeras partes del código: "HORIZON-CL6",
+  // "CREA-MEDIA"; si la segunda es un año, solo la primera). Índice hecho
+  // una vez, al abrir la primera ficha.
+  var MAX_OTRAS_ABIERTAS = 5;
+  var indiceAbiertas = null;
+
+  function claveGrupo(t) {
+    if (t.tipo_registro === "licitacion") {
+      return t.organismo && t.organismo !== NO_PUBLICADO ? "o|" + sinTildes(t.organismo).replace(/\s+/g, " ").trim() : null;
+    }
+    if (t.tipo_registro === "convocatoria_ue" && t.codigo_expediente) {
+      var partes = String(t.codigo_expediente).split("-");
+      return "p|" + (/^\d+$/.test(partes[1] || "") ? partes[0] : partes.slice(0, 2).join("-"));
+    }
+    return null;
+  }
+
+  function otrasAbiertas(t) {
+    var clave = claveGrupo(t);
+    if (!clave) return [];
+    if (!indiceAbiertas) {
+      indiceAbiertas = {};
+      DATOS.forEach(function (o) {
+        var dias = diasRestantes(o.fecha_limite);
+        if (dias !== null && dias < 0) return;
+        var k = claveGrupo(o);
+        if (k) (indiceAbiertas[k] = indiceAbiertas[k] || []).push(o);
+      });
+      Object.keys(indiceAbiertas).forEach(function (k) {
+        indiceAbiertas[k].sort(function (a, b) { return porFechaProxima("fecha_limite", a, b); });
+      });
+    }
+    return (indiceAbiertas[clave] || []).filter(function (o) { return o.id !== t.id; });
+  }
+
   function sinTildes(str) {
     return String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
@@ -831,6 +867,18 @@
     var revisarHtml = t.revisar_manual
       ? '<span class="etiqueta-revisar">Revisar: mezcla con otros servicios no propios de agencia</span>'
       : "";
+    // Por qué está en el radar: las palabras clave que encontró el filtro
+    // (normalizar._por_que). En TED puede decidir el tipo de servicio que
+    // TED antepone al título, sacado del CPV.
+    var pq = t.por_que;
+    var porQueHtml = "";
+    if (pq && pq.terminos && pq.terminos.length) {
+      var lista = pq.terminos.map(function (x) { return "«" + escaparHtml(x) + "»"; }).join(", ");
+      porQueHtml = '<p class="tarjeta__nota">' + (pq.tipo_ted
+        ? "Entra por el tipo de servicio que TED le asigna, «" + escaparHtml(pq.tipo_ted) + "»: el título no dice nada que el filtro reconozca."
+        : "Entra porque " + (t.tipo_registro === "convocatoria_ue" ? "el texto de la convocatoria" : "el título") + " dice " + lista + ".") +
+        ' <a class="enlace" href="filtro.html">Cómo se filtra</a></p>';
+    }
 
     // Lo que el histórico de adjudicaciones sabe del organismo y de la
     // empresa (lo calcula normalizar.py; no está si no aparecen allí).
@@ -855,6 +903,43 @@
             }).join("") + "</ol>"
           : "") +
         "</div>";
+    }
+
+    // Contratos anteriores parecidos del mismo organismo (casi siempre,
+    // ediciones anteriores del mismo servicio): quién lo ganó y a qué
+    // precio. Los busca normalizar._antecedentes en el histórico.
+    var parecidasHtml = "";
+    var ant = t.antecedentes;
+    if (ant && ant.length) {
+      parecidasHtml += '<div class="tarjeta__bloque"><h4>Contratos anteriores parecidos</h4>' +
+        '<p class="tarjeta__resumen-texto">' + (t.antecedentes_total > ant.length
+          ? "Este organismo ha adjudicado " + cuantos(t.antecedentes_total, "contrato parecido", "contratos parecidos") + ". Los " + ant.length + " más recientes:"
+          : "Lo que este organismo adjudicó antes con un título parecido:") + "</p>" +
+        '<ul class="tarjeta__antecedentes">' + ant.map(function (a) {
+          var empresas = (a.empresas || []).map(function (e) {
+            return '<a class="enlace" href="historico.html#/empresa/' + e.id + '">' + escaparHtml(e.nombre) + "</a>";
+          }).join(", ");
+          var datos = [a.anio,
+            empresas ? "Ganó " + empresas : "",
+            a.importe ? euros(Math.round(a.importe)) : "",
+            a.ofertas ? cuantos(a.ofertas, "oferta", "ofertas") : "",
+            a.rebaja != null ? "rebaja del " + numeroEs(a.rebaja) + " %" : ""].filter(Boolean).join(" · ");
+          return "<li>" + (a.enlace
+            ? '<a class="enlace" href="' + escaparHtml(a.enlace) + '" target="_blank" rel="noopener">' + escaparHtml(a.titulo) + "</a>"
+            : escaparHtml(a.titulo)) +
+            '<span class="tarjeta__antecedente-datos">' + datos + "</span></li>";
+        }).join("") + "</ul>" +
+        '<p class="tarjeta__nota">Importes adjudicados sin IVA. Parecido = comparten buena parte de las palabras del título; conviene abrirlos para confirmarlo.</p></div>';
+    }
+    // Otras en plazo del mismo organismo o, en las calls, del mismo programa.
+    var otras = otrasAbiertas(t);
+    if (otras.length) {
+      parecidasHtml += '<div class="tarjeta__bloque"><h4>' +
+        (t.tipo_registro === "convocatoria_ue" ? "Otras convocatorias abiertas de este programa" : "Otras licitaciones abiertas de este organismo") +
+        " (" + otras.length + ")</h4><ul class=\"tarjeta__antecedentes\">" + otras.slice(0, MAX_OTRAS_ABIERTAS).map(function (o) {
+          return '<li><a class="enlace" href="#/' + RUTA_POR_TIPO[o.tipo_registro] + "?id=" + encodeURIComponent(o.id) + '">' + escaparHtml(o.titulo) + "</a>" +
+            '<span class="tarjeta__antecedente-datos">' + (parsearFecha(o.fecha_limite) ? "Plazo: " + fechaLarga(o.fecha_limite) : "") + "</span></li>";
+        }).join("") + "</ul></div>";
     }
 
     // Cómo se puntúa (PLACSP): reparto entre precio, otros criterios con
@@ -1042,7 +1127,8 @@
           documentosHtml +
           licitadoresHtml +
           historialHtml +
-          '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div></div>" +
+          parecidasHtml +
+          '<div class="tarjeta__bloque"><h4>Categorías de servicio</h4><div class="tarjeta__categorias">' + categoriasHtml + revisarHtml + "</div>" + porQueHtml + "</div>" +
           codigoHtml +
           '<div class="tarjeta__acciones">' + acciones + "</div>" +
         "</div>" +

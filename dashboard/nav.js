@@ -56,11 +56,15 @@
         ["organismos", "Organismos", "historico.html", "#/organismos", "institucion"],
       ],
     },
+    {
+      titulo: "Sobre el radar",
+      items: [["filtro", "Cómo se filtra", "filtro.html", "", "filtro"]],
+    },
   ];
 
   var CLAVE_CONTEOS = "radar-conteos";
   var esHistorico = /historico(\.html)?$/.test(location.pathname);
-  var paginaActual = esHistorico ? "historico.html" : "index.html";
+  var paginaActual = esHistorico ? "historico.html" : /filtro(\.html)?$/.test(location.pathname) ? "filtro.html" : "index.html";
 
   // Los recuentos del radar solo se pueden calcular en index.html (es la
   // única página que carga tenders-data.js); se guardan para que la barra

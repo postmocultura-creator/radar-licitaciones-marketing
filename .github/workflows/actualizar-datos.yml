@@ -187,6 +187,22 @@ jobs:
           print(f'{len(data)} registros, OK para publicar.')
           "
 
+      # Correo con lo nuevo desde el último envío (alertas.py). Sin los
+      # secretos ALERTAS_* no hace nada. Va antes de publicar porque guarda
+      # lo enviado en data/alertas_enviadas.json, que se sube a "estado"; si
+      # el envío falla, no lo marca y la actualización se publica igual.
+      - name: Alerta por correo
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          ALERTAS_SMTP_SERVIDOR: ${{ secrets.ALERTAS_SMTP_SERVIDOR }}
+          ALERTAS_SMTP_PUERTO: ${{ secrets.ALERTAS_SMTP_PUERTO }}
+          ALERTAS_SMTP_USUARIO: ${{ secrets.ALERTAS_SMTP_USUARIO }}
+          ALERTAS_SMTP_CLAVE: ${{ secrets.ALERTAS_SMTP_CLAVE }}
+          ALERTAS_DE: ${{ secrets.ALERTAS_DE }}
+          ALERTAS_PARA: ${{ secrets.ALERTAS_PARA }}
+        run: python alertas.py
+
       # El scraping tarda 15-30 minutos; en ese rato puede haber caído un
       # commit nuevo en main (código, o un push manual) que deja a este job
       # por detrás del remoto -pasó de verdad en la primera prueba real, un
@@ -208,12 +224,12 @@ jobs:
           # Primero el estado interno (rama "estado", un solo commit que
           # sustituye al anterior). El histórico completo, solo si su paso
           # terminó bien: si se cortó a medias, no se publica a medio escribir.
-          estado="data/ultimo_bueno_por_fuente.json data/primera_aparicion.json data/placsp_web_acumulado.json data/euskadi_menores_acumulado.json data/euskadi_licitadoras.json"
+          estado="data/ultimo_bueno_por_fuente.json data/primera_aparicion.json data/placsp_web_acumulado.json data/euskadi_menores_acumulado.json data/euskadi_licitadoras.json data/alertas_enviadas.json"
           if [ "${{ steps.historico.outcome }}" = "success" ]; then estado="$estado data/historico_adjudicaciones.json"; fi
           sh .github/publicar_estado.sh $estado
           # Después lo que sirve la web (main, que Vercel publica).
           git reset origin/main
-          git add dashboard/tenders-data.js dashboard/licitadoras-data.js
+          git add dashboard/tenders-data.js dashboard/licitadoras-data.js dashboard/filtro-data.js
           if [ "${{ steps.historico.outcome }}" = "success" ]; then
             git add dashboard/historico-data.js dashboard/historico-detalle
           fi

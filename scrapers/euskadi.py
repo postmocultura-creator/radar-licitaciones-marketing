@@ -562,12 +562,23 @@ def anadir_fichas_licitaciones(items: list[dict], hoy: str | None = None) -> Non
     hoy = hoy or datetime.now(timezone.utc).date().isoformat()
     inicio = time.monotonic()
     leidas = vacias = 0
+    ya_leidas: dict[str, dict] = {}
     for item in items:
+        # Los contratos menores no van al radar (clasificar_euskadi los
+        # descarta): leer su ficha era la mitad del trabajo (136 fichas
+        # leídas para 67 licitaciones la noche del 2026-10-05).
+        if item.get("minorContract"):
+            continue
         limite = (item.get("deadlineDate") or "")[:10]
         if limite and limite < hoy:
             continue
         url = item.get("mainEntityOfPage")
         if not url or not clasificar_texto(item.get("object") or "")["incluir"]:
+            continue
+        # Varios anuncios del mismo expediente (licitación, corrección...)
+        # comparten ficha: se lee una vez.
+        if url in ya_leidas:
+            item["ficha"] = ya_leidas[url]
             continue
         if time.monotonic() - inicio > SEGUNDOS_FICHAS_LICITACIONES:
             print("[euskadi] AVISO: fichas de licitaciones cortadas por tiempo", file=sys.stderr)
@@ -577,7 +588,7 @@ def anadir_fichas_licitaciones(items: list[dict], hoy: str | None = None) -> Non
         except requests.RequestException as exc:
             print(f"[euskadi] AVISO: no se pudo leer la ficha {url} ({exc})", file=sys.stderr)
             continue
-        item["ficha"] = {"pliegos": ficha["pliegos"], "criterios": ficha["criterios"], "lotes": ficha["lotes"]}
+        item["ficha"] = ya_leidas[url] = {"pliegos": ficha["pliegos"], "criterios": ficha["criterios"], "lotes": ficha["lotes"]}
         leidas += 1
         vacias += not ficha["pliegos"] and not ficha["criterios"]
         time.sleep(1 / PETICIONES_POR_SEGUNDO)
@@ -759,7 +770,15 @@ def _guardar_error(prefijo: str, exc: Exception) -> None:
     comun.guardar_error(FUENTE, prefijo, exc)
 
 
+# Tiempo del paso "Scraper Euskadi" (timeout-minutes: 25 en el workflow)
+# que puede usar todo lo anterior al relleno del índice de éxito, que va al
+# final y solo usa lo que quede. La noche del 2026-10-05 el relleno empezó a
+# 1 minuto del límite con sus 5 fijos y el paso se cortó.
+SEGUNDOS_PASO = 23 * 60
+
+
 def main() -> None:
+    inicio_paso = time.monotonic()
     try:
         items = extraer()
     except requests.RequestException as exc:
@@ -799,8 +818,10 @@ def main() -> None:
     ruta_menores = guardar_crudo(menores, "euskadi_menores")
     print(f"[euskadi] {len(menores)} contratos menores guardados en {ruta_menores}")
 
-    # Lo último del paso, para que no le quite tiempo a lo demás.
-    rellenadas = rellenar_desde_historico(licitadoras)
+    # Lo último del paso, para que no le quite tiempo a lo demás, y solo con
+    # el tiempo que le quede.
+    restante = SEGUNDOS_PASO - (time.monotonic() - inicio_paso)
+    rellenadas = rellenar_desde_historico(licitadoras, segundos_max=max(0.0, min(SEGUNDOS_RELLENO_MAX, restante)))
     guardar_licitadoras(licitadoras)
     publicar_indice_exito(licitadoras)
     print(f"[euskadi] licitadoras: {rellenadas} fichas del histórico leídas, "

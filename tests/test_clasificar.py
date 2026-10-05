@@ -14,6 +14,10 @@ from clasificar import _normalizar_texto, clasificar_texto
     # Se escapaban frente a un radar comercial (benchmark del 2026-10-04).
     "Los servicios para la gestión, creación y difusión de contenidos en los canales digitales del Ayuntamiento de Avilés.",
     "Web turística + imagen de marca",
+    # Vistas en los descartes de "Cómo se filtra" (2026-10-04).
+    "Servicio realizacion de la Campana Institucional de Navidad 2026",
+    "Contratación del servicio de apoyo a la captación y gestión de patrocinios",
+    "Nuevo diseño de la web de la CNMC",
 ])
 def test_titulos_de_agencia_entran(titulo):
     resultado = clasificar_texto(titulo)
@@ -30,9 +34,31 @@ def test_titulos_de_agencia_entran(titulo):
     # con apóstrofo tipográfico catalán.
     "Servei d’impressió i comunicació de la Diputació",
     "Obras de urbanización de la calle Mayor",
+    # "Campaña de Navidad" y "patrocinio" sueltos son ruido (medido).
+    "Suministro de luminarias ornamentales y decorativas para la campaña de Navidad del municipio",
+    "Patrocinio del evento Festival Internacional de trompetas",
 ])
 def test_titulos_ajenos_no_entran(titulo):
     assert clasificar_texto(titulo)["incluir"] is False
+
+
+@pytest.mark.parametrize("titulo, entra", [
+    # El tipo de servicio de TED dice "impresión", el título no: entra.
+    ("España – Servicios de impresión y servicios conexos – Diseño gráfico y producción de elementos de comunicación", True),
+    # Grupo genérico "Servicios a empresas": su "imprenta" ya no tumba un
+    # título de agencia...
+    ("España – Servicios a empresas: legislación, mercadotecnia, asesoría, selección de personal, imprenta y seguridad – "
+     "Servicios especializados de agencia de publicidad y de agencia de medios", True),
+    # ...pero su "mercadotecnia" tampoco basta: el título tiene que decirlo.
+    ("Alemania – Servicios a empresas: legislación, mercadotecnia, asesoría, selección de personal, imprenta y seguridad – "
+     "7 Reiseführer und 35 Workshops", False),
+    # El tipo de servicio sí cuenta para entrar (títulos en otro idioma).
+    ("Letonia – Servicios de relaciones públicas – Komunikācijas aktivitāšu nodrošināšana", True),
+    # Y la imprenta en el título sigue descartando.
+    ("España – Servicios de diseño gráfico – Diseño e impresión de folletos", False),
+])
+def test_titulos_de_ted(titulo, entra):
+    assert clasificar_texto(titulo, ted=True)["incluir"] is entra
 
 
 def test_mezcla_con_exclusion_entra_para_revisar():
@@ -64,3 +90,38 @@ def test_normalizar_texto_quita_tildes_y_ruido_procedimental():
     # El punt volat catalán une la palabra; el apóstrofo tipográfico la separa.
     assert "installacio" in _normalizar_texto("Instal·lació")
     assert _normalizar_texto("d’impressió").split() == ["d", "impressio"]
+
+
+def test_terminos_que_encajan_tal_como_se_escriben():
+    from clasificar import terminos_que_encajan
+
+    # Por categoría, la palabra clave más larga que encaje.
+    assert terminos_que_encajan("Gestión de REDES SOCIALES y Diseño Gráfico") == ["Gestión de REDES SOCIALES", "Diseño Gráfico"]
+    assert terminos_que_encajan("Instal·lació de publicitat exterior") == ["publicitat"]
+    assert terminos_que_encajan("Obras de urbanización") == []
+
+
+def test_descartes_con_su_motivo():
+    import clasificar
+
+    items = [
+        {"estado": "PUB", "titulo": "Diseño e impresión de piezas publicitarias", "cpv": ["79800000"]},
+        {"estado": "PUB", "titulo": "Campaña de Navidad del comercio local", "cpv": ["79341400"]},
+        {"estado": "PUB", "titulo": "Obras de la calle Mayor", "cpv": ["45000000"]},
+        {"estado": "ADJ", "titulo": "Gestión de redes sociales", "cpv": []},
+        {"estado": "PUB", "titulo": "Gestión de redes sociales", "cpv": []},
+    ]
+    clasificar._descartes = {"lista": []}
+    try:
+        relevantes = clasificar.clasificar_placsp(items)
+        descartes = clasificar._descartes
+    finally:
+        clasificar._descartes = None
+    assert [r["titulo"] for r in relevantes] == ["Gestión de redes sociales"]
+    assert (descartes["servicio_no_ofrecido"], descartes["sin_categoria"]) == (1, 2)
+    # Se guardan el de imprenta (con la palabra) y el de CPV de publicidad;
+    # la obra no, y el adjudicado ni siquiera llega al filtro de texto.
+    assert [(d["titulo"], d["motivo"], d["termino"]) for d in descartes["lista"]] == [
+        ("Diseño e impresión de piezas publicitarias", "servicio_no_ofrecido", "impresión"),
+        ("Campaña de Navidad del comercio local", "sin_categoria", None),
+    ]

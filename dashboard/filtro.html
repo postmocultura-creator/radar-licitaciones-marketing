@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Herramienta interna: fuera de los buscadores (también por cabecera, ver vercel.json). -->
+<meta name="robots" content="noindex, nofollow">
+<title>Cómo se filtra — Radar de licitaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+<div class="app">
+  <!-- La barra lateral la pinta nav.js (es la misma en las tres páginas). -->
+  <aside class="lateral" id="lateral" aria-label="Navegación principal"></aside>
+
+  <div class="app__principal">
+    <header class="barra-movil">
+      <button class="boton-icono" id="abrir-menu" type="button" aria-label="Abrir menú" aria-controls="lateral" aria-expanded="false"></button>
+      <span class="barra-movil__marca">Radar de licitaciones</span>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+      <header class="pagina__cabecera">
+        <div class="pagina__titulo">
+          <h1>Cómo se filtra</h1>
+          <p class="pagina__descripcion">Qué se trajo de cada fuente en la última actualización, cuánto quitó cada filtro y por qué. Abajo, lo descartado que conviene mirar a mano: es donde se ve si a la lista de palabras clave le falta algo.</p>
+        </div>
+      </header>
+
+      <!-- Lo rellena filtro.js con window.FILTRO_DATA (filtro-data.js). -->
+      <div id="filtro"></div>
+    </main>
+
+    <footer class="pie">
+      <p>Lo genera cada noche la actualización automática (clasificar.py y normalizar.py).</p>
+    </footer>
+  </div>
+</div>
+
+<script src="nav.js"></script>
+<script src="filtro-data.js"></script>
+<script src="filtro.js"></script>
+</body>
+</html>

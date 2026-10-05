@@ -161,6 +161,46 @@ nuevos se comprueban antes en
   el valor estimado (los criterios no: los da todos seguidos, sin decir de
   qué lote son). Las calls for proposals no tienen lotes. Una licitación con
   un solo lote no enseña la lista.
+- **Contratos anteriores parecidos** (`normalizar._antecedentes`): en cada
+  licitación española (Estado, Euskadi y TED de organismos españoles), los
+  contratos del mismo organismo con un título parecido que hay en el
+  histórico de adjudicaciones, casi siempre ediciones anteriores del mismo
+  servicio: año, quién lo ganó, importe, ofertas y rebaja. Parecido = comparten
+  al menos el 30 % de las palabras con contenido del título, sin contar las
+  del nombre del organismo. Se leen del histórico completo
+  (`data/historico_adjudicaciones.json`), que tiene los títulos. Las
+  licitaciones extranjeras de TED no tienen histórico.
+- **Otras abiertas** (en el dashboard, `otrasAbiertas` de `app.js`): en cada
+  licitación, las demás en plazo del mismo organismo; en cada call for
+  proposals, las demás del mismo programa (las dos primeras partes del
+  código: `HORIZON-CL6`, `CREA-MEDIA`).
+- **Alerta diaria por correo** (`alertas.py`, paso "Alerta por correo" de la
+  actualización nocturna): solo las licitaciones que no se han enviado
+  nunca, en tres bloques por este orden: Euskadi (también las vascas que
+  llegan por TED o PLACSP), resto de España y Europa. Ni calls, ni
+  adjudicaciones, ni contratos menores. Cada licitación es una tabla de
+  etiqueta y dato: objeto, organismo, lugar, presupuesto, fin de plazo,
+  cómo se puntúa, lotes y quién ganó el contrato anterior parecido, con
+  enlace a su ficha en el radar y al anuncio. Si no hay nada nuevo no se
+  manda. Lo enviado se guarda
+  en `data/alertas_enviadas.json` (rama `estado`) solo si el correo sale
+  bien. Envía por SMTP con los secretos de GitHub `ALERTAS_SMTP_SERVIDOR`,
+  `ALERTAS_SMTP_PUERTO`, `ALERTAS_SMTP_USUARIO`, `ALERTAS_SMTP_CLAVE`,
+  `ALERTAS_DE` y `ALERTAS_PARA` (destinatarios separados por comas); sin
+  ellos el paso no hace nada. Vista previa sin enviar:
+  `python alertas.py --prueba` (escribe `data/alerta_prueba.html`).
+- **Cómo se filtra** (`dashboard/filtro.html`): el embudo de cada noche por
+  fuente (traídas, fuera por estado u origen, sin palabra clave, servicio no
+  ofrecido, entran) y por tipo (fuera de plazo, extranjeras, repetidas,
+  publicadas), más dos listas de licitaciones en plazo descartadas que
+  conviene revisar: las que tienen un CPV de marketing (`config.CPV_RANGOS`)
+  pero ninguna palabra clave, y las que cayeron por un servicio no ofrecido,
+  con la palabra que las tumbó. `clasificar.py` apunta los descartes
+  (`_apuntar_descarte`, en `data/filtro.json`, que no se guarda entre
+  ejecuciones) y `normalizar._publicar_filtro` los convierte y escribe
+  `dashboard/filtro-data.js`. Cada ficha dice además por qué está en el radar
+  (`normalizar._por_que`): las palabras clave que encontró el filtro y, en
+  TED, si decidió el tipo de servicio que TED antepone al título.
 - **Competencia en cada adjudicación**: ofertas recibidas (PLACSP; en Euskadi,
   las empresas que se presentaron) y rebaja de la ganadora sobre el
   presupuesto, los dos sin IVA (`normalizar._competencia`). La rebaja solo

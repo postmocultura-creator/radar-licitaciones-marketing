@@ -986,6 +986,44 @@ a.kpi:active { transform: scale(.99); }
 /* Licitadora sin ficha en el histórico: el nombre, sin enlace y sin atenuar. */
 .tarjeta__principales .tarjeta__licitador { color: var(--color-ink); }
 
+/* Página "Cómo se filtra" (filtro.html). */
+.filtro__seccion { margin-bottom: 16px; }
+.filtro__seccion h2 { margin-bottom: 8px; }
+.filtro__total { font-size: 13px; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.filtro__reglas { display: grid; gap: 8px; max-width: 95ch; margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--color-ink); }
+.tabla-embudo__marco { overflow-x: auto; margin: 4px 0 0; }
+.tabla-embudo { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.tabla-embudo th, .tabla-embudo td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); text-align: right; vertical-align: top; }
+.tabla-embudo thead th { font-size: 12px; font-weight: 600; color: var(--color-muted); }
+.tabla-embudo th[scope="row"], .tabla-embudo thead th:first-child { text-align: left; font-weight: 500; color: var(--color-ink); }
+.tabla-embudo__entra { font-weight: 700; color: var(--color-ink); }
+.tabla-embudo__extra { display: block; font-size: 12px; font-weight: 400; color: var(--color-muted); }
+.tabla-embudo__aviso { text-align: left !important; color: var(--color-muted); }
+/* Móvil: cada fuente es una ficha con sus cifras en dos columnas. */
+@media (max-width: 640px) {
+  .tabla-embudo { min-width: 0; }
+  .tabla-embudo thead { display: none; }
+  .tabla-embudo tr { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+  .tabla-embudo th, .tabla-embudo td { padding: 0; border: 0; text-align: left; }
+  .tabla-embudo th[scope="row"] { grid-column: 1 / -1; margin-bottom: 4px; font-weight: 600; }
+  .tabla-embudo td::before { content: attr(data-etiqueta); display: block; font-size: 11.5px; font-weight: 400; color: var(--color-muted); }
+  .tabla-embudo__aviso { grid-column: 1 / -1; }
+}
+
+/* Contratos anteriores parecidos y otras abiertas: título y, debajo, los datos. */
+.tarjeta__antecedentes {
+  display: grid;
+  gap: 10px;
+  max-width: 90ch;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+.tarjeta__antecedentes li { display: grid; gap: 2px; overflow-wrap: anywhere; }
+.tarjeta__antecedente-datos { font-size: 12.5px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.tarjeta__antecedente-datos:empty { display: none; }
+
 .tarjeta__pliegos {
   display: grid;
   gap: 6px;

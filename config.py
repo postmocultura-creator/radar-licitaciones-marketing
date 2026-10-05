@@ -178,6 +178,12 @@ CATEGORIAS = {
         "web corporativa", "web institucional",
         "landing", "landing page", "landing pages",
         "web turistica", "portal turistico",
+        # Con artículo: "Nuevo diseño de la web de la CNMC" se escapaba
+        # (página "Cómo se filtra", 2026-10-04). Medido sobre 64.000 títulos
+        # de PLACSP y TED: 8 nuevos, todos de web. "web de" a secas no: mete
+        # aplicaciones y servicios web de gestión (24 nuevos, casi todos TI).
+        "diseno de la web", "desarrollo de la web", "rediseno de la web",
+        "mantenimiento de la web", "nueva web",
     ],
     "Diseño y desarrollo de apps": [
         "aplicacion movil", "app movil", "desarrollo de app",
@@ -240,6 +246,14 @@ CATEGORIAS = {
         "informacion y sensibilizacion", "difusion y sensibilizacion",
         "servicio de promocion turistica", "servicios de promocion turistica",
         "campana de promocion turistica", "plan de promocion turistica",
+        # Vistas en los descartes de "Cómo se filtra" (2026-10-04) y medidas
+        # sobre 64.000 títulos: "campaña institucional" mete 5 nuevas (4 de
+        # agencia) y "gestión/captación de patrocinios" 2 (las 2). NO
+        # "campaña de Navidad" (20 nuevas, casi todas alumbrado, pistas de
+        # hielo o carpas) ni "patrocinio" suelto (166: patrocinios de eventos
+        # y clubes, no servicios de agencia).
+        "campana institucional", "campanas institucionales",
+        "gestion de patrocinios", "captacion de patrocinios",
         "presencia digital", "estrategia digital", "canales digitales",
         # "comunicacion" a secas: se verificó con datos reales de Euskadi
         # (muestra de 23 títulos discartados) que ronda el 55-60% de

@@ -6,8 +6,9 @@ __pycache__/
 # tiene sentido versionarlo (367 MB acumulados localmente a día de hoy).
 data/raw/
 
-# Artefacto intermedio de clasificar.py, se regenera en cada ejecución.
+# Artefactos intermedios de clasificar.py, se regeneran en cada ejecución.
 data/clasificado.json
+data/filtro.json
 
 # Ficheros de depuración sueltos (ver auditoría en README: ya se borró uno).
 data/_tmp_*
@@ -28,5 +29,8 @@ data/primera_aparicion.json
 data/placsp_web_acumulado.json
 data/euskadi_menores_acumulado.json
 data/euskadi_licitadoras.json
+data/alertas_enviadas.json
+# Vista previa del correo (python alertas.py --prueba).
+data/alerta_prueba.html
 # Lo mismo que dashboard/tenders-data.js, que es lo que se publica.
 data/tenders.json

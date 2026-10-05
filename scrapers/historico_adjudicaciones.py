@@ -396,7 +396,7 @@ def pieza_ted(anio: str) -> list[dict]:
     salida = []
     for n in ted._consultar(query, campos, limite_paginas=200, scope="ALL"):
         titulo = _titulo_ted(n)
-        clasif = clasificar_texto(titulo)
+        clasif = clasificar_texto(titulo, ted=True)  # mismo criterio que el radar diario
         if not clasif["incluir"]:
             continue
         nombres = next(iter((n.get("buyer-name") or {}).values()), None) or ["no publicado"]

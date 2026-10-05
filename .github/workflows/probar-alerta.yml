@@ -1,0 +1,36 @@
+# Manda ahora el correo de alertas con los datos ya publicados
+# (dashboard/tenders-data.js), para comprobar que los secretos ALERTAS_*
+# funcionan sin esperar a la noche ni lanzar la actualización completa
+# (que de día va muy lenta con PLACSP). No descarga nada ni marca nada como
+# enviado: el correo de la noche sale igual. El asunto lleva "[Prueba]".
+name: Probar alerta por correo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # alertas.py solo usa la biblioteca estándar: no hace falta instalar nada.
+      - name: Enviar correo de prueba
+        env:
+          ALERTAS_SMTP_SERVIDOR: ${{ secrets.ALERTAS_SMTP_SERVIDOR }}
+          ALERTAS_SMTP_PUERTO: ${{ secrets.ALERTAS_SMTP_PUERTO }}
+          ALERTAS_SMTP_USUARIO: ${{ secrets.ALERTAS_SMTP_USUARIO }}
+          ALERTAS_SMTP_CLAVE: ${{ secrets.ALERTAS_SMTP_CLAVE }}
+          ALERTAS_DE: ${{ secrets.ALERTAS_DE }}
+          ALERTAS_PARA: ${{ secrets.ALERTAS_PARA }}
+        run: python alertas.py --sin-guardar
