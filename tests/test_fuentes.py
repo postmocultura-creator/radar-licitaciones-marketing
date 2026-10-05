@@ -301,3 +301,22 @@ def test_placsp_lotes():
     item = placsp._parsear_entry(ET.fromstring(texto.encode("utf-8")).find("atom:entry", placsp.NS))
     assert item["lotes"] == [{"id": "1", "nombre": "Gabinete de prensa", "importe": "20825"},
                              {"id": "2", "nombre": "Comunicación digital", "importe": "46300"}]
+
+
+def test_ted_adjudicaciones_con_la_documentacion_del_procedimiento(monkeypatch):
+    import ted
+    consultas = []
+
+    def consultar(query, campos, limite, scope="ACTIVE"):
+        consultas.append((query, scope))
+        return [{"procedure-identifier": "aaaaaaaa-1111", "document-url-lot": ["https://plataforma.example/exp/1"]},
+                {"procedure-identifier": "bbbbbbbb-2222"}]  # sin enlace: no se apunta
+
+    monkeypatch.setattr(ted, "_consultar", consultar)
+    adjudicaciones = [{"procedure-identifier": "aaaaaaaa-1111"}, {"procedure-identifier": ["aaaaaaaa-1111"]},
+                      {"procedure-identifier": "bbbbbbbb-2222"}, {}]
+    ted._documentos_del_procedimiento(adjudicaciones)
+    assert [a.get("documentos-procedimiento") for a in adjudicaciones] == [
+        "https://plataforma.example/exp/1", "https://plataforma.example/exp/1", None, None]
+    # Una sola consulta (de 20 en 20), a los anuncios de licitación de cualquier fecha.
+    assert len(consultas) == 1 and "form-type=competition" in consultas[0][0] and consultas[0][1] == "ALL"

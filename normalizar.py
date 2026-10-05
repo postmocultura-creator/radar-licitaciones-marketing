@@ -1635,9 +1635,17 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
                                and not any(l.get("precio") is not None for l in mios))):
         superviviente["lotes"] = suyos
     # Adjudicaciones: TED gana al deduplicar, pero las actas e informes de
-    # valoración solo vienen de PLACSP.
-    if not superviviente.get("documentos_adjudicacion") and duplicado.get("documentos_adjudicacion"):
-        superviviente["documentos_adjudicacion"] = duplicado["documentos_adjudicacion"]
+    # valoración uno a uno solo vienen de PLACSP y de Euskadi; de TED, como
+    # mucho, el enlace a la documentación del expediente. Se juntan: primero
+    # los documentos sueltos y, si no estaba ya, ese enlace.
+    mios, suyos = superviviente.get("documentos_adjudicacion") or [], duplicado.get("documentos_adjudicacion") or []
+    sueltos = lambda docs: [d for d in docs if d.get("tipo") != "expediente"]  # noqa: E731
+    if suyos and (not mios or (sueltos(suyos) and not sueltos(mios))):
+        urls = {d.get("url") for d in suyos}
+        superviviente["documentos_adjudicacion"] = suyos + [d for d in mios if d.get("url") not in urls]
+    # Empresas que se presentaron (Euskadi): TED no las da.
+    if not superviviente.get("licitadores") and duplicado.get("licitadores"):
+        superviviente["licitadores"] = duplicado["licitadores"]
     propios = superviviente.get("pliegos") or []
     ajenos = [p for p in duplicado.get("pliegos") or [] if p["tipo"] != "documentacion"]
     if ajenos and not any(p["tipo"] != "documentacion" for p in propios):
@@ -1726,7 +1734,15 @@ def main() -> None:
                     salida["licitadores"] = [
                         {"nombre": l["nombre"], "nif": _nif_limpio(l.get("nif")), "pyme": l.get("pyme"),
                          "provincia": l.get("provincia")} for l in licitadores if l.get("nombre")]
+            elif registro["fuente"] == "UE":
+                # TED no da los documentos sueltos: la documentación del
+                # expediente en la plataforma del organismo, sacada del
+                # anuncio de licitación (ted._documentos_del_procedimiento).
+                url = original.get("documentos-procedimiento")
+                documentos = [{"tipo": "expediente", "nombre": "Documentación del expediente", "url": url}] if url else []
             else:
+                # Plataformas autonómicas: su feed no trae actas ni informes
+                # (medido el 2026-10-05: 0 de 494 adjudicaciones de agencia).
                 documentos = []
             documentos = [d for d in documentos if (d.get("url") or "").startswith("http")]
             if documentos:

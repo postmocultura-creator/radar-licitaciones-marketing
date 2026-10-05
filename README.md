@@ -121,7 +121,13 @@ nuevos se comprueban antes en
   españolas (por NIF, o por el país que publica TED). Con los documentos que
   dicen qué se valoró (informe de valoración, actas de la mesa, resolución)
   cuando la fuente los publica: PLACSP en los perfiles propios y Euskadi en
-  la ficha del expediente, que además dice qué empresas se presentaron.
+  la ficha del expediente, que además dice qué empresas se presentaron. TED
+  no los publica: se enlaza la documentación del expediente en la plataforma
+  del organismo, sacada del anuncio de licitación del mismo procedimiento
+  (`ted._documentos_del_procedimiento`, 3 de cada 4 adjudicaciones). Las
+  plataformas autonómicas de PLACSP no traen ninguno. Si una adjudicación
+  llega por TED y por PLACSP o Euskadi, se queda con los documentos sueltos
+  y las empresas presentadas de la otra fuente.
 - **Contratos menores por vencer**: fecha de fin entre hoy y 90 días
   (`DIAS_AVISO_CONTRATO_MENOR`). Euskadi la publica; en PLACSP se calcula con
   la fecha de adjudicación y la duración.

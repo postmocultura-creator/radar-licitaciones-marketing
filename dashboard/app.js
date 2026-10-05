@@ -166,7 +166,7 @@
     plazo_largo:
       "Licitaciones abiertas a las que les quedan más de 60 días de plazo: sistemas dinámicos de adquisición, homologaciones de proveedores y acuerdos marco que admiten solicitudes durante meses o años. Son parte de \"Licitaciones abiertas\". Las de PLACSP se leen de su buscador una vez a la semana, sin límite de antigüedad, y por eso no tienen fecha de publicación.",
     adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando la fuente los publica, el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación: PLACSP (perfiles propios del organismo, no plataformas autonómicas) y el portal de Euskadi, que además dice qué empresas se presentaron.",
+      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando la fuente los publica, el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación: PLACSP (perfiles propios del organismo, no plataformas autonómicas) y el portal de Euskadi, que además dice qué empresas se presentaron. En las de TED, que no publica esos documentos, enlaza la documentación del expediente en la plataforma del organismo.",
     contrato_menor_venciendo:
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:
@@ -1017,17 +1017,20 @@
         "</div>";
     }
 
-    // Actas e informes de valoración de una adjudicación (solo PLACSP). Las
-    // actas no tienen título propio: se numeran en el orden de la fuente.
+    // Actas e informes de valoración de una adjudicación (PLACSP y Euskadi,
+    // uno a uno) o, en TED, el enlace a la documentación del expediente. Las
+    // actas de PLACSP no tienen título propio: se numeran.
     var NOMBRES_DOCUMENTO = {
       informe_valoracion: "Informe de valoración de las ofertas",
       acta: "Acta de la mesa de contratación",
       informe_anormales: "Informe sobre ofertas anormalmente bajas",
       apertura: "Acto público de apertura de ofertas",
       resolucion: "Resolución de adjudicación",
+      expediente: "Documentación del expediente",
     };
     var documentosHtml = "";
     var docs = t.documentos_adjudicacion || [];
+    var soloExpediente = docs.length && docs.every(function (d) { return d.tipo === "expediente"; });
     if (docs.length) {
       var porTipo = {};
       docs.forEach(function (d) { porTipo[d.tipo] = (porTipo[d.tipo] || 0) + 1; });
@@ -1042,7 +1045,9 @@
           return '<li><a class="enlace" href="' + escaparHtml(d.url) + '" target="_blank" rel="noopener noreferrer">' +
             escaparHtml(nombre) + Nav.icono("externo") + "</a>" +
             (d.detalle ? "<span>" + escaparHtml(d.detalle) + "</span>" : "") + "</li>";
-        }).join("") + "</ul></div>";
+        }).join("") + "</ul>" +
+        (soloExpediente ? '<p class="tarjeta__nota">TED no publica las actas ni los informes de valoración: si el organismo los ha subido, están en la documentación del expediente, en su plataforma.</p>' : "") +
+        "</div>";
     }
 
     // Empresas que se presentaron (portal de Euskadi), con enlace a su

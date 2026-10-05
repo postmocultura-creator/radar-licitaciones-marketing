@@ -15,6 +15,7 @@ la carpeta licitaciones_marketing/):
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -178,6 +179,9 @@ CAMPOS_ADJUDICACIONES = [
     "contract-duration-end-date-lot",
     "result-value-lot",
     "result-value-cur-lot",
+    # Para buscar el anuncio de licitación del mismo procedimiento, que sí
+    # trae la dirección de los documentos (ver _documentos_del_procedimiento).
+    "procedure-identifier",
 ]
 
 
@@ -199,6 +203,45 @@ def _construir_query_adjudicaciones() -> str:
 def extraer_adjudicaciones(limite_paginas: int = 20) -> list[dict]:
     avisos = _consultar(_construir_query_adjudicaciones(), CAMPOS_ADJUDICACIONES, limite_paginas)
     return [_solo_idiomas_utiles(n) for n in avisos]
+
+
+PROCEDIMIENTOS_POR_CONSULTA = 20
+
+
+def _documentos_del_procedimiento(adjudicaciones: list[dict]) -> None:
+    """El aviso de adjudicación de TED no trae documentos (0 de 92 españoles
+    y 0 de 100 en toda la UE, medido el 2026-10-05), pero el anuncio de
+    licitación del mismo procedimiento sí trae la dirección donde el
+    organismo publica la documentación del expediente (document-url-lot), que
+    es donde cuelga las actas e informes de valoración. Se busca por
+    procedure-identifier, de 20 en 20: lo tenían 79 de 100 adjudicaciones
+    (22 de 24 españolas). Se guarda en "documentos-procedimiento"."""
+    por_procedimiento: dict[str, list[dict]] = {}
+    for aviso in adjudicaciones:
+        pid = aviso.get("procedure-identifier")
+        pid = pid[0] if isinstance(pid, list) and pid else pid
+        if isinstance(pid, str) and re.fullmatch(r"[0-9a-fA-F-]{8,64}", pid):
+            por_procedimiento.setdefault(pid, []).append(aviso)
+    ids = list(por_procedimiento)
+    encontrados = 0
+    for i in range(0, len(ids), PROCEDIMIENTOS_POR_CONSULTA):
+        trozo = ids[i:i + PROCEDIMIENTOS_POR_CONSULTA]
+        query = "(" + " OR ".join(f'procedure-identifier="{p}"' for p in trozo) + ") AND form-type=competition"
+        try:
+            anuncios = _consultar(query, ["publication-number", "procedure-identifier", "document-url-lot"], 1, scope="ALL")
+        except requests.RequestException as exc:
+            print(f"[ted] AVISO: documentos de procedimientos no disponibles ({exc})", file=sys.stderr)
+            return
+        for anuncio in anuncios:
+            pid = anuncio.get("procedure-identifier")
+            pid = pid[0] if isinstance(pid, list) and pid else pid
+            urls = [u for u in anuncio.get("document-url-lot") or [] if str(u).startswith("http")]
+            if pid in por_procedimiento and urls:
+                for aviso in por_procedimiento[pid]:
+                    if not aviso.get("documentos-procedimiento"):
+                        aviso["documentos-procedimiento"] = urls[0]
+                        encontrados += 1
+    print(f"[ted] adjudicaciones con documentación del procedimiento: {encontrados} de {len(adjudicaciones)}")
 
 
 def guardar_crudo(notices: list[dict], prefijo: str = "ted") -> Path:
@@ -229,6 +272,7 @@ def main() -> None:
         _guardar_error("ted_adjudicaciones", exc)
         return
 
+    _documentos_del_procedimiento(adjudicaciones)
     ruta_adj = guardar_crudo(adjudicaciones, "ted_adjudicaciones")
     print(f"[ted] {len(adjudicaciones)} adjudicaciones guardadas en {ruta_adj}")
 

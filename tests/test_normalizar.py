@@ -379,3 +379,17 @@ def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
     assert a[1]["empresas"] == [{"id": 0, "nombre": "Agencia Uno SL"}]
     assert registros[0]["antecedentes_total"] == 2
     assert "antecedentes" not in registros[1]
+
+
+def test_documentos_de_adjudicacion_al_fusionar_ted_con_placsp_y_euskadi():
+    ted = {"documentos_adjudicacion": [{"tipo": "expediente", "url": "https://exp"}]}
+    placsp_ = {"documentos_adjudicacion": [{"tipo": "acta", "url": "https://acta"}, {"tipo": "informe_valoracion", "url": "https://inf"}],
+               "licitadores": [{"nombre": "Agencia Uno SL"}]}
+    normalizar._heredar_hora_y_pliegos(ted, placsp_)
+    # Primero los documentos sueltos; el enlace al expediente, al final.
+    assert [d["url"] for d in ted["documentos_adjudicacion"]] == ["https://acta", "https://inf", "https://exp"]
+    assert ted["licitadores"] == [{"nombre": "Agencia Uno SL"}]
+    # Si el que se queda ya tiene documentos sueltos, no se tocan.
+    otro = {"documentos_adjudicacion": [{"tipo": "acta", "url": "https://propia"}]}
+    normalizar._heredar_hora_y_pliegos(otro, {"documentos_adjudicacion": [{"tipo": "expediente", "url": "https://exp"}]})
+    assert [d["url"] for d in otro["documentos_adjudicacion"]] == ["https://propia"]
