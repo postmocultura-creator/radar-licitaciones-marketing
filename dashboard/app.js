@@ -500,28 +500,31 @@
     return lista;
   }
 
+  // Construye los controles de filtro de la vista: qué opciones hay y en qué
+  // orden. Eso se decide con la vista entera y no cambia al filtrar, para
+  // que las opciones no bailen ni desaparezcan mientras se combinan
+  // filtros. Los números de cada opción los pone actualizarConteos(), que se
+  // llama en cada aplicarFiltros().
   function construirControles() {
     var subconjunto = subconjuntoActivo();
-    var esRecientes = estado.tipoRegistro === "recientes";
     var fuentes = {};
     var categorias = {};
     var totalRevisar = 0;
     var totalPropuesta = 0;
     var paises = {};
-    var comunidades = {};  // comunidad -> { total, provincias: { provincia: n } }
+    var comunidades = {};  // comunidad -> { provincias: { provincia: true } }
     var sinLugar = 0;
 
     subconjunto.forEach(function (t) {
-      var f = esRecientes ? ambitoReciente(t) : t.fuente;
+      var f = fuenteDe(t);
       fuentes[f] = (fuentes[f] || 0) + 1;
       (t.categorias || []).forEach(function (c) {
         categorias[c] = (categorias[c] || 0) + 1;
       });
       paises[t.pais_territorio] = (paises[t.pais_territorio] || 0) + 1;
       if (t.comunidad) {
-        var com = comunidades[t.comunidad] || (comunidades[t.comunidad] = { total: 0, provincias: {} });
-        com.total++;
-        if (t.provincia) com.provincias[t.provincia] = (com.provincias[t.provincia] || 0) + 1;
+        var com = comunidades[t.comunidad] || (comunidades[t.comunidad] = { provincias: {} });
+        if (t.provincia) com.provincias[t.provincia] = true;
       } else if (esOrganismoEspanol(t)) {
         sinLugar++;
       }
@@ -532,10 +535,10 @@
     // Fuente: "Todas" + las fuentes fijas de la vista (FUENTES_POR_TIPO),
     // aunque alguna esté a 0 ese día: que un filtro desaparezca parecería un
     // fallo, no información.
-    var opcionesFuente = [["", "Todas", subconjunto.length]];
+    var opcionesFuente = [["", "Todas"]];
     var fuentesVista = conOpcionesFijas(FUENTES_POR_TIPO[estado.tipoRegistro], fuentes);
     fuentesVista.forEach(function (f) {
-      opcionesFuente.push([f, f, fuentes[f] || 0]);
+      opcionesFuente.push([f, f]);
     });
     // Con una sola fuente posible (calls for proposals: solo la UE) no hay
     // nada que filtrar.
@@ -547,7 +550,7 @@
       var boton = document.createElement("button");
       boton.type = "button";
       boton.className = "opciones__opcion";
-      boton.innerHTML = "<span>" + escaparHtml(opcion[1]) + '</span><span class="opciones__conteo">' + opcion[2] + "</span>";
+      boton.innerHTML = "<span>" + escaparHtml(opcion[1]) + '</span><span class="opciones__conteo"></span>';
       boton.setAttribute("data-valor", valor);
       boton.setAttribute("aria-pressed", valor === estado.fuente ? "true" : "false");
       boton.addEventListener("click", function () {
@@ -566,12 +569,10 @@
       var diferencia = (categorias[b] || 0) - (categorias[a] || 0);
       return diferencia !== 0 ? diferencia : a.localeCompare(b, "es");
     });
-    elCategoria.innerHTML = '<option value="">Todas las categorías (' + subconjunto.length + ")</option>";
+    elCategoria.innerHTML = "";
+    opcionConEtiqueta("", "Todas las categorías", elCategoria);
     categoriasOrdenadas.forEach(function (c) {
-      var opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c + " (" + (categorias[c] || 0) + ")";
-      elCategoria.appendChild(opt);
+      opcionConEtiqueta(c, c, elCategoria);
     });
     elCategoria.value = estado.categoria;
 
@@ -581,12 +582,10 @@
     elCampoPais.hidden = !paisesFijos;
     var paisesOrdenados = !paisesFijos ? [] : conOpcionesFijas(paisesFijos, paises)
       .sort(function (a, b) { return a.localeCompare(b, "es"); });
-    elPais.innerHTML = '<option value="">Todos los países (' + subconjunto.length + ")</option>";
+    elPais.innerHTML = "";
+    opcionConEtiqueta("", "Todos los países", elPais);
     paisesOrdenados.forEach(function (p) {
-      var opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p + " (" + (paises[p] || 0) + ")";
-      elPais.appendChild(opt);
+      opcionConEtiqueta(p, p, elPais);
     });
 
     // Desplegable de provincia: las comunidades con registros en la vista y,
@@ -594,32 +593,25 @@
     // provincia (Madrid, Navarra...) es una opción suelta. No hay lista fija:
     // solo tienen provincia los registros españoles cuya fuente publica el
     // código de lugar, y en las calls de la UE no la tiene ninguno.
-    var opcionLugar = function (valor, texto, padre) {
-      var opt = document.createElement("option");
-      opt.value = valor;
-      opt.textContent = texto;
-      padre.appendChild(opt);
-    };
     var nombresComunidad = Object.keys(comunidades).sort(function (a, b) { return a.localeCompare(b, "es"); });
     elCampoLugar.hidden = nombresComunidad.length === 0;
     elLugar.innerHTML = "";
-    opcionLugar("", "Todas (" + subconjunto.length + ")", elLugar);
+    opcionConEtiqueta("", "Todas", elLugar);
     nombresComunidad.forEach(function (nombre) {
-      var com = comunidades[nombre];
-      var provincias = Object.keys(com.provincias).sort(function (a, b) { return a.localeCompare(b, "es"); });
+      var provincias = Object.keys(comunidades[nombre].provincias).sort(function (a, b) { return a.localeCompare(b, "es"); });
       if (provincias.length === 0 || (provincias.length === 1 && provincias[0] === nombre)) {
-        opcionLugar("c:" + nombre, nombre + " (" + com.total + ")", elLugar);
+        opcionConEtiqueta("c:" + nombre, nombre, elLugar);
         return;
       }
       var grupoComunidad = document.createElement("optgroup");
       grupoComunidad.label = nombre;
-      opcionLugar("c:" + nombre, nombre + ": todas (" + com.total + ")", grupoComunidad);
+      opcionConEtiqueta("c:" + nombre, nombre + ": todas", grupoComunidad);
       provincias.forEach(function (p) {
-        opcionLugar("p:" + p, p + " (" + com.provincias[p] + ")", grupoComunidad);
+        opcionConEtiqueta("p:" + p, p, grupoComunidad);
       });
       elLugar.appendChild(grupoComunidad);
     });
-    if (sinLugar && nombresComunidad.length) opcionLugar("sin", "Sin provincia publicada (" + sinLugar + ")", elLugar);
+    if (sinLugar && nombresComunidad.length) opcionConEtiqueta("sin", "Sin provincia publicada", elLugar);
     elLugar.value = estado.lugar;
     if (elLugar.value !== estado.lugar) {
       // La provincia elegida no existe en esta vista.
@@ -628,15 +620,41 @@
     }
 
     elBotonRevisar.hidden = totalRevisar === 0;
-    elBotonRevisar.textContent = "Solo pendientes de revisar (" + totalRevisar + ")";
     elBotonRevisar.setAttribute("aria-pressed", estado.soloRevisarManual ? "true" : "false");
 
     // Si en esta vista no hay ninguna (adjudicaciones, calls...), el botón
     // no sale y el filtro se suelta.
     if (!totalPropuesta) estado.soloPropuesta = false;
     elBotonPropuesta.hidden = totalPropuesta === 0;
-    elBotonPropuesta.textContent = "Puntúa la propuesta, precio hasta el 50 % (" + totalPropuesta + ")";
     elBotonPropuesta.setAttribute("aria-pressed", estado.soloPropuesta ? "true" : "false");
+  }
+
+  // Opción de desplegable cuyo texto es "etiqueta (n)": la etiqueta se guarda
+  // aparte para que actualizarConteos() solo cambie el número.
+  function opcionConEtiqueta(valor, etiqueta, padre) {
+    var opt = document.createElement("option");
+    opt.value = valor;
+    opt.setAttribute("data-etiqueta", etiqueta);
+    opt.textContent = etiqueta;
+    padre.appendChild(opt);
+  }
+
+  // Pone en cada opción de filtro cuántos registros quedarían al elegirla,
+  // con los demás filtros como están (ver recorrerFiltros). Cambia solo los
+  // números: las opciones, su orden y el foco no se tocan.
+  function actualizarConteos(conteos) {
+    Array.prototype.forEach.call(elSegmentedFuente.children, function (b) {
+      var valor = b.getAttribute("data-valor");
+      b.querySelector(".opciones__conteo").textContent = valor ? (conteos.fuente.valores[valor] || 0) : conteos.fuente.total;
+    });
+    [[elCategoria, conteos.categoria], [elPais, conteos.pais], [elLugar, conteos.lugar]].forEach(function (par) {
+      Array.prototype.forEach.call(par[0].querySelectorAll("option"), function (opt) {
+        var n = opt.value ? (par[1].valores[opt.value] || 0) : par[1].total;
+        opt.textContent = opt.getAttribute("data-etiqueta") + " (" + n + ")";
+      });
+    });
+    elBotonRevisar.textContent = "Solo pendientes de revisar (" + conteos.revisar + ")";
+    elBotonPropuesta.textContent = "Puntúa la propuesta, precio hasta el 50 % (" + conteos.propuesta + ")";
   }
 
   // Licitaciones donde la mesa valora la propuesta (hay juicio de valor) y
@@ -660,46 +678,89 @@
     });
   }
 
-  function pasaFiltros(t) {
-    if (estado.soloRevisarManual && !t.revisar_manual) return false;
-    if (estado.soloPropuesta && !pesaLaPropuesta(t)) return false;
-    if (estado.fuente) {
-      var fuenteComparar = estado.tipoRegistro === "recientes" ? ambitoReciente(t) : t.fuente;
-      if (fuenteComparar !== estado.fuente) return false;
-    }
-    if (estado.categoria && (t.categorias || []).indexOf(estado.categoria) === -1) return false;
-    if (estado.pais && t.pais_territorio !== estado.pais) return false;
-    if (estado.lugar) {
-      if (estado.lugar === "sin") {
-        if (t.comunidad || !esOrganismoEspanol(t)) return false;
-      } else if (estado.lugar.charAt(0) === "c") {
-        if (t.comunidad !== estado.lugar.slice(2)) return false;
-      } else if (t.provincia !== estado.lugar.slice(2)) {
-        return false;
-      }
-    }
+  // Fuente con la que se filtra y se cuenta: en "Publicadas recientemente",
+  // el ámbito (Estado, Euskadi o UE en España) en vez de la fuente tal cual.
+  function fuenteDe(t) {
+    return estado.tipoRegistro === "recientes" ? ambitoReciente(t) : t.fuente;
+  }
 
-    if (estado.texto) {
-      // Se incluye empresa_adjudicataria (undefined en licitaciones/calls for
-      // proposals, de ahí el || "") para poder buscar por el nombre de la
-      // empresa ganadora en Adjudicaciones y Contratos menores.
-      var pajar = sinTildes(t.titulo + " " + t.organismo + " " + t.resumen + " " + (t.empresa_adjudicataria || "") + " " + (t.codigo_expediente || "") +
-        " " + (t.provincia || "") + " " + (t.comunidad || ""));
-      if (pajar.indexOf(estado.texto) === -1) return false;
-    }
+  function pasaLugar(t) {
+    if (estado.lugar === "sin") return !t.comunidad && esOrganismoEspanol(t);
+    if (estado.lugar.charAt(0) === "c") return t.comunidad === estado.lugar.slice(2);
+    return t.provincia === estado.lugar.slice(2);
+  }
 
+  // Valores del desplegable de provincia en los que cuenta un registro.
+  function clavesLugar(t) {
+    if (t.comunidad) return t.provincia ? ["c:" + t.comunidad, "p:" + t.provincia] : ["c:" + t.comunidad];
+    return esOrganismoEspanol(t) ? ["sin"] : [];
+  }
+
+  function pasaTexto(t) {
+    // Se incluye empresa_adjudicataria (undefined en licitaciones/calls for
+    // proposals, de ahí el || "") para poder buscar por el nombre de la
+    // empresa ganadora en Adjudicaciones y Contratos menores.
+    var pajar = sinTildes(t.titulo + " " + t.organismo + " " + t.resumen + " " + (t.empresa_adjudicataria || "") + " " + (t.codigo_expediente || "") +
+      " " + (t.provincia || "") + " " + (t.comunidad || ""));
+    return pajar.indexOf(estado.texto) !== -1;
+  }
+
+  function pasaImporte(t) {
     var importe = IMPORTE_POR_TIPO[estado.tipoRegistro];
     var minActivo = estado.presupuestoMin > 0;
     var maxActivo = estado.presupuestoMax !== null && estado.presupuestoMax !== "";
-    if (importe && (minActivo || maxActivo)) {
-      // Sin importe publicado no se puede saber si entra en el rango: fuera.
-      var valor = t[importe.campo];
-      if (valor === null || valor === undefined) return false;
-      if (minActivo && valor < estado.presupuestoMin) return false;
-      if (maxActivo && valor > Number(estado.presupuestoMax)) return false;
-    }
-
+    if (!importe || (!minActivo && !maxActivo)) return true;
+    // Sin importe publicado no se puede saber si entra en el rango: fuera.
+    var valor = t[importe.campo];
+    if (valor === null || valor === undefined) return false;
+    if (minActivo && valor < estado.presupuestoMin) return false;
+    if (maxActivo && valor > Number(estado.presupuestoMax)) return false;
     return true;
+  }
+
+  // Filtros activos que no pasa un registro, por su nombre de faceta
+  // ("fuente", "categoria", "pais", "lugar", "revisar", "propuesta") o
+  // "texto" e "importe", que no tienen recuento propio.
+  function fallosDeFiltro(t) {
+    var fallos = [];
+    if (estado.soloRevisarManual && !t.revisar_manual) fallos.push("revisar");
+    if (estado.soloPropuesta && !pesaLaPropuesta(t)) fallos.push("propuesta");
+    if (estado.fuente && fuenteDe(t) !== estado.fuente) fallos.push("fuente");
+    if (estado.categoria && (t.categorias || []).indexOf(estado.categoria) === -1) fallos.push("categoria");
+    if (estado.pais && t.pais_territorio !== estado.pais) fallos.push("pais");
+    if (estado.lugar && !pasaLugar(t)) fallos.push("lugar");
+    if (estado.texto && !pasaTexto(t)) fallos.push("texto");
+    if (!pasaImporte(t)) fallos.push("importe");
+    return fallos;
+  }
+
+  // Una pasada por la vista: los registros que pasan todos los filtros y,
+  // para cada filtro, cuántos quedarían al elegir cada opción con los demás
+  // filtros como están. Un registro que solo falla un filtro cuenta en las
+  // opciones de ese filtro (es lo que habría al cambiarlo) y en ningún
+  // otro; así un filtro no se cuenta a sí mismo: con Euskadi marcado se
+  // sigue viendo cuántas habría en Estado y en Europa.
+  function recorrerFiltros(subconjunto) {
+    var nueva = function () { return { total: 0, valores: {} }; };
+    var conteos = { fuente: nueva(), categoria: nueva(), pais: nueva(), lugar: nueva(), revisar: 0, propuesta: 0 };
+    var sumar = function (faceta, valores) {
+      faceta.total++;
+      valores.forEach(function (v) { faceta.valores[v] = (faceta.valores[v] || 0) + 1; });
+    };
+    var filtrados = [];
+    subconjunto.forEach(function (t) {
+      var fallos = fallosDeFiltro(t);
+      if (fallos.length > 1) return;
+      if (fallos.length === 0) filtrados.push(t);
+      var cuenta = function (faceta) { return fallos.length === 0 || fallos[0] === faceta; };
+      if (cuenta("fuente")) sumar(conteos.fuente, [fuenteDe(t)]);
+      if (cuenta("categoria")) sumar(conteos.categoria, t.categorias || []);
+      if (cuenta("pais")) sumar(conteos.pais, [t.pais_territorio]);
+      if (cuenta("lugar")) sumar(conteos.lugar, clavesLugar(t));
+      if (cuenta("revisar") && t.revisar_manual) conteos.revisar++;
+      if (cuenta("propuesta") && pesaLaPropuesta(t)) conteos.propuesta++;
+    });
+    return { filtrados: filtrados, conteos: conteos };
   }
 
   // Fecha más reciente primero. fecha_publicacion guarda la fecha propia de
@@ -1183,8 +1244,10 @@
 
   function aplicarFiltros() {
     var subconjunto = subconjuntoActivo();
-    var filtrados = subconjunto.filter(pasaFiltros);
+    var recorrido = recorrerFiltros(subconjunto);
+    var filtrados = recorrido.filtrados;
     filtrados.sort(comparar);
+    actualizarConteos(recorrido.conteos);
 
     // "Publicadas recientemente" tendrá pocas tarjetas casi siempre (es una
     // ventana de tres días), así que se muestran ya desplegadas: no compensa
