@@ -24,7 +24,21 @@ def test_la_que_mejor_encaja():
     # 3 de base + 3 servicio principal + 2 provincia + 2 pesa la propuesta.
     assert n["nota"] == 10 and n["riesgos"] == []
     assert n["motivos"] == ["Servicio principal de la agencia: Redes sociales / community management",
-                            "Provincia prioritaria: Zaragoza", "Pesa la propuesta: el precio cuenta el 40 %"]
+                            "Provincia prioritaria: Zaragoza",
+                            "Pesa la propuesta: el juicio de valor cuenta el 50 % y el precio el 40 %"]
+
+
+def test_frase_del_precio_segun_lo_que_dice_la_fuente():
+    frase = encaje._frase_precio
+    # Presupuesto cerrado: el precio no puntúa y casi todo va por fórmulas.
+    assert frase({"precio": 0, "formulas": 72, "juicio": 28}) == (
+        "El precio no puntúa: la propuesta técnica vale el 28 % y el resto va por fórmulas")
+    assert frase({"precio": 0, "formulas": 0, "juicio": 100}) == "El precio no puntúa: todo es propuesta técnica"
+    assert frase({"precio": 60, "formulas": 10, "juicio": 30}) == "El precio cuenta el 60 % y la propuesta técnica el 30 %"
+    # Euskadi y TED: solo se sabe el precio y "el resto".
+    assert frase({"precio": 45, "resto": 55}) == "El precio cuenta el 45 %"
+    assert frase({"precio": 0, "resto": 100}) == "El precio no puntúa"
+    assert frase({"precio": 12.5, "resto": 87.5}) == "El precio cuenta el 12,5 %"
 
 
 def test_riesgos_que_restan():

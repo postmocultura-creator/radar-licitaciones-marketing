@@ -112,6 +112,30 @@ def _decimal(valor: float) -> str:
     return f"{valor:.1f}".replace(".", ",")
 
 
+def _pct(valor: float) -> str:
+    return f"{valor:g}".replace(".", ",") + " %"
+
+
+def _frase_precio(cr: dict) -> str:
+    """Cuánto pesa el precio, dicho con lo que la fuente permite afirmar.
+
+    Solo el Estado separa el juicio de valor de las fórmulas; en Euskadi y
+    TED se sabe el precio y "el resto", que puede ir en parte por fórmula.
+    Con presupuesto cerrado el precio no puntúa (0 %)."""
+    precio, juicio = cr["precio"], cr.get("juicio")
+    if juicio:
+        if precio == 0 and juicio >= 100:
+            return "El precio no puntúa: todo es propuesta técnica"
+        if precio == 0:
+            return f"El precio no puntúa: la propuesta técnica vale el {_pct(juicio)} y el resto va por fórmulas"
+        if juicio >= precio:
+            return f"Pesa la propuesta: el juicio de valor cuenta el {_pct(juicio)} y el precio el {_pct(precio)}"
+        return f"El precio cuenta el {_pct(precio)} y la propuesta técnica el {_pct(juicio)}"
+    if precio == 0:
+        return "El precio no puntúa"
+    return f"El precio cuenta el {_pct(precio)}"
+
+
 def nota(r: dict, perfil: dict, hoy: date | None = None, competencia: dict | None = None) -> dict:
     """{"nota": 0-10, "motivos": [...], "riesgos": [...]} de una licitación.
     competencia: lo que devuelve competencia_por_provincia."""
@@ -163,10 +187,10 @@ def nota(r: dict, perfil: dict, hoy: date | None = None, competencia: dict | Non
         propuesta = (cr.get("juicio") or 0) > 0 or (cr.get("resto") or 0) > 0
         if precio <= 50 and propuesta:
             puntos += 2
-            motivos.append(f"Pesa la propuesta: el precio cuenta el {precio} %")
+            motivos.append(_frase_precio(cr))
         elif precio <= 70:
             puntos += 1
-            motivos.append(f"El precio cuenta el {precio} %")
+            motivos.append(_frase_precio(cr))
         elif precio >= 100:
             puntos -= 1
             riesgos.append("Solo cuenta el precio: gana la oferta más barata")
