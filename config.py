@@ -120,6 +120,22 @@ SEO_NO = [
     "tacc", "sacta", "acc cats", "comunicaciones voz", "grabacion digital de comunicaciones",
 ]
 
+# "sem" suelto, igual que "seo": solo cuenta si el título habla de algo
+# digital o publicitario. Medido el 2026-10-17 sobre el radar y el histórico:
+# 520 títulos con "sem" y solo 43 de marketing; el resto eran códigos de
+# expediente ("SEM-340" en un mantenimiento de redes de agua), el Sistema
+# d'Emergències Mèdiques catalán, microscopios SEM, semestres y semanas
+# abreviados ("2º sem.") y congresos de la Sociedad Española de
+# Microbiología. Ver clasificar._coincide.
+SEM_CONTEXTO = [
+    "seo", "posicionamiento", "posicionament", "google", "ads", "adwords", "campana", "campanas",
+    "campanya", "campanyes", "kanpaina", "kanpainak", "online", "digital", "digitales", "internet",
+    "web", "webgune", "webgunea", "webgunearen", "buscador", "buscadores", "cercadors",
+    "redes sociales", "publicidad", "publicitaria", "publicitarias", "publicitat", "marketing",
+    "display", "ppc", "anuncios", "banner", "banners", "paid media", "programatica",
+    "analitica", "conversion", "conversiones",
+]
+
 CATEGORIAS = {
     "SEO / posicionamiento en buscadores": [
         "seo", "posicionamiento en buscadores", "posicionamiento web",

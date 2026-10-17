@@ -80,6 +80,26 @@ def test_seo_suelto(titulo, entra):
     assert clasificar_texto(titulo)["incluir"] is entra
 
 
+@pytest.mark.parametrize("titulo, entra", [
+    # "sem" suelto solo con contexto digital o publicitario
+    # (config.SEM_CONTEXTO)...
+    ("Campaña SEM 2024.", True),
+    ("Contrato Menor Servicios - SEM META ADS", True),
+    ("servicio sem, analítica y conversión", True),
+    ("eguberriak hondarribian 2021: webgunearen sem kanpaina, banner eta euskarriak sortzea, etab", True),
+    # ...y no los otros "sem": códigos de expediente, el Sistema
+    # d'Emergències Mèdiques, microscopios, semestres, congresos.
+    ("Servicio de mantenimiento de instalaciones de protección contra incendios, redes de abastecimiento "
+     "de agua y estaciones de bombeo de aguas residuales (SEM-340)", False),
+    ("Subministrament de cadires per al públic destinades a la sala d'actes de la nova seu del SEM", False),
+    ("Suministro e instalación de marquesina para transporte público en Plaza Rabí Sem Tob de Palencia", False),
+    ("Mantenimiento preventivo del SEM JEOL JSM7000F", False),
+    ("Asistencia al XXVIII congreso nacional de microbiologia SEM 2021", False),
+])
+def test_sem_suelto(titulo, entra):
+    assert clasificar_texto(titulo)["incluir"] is entra
+
+
 def test_mezcla_con_exclusion_entra_para_revisar():
     resultado = clasificar_texto("Contrato de servicio de comunicación y limpieza de edificios municipales")
     assert resultado["incluir"] is True

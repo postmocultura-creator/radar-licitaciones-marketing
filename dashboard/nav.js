@@ -29,6 +29,7 @@
     euro: '<path d="M18 6.5A7 7 0 1 0 18 17.5M4 10h9M4 14h9"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
     filtro: '<path d="M4 5h16l-6 7.5V19l-4-2v-4.5z"/>',
+    marcador: '<path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z"/>',
   };
 
   function icono(nombre, clase) { return svg(ICONOS[nombre], clase); }
@@ -41,6 +42,7 @@
       items: [
         ["licitaciones", "Licitaciones", "index.html", "#/licitaciones/recientes", "documento"],
         ["calls", "Calls for proposals UE", "index.html", "#/calls", "globo"],
+        ["guardadas", "Guardadas", "index.html", "#/guardadas", "marcador"],
       ],
     },
     {

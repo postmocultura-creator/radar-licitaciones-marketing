@@ -313,6 +313,21 @@ main:focus { outline: none; }
 }
 
 .boton--texto { background: none; color: var(--color-primary); padding: 0 6px; }
+.boton--guardar[aria-pressed="true"] svg { fill: currentColor; }
+
+.chip--guardada { background: var(--color-warning-bg); color: var(--color-warning); }
+.chip--guardada[hidden] { display: none; }
+
+.guardadas-fuera {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+.guardadas-fuera h3 { margin: 0 0 4px; font-size: 1rem; }
+.guardadas-fuera p { margin: 0 0 12px; color: var(--color-muted); }
+.guardadas-fuera ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
 .boton--texto:hover { background: var(--color-primary-soft); }
 
 /* Ocupa el ancho del panel de filtros (estrecho): si el texto no cabe, parte

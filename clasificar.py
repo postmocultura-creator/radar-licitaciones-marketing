@@ -128,10 +128,13 @@ def _contiene_keyword(texto_norm: str, keyword: str) -> bool:
 
 
 def _coincide(texto_norm: str, keyword: str) -> bool:
-    """_contiene_keyword con una excepción: "seo" suelto solo cuenta con
-    contexto digital y fuera de los otros "seo" (ver config.SEO_CONTEXTO)."""
+    """_contiene_keyword con dos excepciones: "seo" suelto solo cuenta con
+    contexto digital y fuera de los otros "seo" (ver config.SEO_CONTEXTO), y
+    "sem" suelto, con contexto digital o publicitario (config.SEM_CONTEXTO)."""
     if not _contiene_keyword(texto_norm, keyword):
         return False
+    if keyword == "sem":
+        return any(_contiene_keyword(texto_norm, palabra) for palabra in config.SEM_CONTEXTO)
     if keyword != "seo":
         return True
     if any(_contiene_keyword(texto_norm, no) for no in config.SEO_NO):

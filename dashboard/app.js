@@ -16,6 +16,7 @@
     "calls": { tipo: "convocatoria_ue", nav: "calls", titulo: "Calls for proposals UE" },
     "menores": { tipo: "contrato_menor_venciendo", nav: "menores", titulo: "Contratos menores por vencer" },
     "adjudicaciones": { tipo: "adjudicacion", nav: "adjudicaciones", titulo: "Adjudicaciones recientes" },
+    "guardadas": { tipo: "guardadas", nav: "guardadas", titulo: "Guardadas" },
   };
   var RUTA_POR_TIPO = {};
   Object.keys(VISTAS).forEach(function (ruta) { RUTA_POR_TIPO[VISTAS[ruta].tipo] = ruta; });
@@ -69,6 +70,7 @@
     adjudicacion: ["Estado", "Euskadi", "UE"],
     contrato_menor_venciendo: ["Estado", "Euskadi"],
     convocatoria_ue: ["UE-subvenciones"],
+    guardadas: ["Estado", "Euskadi", "UE"],
   };
   // Países que publican en TED: UE-27 + EEE + Suiza y Reino Unido. Debe
   // coincidir con los nombres de PAISES_ISO3 en normalizar.py. Si aparece
@@ -101,6 +103,7 @@
     recientes: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     licitacion: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     plazo_largo: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
+    guardadas: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     adjudicacion: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
     contrato_menor_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: [3000, 5000, 10000, 15000] },
   };
@@ -135,6 +138,11 @@
     convocatoria_ue: [
       ["plazo", "Fecha límite de solicitud (más próxima)"],
       ["fecha-desc", "Apertura (más reciente)"],
+    ],
+    guardadas: [
+      ["plazo", "Fecha límite (más próxima)"],
+      ["encaje-desc", "Encaje con la agencia (mejor primero)"],
+      ["importe-desc", "Presupuesto (mayor primero)"],
     ],
   };
   var ORDEN_SIN_SELECTOR = "fecha-desc";
@@ -174,6 +182,8 @@
       "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
     convocatoria_ue:
       "Convocatorias de subvención de la Comisión Europea (Horizon Europe, Digital Europe...) abiertas o próximas a abrir, filtradas por las que incluyen un componente de comunicación o difusión en su descripción. Título y resumen traducidos automáticamente del inglés (la fuente no los publica en español).",
+    guardadas:
+      "Las licitaciones y calls for proposals que has guardado con el botón «Guardar» de cada una, de la que cierra antes a la que cierra después. Se guardan en este navegador: no se comparten con otros dispositivos ni con otras personas. Cada una desaparece sola cuando pasa su fecha límite.",
   };
 
   var ETIQUETAS_CONTEO = {
@@ -183,6 +193,7 @@
     adjudicacion: "adjudicaciones",
     contrato_menor_venciendo: "contratos menores",
     convocatoria_ue: "calls for proposals",
+    guardadas: "guardadas",
   };
 
   var estado = {
@@ -235,6 +246,7 @@
   var elBotonRevisar = document.getElementById("boton-revisar");
   var elBotonPropuesta = document.getElementById("boton-propuesta");
   var elSinResultados = document.getElementById("sin-resultados");
+  var TEXTO_SIN_RESULTADOS = elSinResultados.textContent;
   var elResumenCabecera = document.getElementById("resumen-cabecera");
   var elFechaGeneracion = document.getElementById("fecha-generacion");
 
@@ -449,7 +461,68 @@
     return dias !== null && dias > DIAS_PLAZO_LARGO;
   }
 
+  // ---------- Guardadas ----------
+  // Se guardan en el navegador (localStorage): sin cuentas ni servidor, así
+  // que cada navegador tiene su propia lista. De cada una se guarda lo justo
+  // para enseñarla aunque deje de estar en los datos del radar antes de su
+  // fecha límite (la fuente la retira o le cambia el identificador).
+  // Solo se guardan las que tienen plazo de entrega: licitaciones y calls.
+  var CLAVE_GUARDADAS = "radar-guardadas";
+  var TIPOS_GUARDABLES = ["licitacion", "convocatoria_ue"];
+  var guardadas = leerGuardadas();
+  var porId = {};
+  DATOS.forEach(function (t) { porId[t.id] = t; });
+
+  function leerGuardadas() {
+    try { return JSON.parse(localStorage.getItem(CLAVE_GUARDADAS)) || {}; } catch (e) { return {}; }
+  }
+
+  function escribirGuardadas() {
+    try { localStorage.setItem(CLAVE_GUARDADAS, JSON.stringify(guardadas)); } catch (e) { /* sin almacenamiento: la lista dura lo que la página */ }
+  }
+
+  function esGuardable(t) {
+    return TIPOS_GUARDABLES.indexOf(t.tipo_registro) !== -1;
+  }
+
+  function estaGuardada(id) {
+    return Object.prototype.hasOwnProperty.call(guardadas, id);
+  }
+
+  function caducada(fecha) {
+    var dias = diasRestantes(fecha);
+    return dias !== null && dias < 0;
+  }
+
+  // Quita las que ya han pasado su fecha límite. Se llama al abrir el radar.
+  function purgarGuardadas() {
+    var cambio = false;
+    Object.keys(guardadas).forEach(function (id) {
+      if (caducada(guardadas[id].fecha_limite)) {
+        delete guardadas[id];
+        cambio = true;
+      }
+    });
+    if (cambio) escribirGuardadas();
+  }
+
+  function alternarGuardada(id) {
+    var t = porId[id];
+    if (estaGuardada(id) || !t) {
+      delete guardadas[id];
+    } else {
+      guardadas[id] = {
+        titulo: t.titulo, organismo: t.organismo, fuente: t.fuente,
+        fecha_limite: t.fecha_limite, enlace: t.enlace, tipo_registro: t.tipo_registro,
+      };
+    }
+    escribirGuardadas();
+  }
+
   function deTipo(tipo) {
+    if (tipo === "guardadas") {
+      return DATOS.filter(function (t) { return estaGuardada(t.id) && !caducada(t.fecha_limite); });
+    }
     if (tipo === "recientes") return DATOS.filter(esPublicacionReciente);
     if (tipo === "plazo_largo") return DATOS.filter(esPlazoLargo);
     return DATOS.filter(function (t) { return t.tipo_registro === tipo; });
@@ -863,6 +936,7 @@
     var chips =
       (t.codigo_expediente ? '<span class="chip chip--codigo" title="Expediente">' + escaparHtml(t.codigo_expediente) + "</span>" : "") +
       '<span class="chip">' + escaparHtml(t.fuente) + "</span>" +
+      (esGuardable(t) ? '<span class="chip chip--guardada"' + (estaGuardada(t.id) ? "" : " hidden") + ">Guardada</span>" : "") +
       chipNovedad(t) +
       (t.encaje ? '<span class="chip chip--encaje chip--encaje-' + nivelEncaje(t.encaje.nota) + '" title="Encaje con la agencia (0-10)">Encaje ' + t.encaje.nota + "/10</span>" : "") +
       (t.revisar_manual ? '<span class="chip chip--aviso">Revisar</span>' : "") +
@@ -1165,6 +1239,7 @@
     } else {
       acciones += '<span class="chip">Enlace no publicado</span>';
     }
+    if (esGuardable(t)) acciones += botonGuardar(t.id);
     if (conEmpresa && t.empresa_adjudicataria !== NO_PUBLICADO) {
       // Por NIF si el registro lo trae (es como identifica a cada empresa el
       // histórico); el nombre va siempre, por si el NIF no está allí.
@@ -1229,6 +1304,37 @@
     );
   }
 
+  function botonGuardar(id) {
+    var si = estaGuardada(id);
+    return '<button type="button" class="boton boton--contorno boton--guardar" data-guardar="' + escaparHtml(id) + '" aria-pressed="' + si + '">' +
+      Nav.icono("marcador") + "<span>" + (si ? "Guardada" : "Guardar") + "</span></button>";
+  }
+
+  // Guardadas que ya no están en los datos del radar: se enseñan aparte, con
+  // su enlace, hasta que pasa su fecha límite.
+  function bloqueGuardadasFuera() {
+    var fuera = Object.keys(guardadas).filter(function (id) { return !porId[id]; });
+    if (!fuera.length) return "";
+    fuera.sort(function (a, b) { return (guardadas[a].fecha_limite || "").localeCompare(guardadas[b].fecha_limite || ""); });
+    return '<section class="guardadas-fuera"><h3>Guardadas que ya no están en el radar</h3>' +
+      "<p>La fuente las ha retirado o les ha cambiado el identificador. Se quitan solas al pasar su fecha límite.</p><ul>" +
+      fuera.map(function (id) {
+        var g = guardadas[id];
+        var titulo = g.enlace && g.enlace !== NO_PUBLICADO
+          ? '<a href="' + escaparHtml(g.enlace) + '" target="_blank" rel="noopener noreferrer">' + escaparHtml(g.titulo) + "</a>"
+          : escaparHtml(g.titulo);
+        return "<li>" + titulo + " · " + escaparHtml(g.organismo) + " · Fecha límite: " + fechaLarga(g.fecha_limite, "no publicada") +
+          ' <button type="button" class="boton boton--texto" data-guardar="' + escaparHtml(id) + '">Quitar</button></li>';
+      }).join("") + "</ul></section>";
+  }
+
+  var conteosNav = {};
+
+  function actualizarConteoGuardadas() {
+    conteosNav.guardadas = Object.keys(guardadas).length;
+    Nav.guardarConteos(conteosNav);
+  }
+
   function contarFiltrosActivos() {
     var n = 0;
     if (estado.fuente) n++;
@@ -1255,7 +1361,12 @@
     var abiertas = estado.tipoRegistro === "recientes";
 
     elConteo.textContent = filtrados.length + " de " + subconjunto.length + " " + ETIQUETAS_CONTEO[estado.tipoRegistro];
-    elContenedor.innerHTML = filtrados.map(function (t) { return plantillaTarjeta(t, abiertas); }).join("");
+    var esGuardadas = estado.tipoRegistro === "guardadas";
+    elContenedor.innerHTML = filtrados.map(function (t) { return plantillaTarjeta(t, abiertas); }).join("") +
+      (esGuardadas ? bloqueGuardadasFuera() : "");
+    elSinResultados.textContent = esGuardadas && subconjunto.length === 0
+      ? "Todavía no has guardado ninguna licitación. Abre una y pulsa «Guardar»: aparecerá aquí hasta su fecha límite."
+      : TEXTO_SIN_RESULTADOS;
     elSinResultados.hidden = filtrados.length > 0;
 
     var activos = contarFiltrosActivos();
@@ -1486,11 +1597,34 @@
     // empiezan plegados para que la lista se vea sin desplazarse.
     if (window.matchMedia("(max-width: 900px)").matches) elFiltros.open = false;
 
-    Nav.guardarConteos({
+    purgarGuardadas();
+    conteosNav = {
       licitaciones: deTipo("licitacion").length,
       calls: deTipo("convocatoria_ue").length,
       menores: deTipo("contrato_menor_venciendo").length,
       adjudicaciones: deTipo("adjudicacion").length,
+    };
+    actualizarConteoGuardadas();
+
+    // Guardar / quitar, en cualquier tarjeta (listado o inicio). En la vista
+    // de guardadas se repinta para que la que se quita desaparezca; en las
+    // demás solo cambian el botón y la etiqueta, sin cerrar la tarjeta.
+    elContenido.addEventListener("click", function (ev) {
+      var boton = ev.target.closest && ev.target.closest("[data-guardar]");
+      if (!boton) return;
+      var id = boton.getAttribute("data-guardar");
+      alternarGuardada(id);
+      actualizarConteoGuardadas();
+      if (estado.tipoRegistro === "guardadas" && !elVistaListado.hidden) {
+        aplicarFiltros();
+        return;
+      }
+      var si = estaGuardada(id);
+      boton.setAttribute("aria-pressed", si ? "true" : "false");
+      boton.querySelector("span").textContent = si ? "Guardada" : "Guardar";
+      var tarjeta = boton.closest(".tarjeta");
+      var chip = tarjeta && tarjeta.querySelector(".chip--guardada");
+      if (chip) chip.hidden = !si;
     });
 
     // No hay marca de tiempo de generación en los datos: la referencia es
