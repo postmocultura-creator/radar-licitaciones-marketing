@@ -97,3 +97,22 @@ def test_compactar_repara_enlaces_ya_publicados():
     roto = "https://hacienda.navarra.es/sicpportal/ctaDatosAdjudicacion.aspx?cod=1&' || 'Ticket=X"
     compacto = h._compactar([_registro("a", "Uniprex SA", "B28016970", enlace=roto)])
     assert "' || '" not in compacto["exp"][0][8]
+
+
+def test_reclasificar_publicados_aplica_la_taxonomia_actual():
+    # combinar solo suma: sin volver a clasificar lo publicado, lo que una
+    # regla nueva deja fuera ("sem" con contexto, 2026-10-17) se quedaba.
+    def con_titulo(id_, titulo, fuente="PLACSP", categorias=("SEM / paid media",)):
+        r = _registro(id_, "Empresa", "B00000000")
+        r.update(titulo=titulo, fuente=fuente, categorias=list(categorias))
+        return r
+    ruido = con_titulo("a", "Subministrament de cadires per a la sala d'actes de la nova seu del SEM")
+    buena = con_titulo("b", "Campaña SEM 2024", categorias=())
+    recortada = con_titulo("c", ("Subministrament de cadires " * 10)[:h.MAX_TITULO] + " del SEM"[:0])
+    ted = con_titulo("d", "Subministrament de cadires de la seu del SEM", fuente="TED")
+    quedan = {r["id"]: r for r in h._reclasificar_publicados([ruido, buena, recortada, ted])}
+    assert "a" not in quedan
+    assert quedan["b"]["categorias"] == ["SEM / paid media"]
+    # Título recortado a MAX_TITULO o de TED: no se puede reclasificar con
+    # seguridad (falta parte del título o el tipo de servicio del CPV).
+    assert "c" in quedan and "d" in quedan

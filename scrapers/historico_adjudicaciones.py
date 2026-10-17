@@ -639,6 +639,27 @@ def combinar(rutas: list[str]) -> None:
     combinar_registros(nuevos)
 
 
+def _reclasificar_publicados(publicados: list[dict]) -> list[dict]:
+    """Vuelve a pasar la taxonomía actual a lo ya publicado. combinar solo
+    suma: lo que una regla nueva deja fuera no se vuelve a descargar y se
+    quedaba para siempre (caso real: "sem" con contexto, 2026-10-17, ~800
+    adjudicaciones de obras, emergencias o microscopios en paid media). Lo
+    que ya no encaja sale y al resto se le actualizan las categorías.
+    Se dejan como están los títulos recortados a MAX_TITULO (la palabra que
+    los metió puede estar en lo recortado) y los de TED (entran también por
+    el tipo de servicio del CPV, que no se guarda)."""
+    quedan = []
+    for r in publicados:
+        if r["fuente"] == "TED" or len(r["titulo"] or "") >= MAX_TITULO - 1:
+            quedan.append(r)
+            continue
+        clasif = clasificar_texto(r["titulo"])
+        if clasif["incluir"]:
+            r["categorias"] = clasif["categorias"]
+            quedan.append(r)
+    return quedan
+
+
 def combinar_registros(nuevos: list[dict]) -> None:
     """Suma registros nuevos a lo ya publicado y lo vuelve a publicar.
 
@@ -666,6 +687,9 @@ def combinar_registros(nuevos: list[dict]) -> None:
     print(f"[historico] {lotes_extranjeros} lotes nuevos descartados por ser de empresas no españolas")
 
     publicados, dic_previo = _leer_publicado()
+    antes = len(publicados)
+    publicados = _reclasificar_publicados(publicados)
+    print(f"[historico] {antes - len(publicados)} expedientes publicados salen al aplicar la taxonomía actual")
     registros: dict[str, dict] = {r["id"]: r for r in publicados}
     for r in nuevos:
         previo = registros.get(r["id"])
