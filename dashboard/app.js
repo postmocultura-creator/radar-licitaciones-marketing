@@ -412,6 +412,24 @@
     return miles(n) + " " + (n === 1 ? uno : varios);
   }
 
+  // Ofertas y rebaja medias de todos los contratos parecidos (los calcula
+  // normalizar._resumen_antecedentes). `fuerte` resalta las cifras.
+  function resumenAntecedentes(t, fuerte) {
+    var r = t.antecedentes_resumen;
+    var total = t.antecedentes_total;
+    var conDato = function (n) { return n < total ? ", en " + miles(n) + " con dato" : ""; };
+    var partes = [];
+    if (r.ofertas) {
+      partes.push(fuerte(numeroEs(r.ofertas.media) + (r.ofertas.media === 1 ? " oferta" : " ofertas")) +
+        " (de " + r.ofertas.min + " a " + r.ofertas.max + conDato(r.ofertas.n) + ")");
+    }
+    if (r.rebaja) {
+      partes.push(fuerte(numeroEs(r.rebaja.media) + " % de rebaja") +
+        " (de " + numeroEs(r.rebaja.min) + " a " + numeroEs(r.rebaja.max) + " %" + conDato(r.rebaja.n) + ")");
+    }
+    return "Media de los " + miles(total) + " contratos parecidos: " + partes.join(" y ") + ".";
+  }
+
   // Los importes llegan ya formateados desde normalizar.py, a la inglesa y
   // con el código de moneda ("865,200 EUR", "8,000,000 SEK": TED publica
   // cada licitación en su moneda). Se pasan a formato español sin tocar la
@@ -1090,7 +1108,8 @@
             : escaparHtml(a.titulo)) +
             '<span class="tarjeta__antecedente-datos">' + datos + "</span></li>";
         }).join("") + "</ul>" +
-        '<p class="tarjeta__nota">Importes adjudicados sin IVA. Parecido = comparten buena parte de las palabras del título; conviene abrirlos para confirmarlo.</p></div>';
+        (t.antecedentes_resumen ? '<p class="tarjeta__resumen-texto">' + resumenAntecedentes(t, function (s) { return "<strong>" + s + "</strong>"; }) + "</p>" : "") +
+        '<p class="tarjeta__nota">Importes adjudicados sin IVA. La rebaja solo se calcula en contratos de un lote con presupuesto publicado. Parecido = comparten buena parte de las palabras del título; conviene abrirlos para confirmarlo.</p></div>';
     }
     // Otras en plazo del mismo organismo o, en las calls, del mismo programa.
     var otras = otrasAbiertas(t);
@@ -1375,8 +1394,9 @@
       t.antecedentes.forEach(function (a) {
         var empresas = (a.empresas || []).map(function (e) { return e.nombre; }).join(", ");
         lineas.push("  - " + [a.anio, a.titulo, empresas ? "ganó " + empresas : "", a.importe ? euros(Math.round(a.importe)) : "",
-          a.ofertas ? a.ofertas + " ofertas" : "", a.rebaja != null ? "rebaja " + String(a.rebaja).replace(".", ",") + " %" : "", a.enlace].filter(Boolean).join(" · "));
+          a.ofertas ? cuantos(a.ofertas, "oferta", "ofertas") : "", a.rebaja != null ? "rebaja " + String(a.rebaja).replace(".", ",") + " %" : "", a.enlace].filter(Boolean).join(" · "));
       });
+      if (t.antecedentes_resumen) lineas.push("  - " + resumenAntecedentes(t, function (s) { return s; }));
     }
     if (t.encaje) {
       anadir("Encaje con la agencia", t.encaje.nota + "/10" +

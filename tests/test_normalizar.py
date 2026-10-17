@@ -380,6 +380,20 @@ def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
     assert a[1]["empresas"] == [{"id": 0, "nombre": "Agencia Uno SL"}]
     assert registros[0]["antecedentes_total"] == 2
     assert "antecedentes" not in registros[1]
+    # Solo una rebaja y una cifra de ofertas: no hay media que dar.
+    assert "antecedentes_resumen" not in registros[0]
+
+
+def test_resumen_de_antecedentes_con_todos_los_parecidos():
+    lista = [{"ofertas": 5, "rebaja": 20.0}, {"ofertas": None, "rebaja": None},
+             {"ofertas": 2, "rebaja": 30.5}, {"ofertas": 3, "rebaja": None}]
+    assert normalizar._resumen_antecedentes(lista) == {
+        "ofertas": {"media": 3.3, "min": 2, "max": 5, "n": 3},
+        "rebaja": {"media": 25.2, "min": 20.0, "max": 30.5, "n": 2},
+    }
+    # Con un solo dato de rebaja, solo las ofertas.
+    assert normalizar._resumen_antecedentes(lista[:2] + lista[3:]) == {"ofertas": {"media": 4.0, "min": 3, "max": 5, "n": 2}}
+    assert normalizar._resumen_antecedentes(lista[:2]) is None
 
 
 def test_documentos_de_adjudicacion_al_fusionar_ted_con_placsp_y_euskadi():

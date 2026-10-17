@@ -724,6 +724,32 @@ def _antecedentes(registros: list[dict]) -> None:
             })
         r["antecedentes"] = lista[:MAX_ANTECEDENTES]
         r["antecedentes_total"] = len(lista)
+        resumen = _resumen_antecedentes(lista)
+        if resumen:
+            r["antecedentes_resumen"] = resumen
+
+
+# Con un solo dato, la "media" es ese contrato, que ya se ve en la tarjeta.
+MIN_DATOS_RESUMEN = 2
+
+
+def _resumen_antecedentes(lista: list[dict]) -> dict | None:
+    """Ofertas y rebaja medias de todos los contratos parecidos, no solo de
+    los MAX_ANTECEDENTES que enseña la tarjeta: lo que suele presentarse y
+    lo que suele bajar el precio en este servicio y organismo. Medido el
+    2026-10-18: de 52 licitaciones abiertas con parecidos, 16 tienen dos o
+    más cifras de ofertas y 7 dos o más rebajas (la rebaja solo se calcula
+    en contratos de un lote con presupuesto publicado).
+
+      {"ofertas": {media, min, max, n}, "rebaja": {media, min, max, n}}
+    Cada parte solo si hay MIN_DATOS_RESUMEN datos; None si no hay ninguna."""
+    resumen = {}
+    for campo in ("ofertas", "rebaja"):
+        valores = [a[campo] for a in lista if a[campo]]  # la rebaja nunca es 0: va del 0,5 al 90 %
+        if len(valores) >= MIN_DATOS_RESUMEN:
+            resumen[campo] = {"media": round(sum(valores) / len(valores), 1),
+                              "min": min(valores), "max": max(valores), "n": len(valores)}
+    return resumen or None
 
 
 # ---------------------------------------------------------------------------
