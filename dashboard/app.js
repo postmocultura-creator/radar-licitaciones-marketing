@@ -1239,7 +1239,11 @@
     } else {
       acciones += '<span class="chip">Enlace no publicado</span>';
     }
-    if (esGuardable(t)) acciones += botonGuardar(t.id);
+    if (esGuardable(t)) {
+      acciones += botonGuardar(t.id);
+      acciones += '<button type="button" class="boton boton--contorno" data-copiar-ficha="' + escaparHtml(t.id) + '">' +
+        Nav.icono("documento") + "<span>Copiar ficha para el asistente</span></button>";
+    }
     if (conEmpresa && t.empresa_adjudicataria !== NO_PUBLICADO) {
       // Por NIF si el registro lo trae (es como identifica a cada empresa el
       // histórico); el nombre va siempre, por si el NIF no está allí.
@@ -1326,6 +1330,76 @@
         return "<li>" + titulo + " · " + escaparHtml(g.organismo) + " · Fecha límite: " + fechaLarga(g.fecha_limite, "no publicada") +
           ' <button type="button" class="boton boton--texto" data-guardar="' + escaparHtml(id) + '">Quitar</button></li>';
       }).join("") + "</ul></section>";
+  }
+
+  // Texto con lo que necesita el asistente de licitaciones (skill
+  // comunicacion-publica-licitaciones) para arrancar la carpeta y el plan:
+  // se pega en un chat nuevo. Solo datos que ya enseña la tarjeta.
+  var TIPOS_CRITERIO = { precio: "precio", formula: "fórmula", juicio: "juicio de valor" };
+
+  function fichaAsistente(t) {
+    var lineas = ["Licitación para preparar con el asistente de licitaciones (skill comunicacion-publica-licitaciones).", ""];
+    var anadir = function (etiqueta, valor) { if (valor) lineas.push("- " + etiqueta + ": " + valor); };
+    anadir("Título", t.titulo);
+    anadir("Organismo", t.organismo);
+    anadir("Expediente", t.codigo_expediente);
+    anadir("Fuente", t.fuente);
+    anadir("Anuncio", t.enlace && t.enlace !== NO_PUBLICADO ? t.enlace : "");
+    anadir("Fecha límite", fechaLarga(t.fecha_limite, "no publicada") + (t.hora_limite ? ", " + t.hora_limite : "") +
+      " (" + infoUrgencia(t.fecha_limite, t).texto + ")");
+    anadir("Presupuesto", importeTexto(t.presupuesto_display));
+    anadir("Lugar", textoLugar(t));
+    anadir("Tipo de contrato", t.tipo_contrato);
+    anadir("Categorías", (t.categorias || []).join(", "));
+    var c = t.criterios;
+    if (c) {
+      anadir("Criterios", "precio " + c.precio + " %" + (c.juicio ? ", juicio de valor " + c.juicio + " %" : "") +
+        (c.formulas ? ", otras fórmulas " + c.formulas + " %" : "") + (c.resto != null ? ", resto " + c.resto + " %" : ""));
+      (c.detalle || []).forEach(function (d) {
+        lineas.push("  - " + d.descripcion + ": " + d.peso + " %" + (TIPOS_CRITERIO[d.tipo] ? " (" + TIPOS_CRITERIO[d.tipo] + ")" : ""));
+      });
+    }
+    if (t.lotes && t.lotes.length) {
+      lineas.push("- Lotes:");
+      t.lotes.forEach(function (l) {
+        lineas.push("  - " + (l.nombre || "Lote " + l.id) + (l.importe ? ": " + euros(l.importe) : "") +
+          (l.precio != null ? " (precio " + l.precio + " %)" : ""));
+      });
+    }
+    if (t.pliegos && t.pliegos.length) {
+      lineas.push("- Pliegos y documentos:");
+      t.pliegos.forEach(function (p) { lineas.push("  - " + (p.nombre || p.tipo) + ": " + p.url); });
+    }
+    if (t.antecedentes && t.antecedentes.length) {
+      lineas.push("- Contratos anteriores parecidos del organismo:");
+      t.antecedentes.forEach(function (a) {
+        var empresas = (a.empresas || []).map(function (e) { return e.nombre; }).join(", ");
+        lineas.push("  - " + [a.anio, a.titulo, empresas ? "ganó " + empresas : "", a.importe ? euros(Math.round(a.importe)) : "",
+          a.ofertas ? a.ofertas + " ofertas" : "", a.rebaja != null ? "rebaja " + String(a.rebaja).replace(".", ",") + " %" : "", a.enlace].filter(Boolean).join(" · "));
+      });
+    }
+    if (t.encaje) {
+      anadir("Encaje con la agencia", t.encaje.nota + "/10" +
+        (t.encaje.motivos.length ? ". A favor: " + t.encaje.motivos.join("; ") : "") +
+        (t.encaje.riesgos.length ? ". Riesgos: " + t.encaje.riesgos.join("; ") : ""));
+    }
+    anadir("En el radar", location.origin + location.pathname + "#/" + RUTA_POR_TIPO[t.tipo_registro] + "?id=" + encodeURIComponent(t.id));
+    return lineas.join("\n");
+  }
+
+  function copiarTexto(texto) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(texto);
+    // Sin API de portapapeles (http sin cifrar): el método antiguo.
+    var area = document.createElement("textarea");
+    area.value = texto;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    var ok = document.execCommand("copy");
+    document.body.removeChild(area);
+    return ok ? Promise.resolve() : Promise.reject(new Error("copia no disponible"));
   }
 
   var conteosNav = {};
@@ -1610,6 +1684,19 @@
     // de guardadas se repinta para que la que se quita desaparezca; en las
     // demás solo cambian el botón y la etiqueta, sin cerrar la tarjeta.
     elContenido.addEventListener("click", function (ev) {
+      var copiar = ev.target.closest && ev.target.closest("[data-copiar-ficha]");
+      if (copiar) {
+        var registro = porId[copiar.getAttribute("data-copiar-ficha")];
+        var etiqueta = copiar.querySelector("span");
+        if (!registro) return;
+        copiarTexto(fichaAsistente(registro)).then(function () {
+          etiqueta.textContent = "Ficha copiada: pégala en un chat nuevo";
+        }, function () {
+          etiqueta.textContent = "No se pudo copiar";
+        });
+        setTimeout(function () { etiqueta.textContent = "Copiar ficha para el asistente"; }, 3000);
+        return;
+      }
       var boton = ev.target.closest && ev.target.closest("[data-guardar]");
       if (!boton) return;
       var id = boton.getAttribute("data-guardar");
