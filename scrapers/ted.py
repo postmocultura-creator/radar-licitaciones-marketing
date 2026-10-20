@@ -68,6 +68,9 @@ CAMPOS = [
     "estimated-value-lot",
     "estimated-value-proc",
     "estimated-value-cur-proc",
+    # Identificador del procedimiento (BT-04): para reconocer la misma
+    # licitación en la plataforma catalana (ver normalizar._id_procedimiento_ted).
+    "procedure-identifier",
 ]
 # Se piden los dos campos de fecha límite porque se comprobó con datos
 # reales que "deadline-date-lot" viene vacío en muchísimos anuncios

@@ -299,6 +299,26 @@ def test_al_fusionar_mandan_los_criterios_de_placsp():
     assert superviviente["criterios"] == de_placsp
 
 
+def test_id_procedimiento_ted():
+    assert normalizar._id_procedimiento_ted({"procedure-identifier": "AAAAAAAA-1111"}) == "aaaaaaaa-1111"
+    assert normalizar._id_procedimiento_ted({"procedure-identifier": ["aaaaaaaa-1111"]}) == "aaaaaaaa-1111"
+    assert normalizar._id_procedimiento_ted({"procedure-identifier": []}) is None
+    assert normalizar._id_procedimiento_ted({}) is None
+
+
+def test_al_fusionar_ted_hereda_presupuesto_y_expediente():
+    superviviente = {"presupuesto_valor": None, "presupuesto_display": NO_PUBLICADO, "codigo_expediente": None}
+    normalizar._heredar_hora_y_pliegos(superviviente, {
+        "presupuesto_valor": 50000.0, "presupuesto_display": "50,000 EUR", "codigo_expediente": "EXP-1"})
+    assert (superviviente["presupuesto_valor"], superviviente["presupuesto_display"], superviviente["codigo_expediente"]) == \
+        (50000.0, "50,000 EUR", "EXP-1")
+    # Si TED ya lo trae, se queda el suyo.
+    superviviente = {"presupuesto_valor": 90000.0, "presupuesto_display": "90,000 EUR", "codigo_expediente": "A"}
+    normalizar._heredar_hora_y_pliegos(superviviente, {
+        "presupuesto_valor": 50000.0, "presupuesto_display": "50,000 EUR", "codigo_expediente": "B"})
+    assert (superviviente["presupuesto_valor"], superviviente["codigo_expediente"]) == (90000.0, "A")
+
+
 def test_lotes_placsp_con_el_peso_del_precio_de_cada_uno():
     registro = {"fuente": "Estado", "original": {
         "lotes": [{"id": "1", "nombre": "Prensa", "importe": "20825"}, {"id": "2", "nombre": "Digital", "importe": None}],

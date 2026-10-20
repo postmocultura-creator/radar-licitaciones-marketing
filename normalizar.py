@@ -53,6 +53,10 @@ prefijo "País – CPV – " que añade TED; organismo igual o igual salvo un
 sufijo de departamento; heurística conservadora: prefiere duplicar de más a
 fusionar mal). Se conserva la
 entrada de TED (más estructurada) y se descarta la de PLACSP equivalente.
+Además se fusionan, aunque el título no coincida, cuando la dirección de la
+otra fuente lleva el identificador de procedimiento de TED (plataforma
+catalana) y, con el mismo plazo, cuando el título es idéntico en fuentes
+distintas aunque el organismo se escriba de otra forma.
 Se aplica igual a "adjudicacion" (bug real detectado en auditoría: el mismo
 contrato sobre el umbral UE también puede aparecer adjudicado tanto en el
 aviso "result" de TED como en el bloque TenderResult del feed general de
@@ -333,7 +337,20 @@ def _from_ted(registro: dict) -> dict:
         "tipo_contrato": _tipo_contrato(registro["cpv"]),
         "tipo_registro": "licitacion",
         "_clave_dedup": "licitacion|" + _normalizar_clave(_titulo_ted_sin_prefijo(titulo)) + "|" + _normalizar_clave(organismo),
+        "_id_procedimiento": _id_procedimiento_ted(item),
     }
+
+
+def _id_procedimiento_ted(item: dict) -> str | None:
+    """Identificador del procedimiento en TED (BT-04, ContractFolderID). La
+    plataforma catalana lo usa tal cual en la dirección de su ficha
+    (contractaciopublica.cat/.../detall-publicacio/<este id>/...): es la
+    forma segura de reconocer la misma licitación aunque TED publique un
+    título resumido y distinto (3 casos el 2026-10-20, IL3-UB entre ellos)."""
+    pid = item.get("procedure-identifier")
+    if isinstance(pid, list):
+        pid = pid[0] if pid else None
+    return pid.lower() if pid else None
 
 
 def _from_placsp(registro: dict) -> dict:
@@ -990,6 +1007,7 @@ def _from_ted_adjudicacion(registro: dict) -> dict:
         "importe_adjudicado_display": importe_display,
         "_empresa_espanola": es_empresa_espanola(None, item.get("winner-country"), codigo_pais == "ESP"),
         "_clave_dedup": "adjudicacion|" + _normalizar_clave(_titulo_ted_sin_prefijo(titulo)) + "|" + _normalizar_clave(organismo),
+        "_id_procedimiento": _id_procedimiento_ted(item),
     }
 
 
@@ -1663,6 +1681,13 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
     documentos, y PLACSP da los pliegos uno a uno."""
     if not superviviente.get("hora_limite") and duplicado.get("hora_limite"):
         superviviente["hora_limite"] = duplicado["hora_limite"]
+    # TED no suele dar el presupuesto ni el expediente del organismo (en los
+    # 3 duplicados catalanes del 2026-10-20 solo los traía la otra fuente).
+    if superviviente.get("presupuesto_valor") is None and duplicado.get("presupuesto_valor") is not None:
+        superviviente["presupuesto_valor"] = duplicado["presupuesto_valor"]
+        superviviente["presupuesto_display"] = duplicado["presupuesto_display"]
+    if not superviviente.get("codigo_expediente") and duplicado.get("codigo_expediente"):
+        superviviente["codigo_expediente"] = duplicado["codigo_expediente"]
     # Las ofertas y la rebaja solo vienen de PLACSP y de Euskadi.
     for campo in ("ofertas", "rebaja"):
         if not superviviente.get(campo) and duplicado.get(campo):
@@ -1730,6 +1755,7 @@ CONVERSORES = {
 # título empieza igual que el otro: por debajo, "Servicio de comunicación"
 # sería el comienzo de demasiados contratos distintos del mismo organismo.
 MIN_TITULO_PREFIJO = 40
+_UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 
 def main() -> None:
@@ -1835,13 +1861,22 @@ def main() -> None:
     # ("...del Ayuntamiento de Viladecans" frente a "...del Ayuntamiento de
     # Viladecans, mediante el fomento de la contratación de..."): con título
     # exacto no se fusionaban (2 de 42 al añadir sindicacion_1044).
+    # Con el mismo plazo vale también el título exacto aunque el organismo se
+    # escriba distinto, si son fuentes distintas ("Gobierno Vasco-Consejero/a
+    # de Bienestar..." en Euskadi, "Gobierno Vasco - Bienestar..." en TED;
+    # "Junta de Gobierno Local" frente a "Ayuntamiento de Pamplona"): 4 casos
+    # el 2026-10-20 y ningún título igual con el mismo plazo que no lo fuera.
     por_plazo = {}  # fecha límite -> [(registro superviviente, título, organismo)]
+    # Antes que todo eso, el identificador del procedimiento de TED cuando la
+    # otra fuente lo lleva en su dirección (ver _id_procedimiento_ted).
+    por_procedimiento = {}  # "tipo|id de procedimiento" -> registro de TED
     finales = []
     duplicados = 0
     ids_vistos = set()
     por_id = {}  # id -> registro que se queda con él
     for r in normalizados:
         clave = r.pop("_clave_dedup")
+        id_procedimiento = r.pop("_id_procedimiento", None)
         # Mismo id = mismo registro (p. ej. PLACSP por feed y por buscador
         # web aunque el organismo se escriba distinto): nunca dos veces.
         if r["id"] in ids_vistos:
@@ -1853,12 +1888,18 @@ def main() -> None:
         if clave:
             tipo, titulo_clave, organismo_clave = clave.split("|")
             grupo = vistos.setdefault(tipo + "|" + titulo_clave, [])
-            superviviente = next((s for s, o in grupo if _organismos_compatibles(o, organismo_clave)), None)
+            superviviente = None
+            if r["fuente"] != "UE":
+                superviviente = next((por_procedimiento[tipo + "|" + u] for u in _UUID.findall((r.get("enlace") or "").lower())
+                                      if tipo + "|" + u in por_procedimiento), None)
+            if superviviente is None:
+                superviviente = next((s for s, o in grupo if _organismos_compatibles(o, organismo_clave)), None)
             plazo = r["fecha_limite"][:10] if tipo == "licitacion" and r["fecha_limite"] != NO_PUBLICADO else None
             if superviviente is None and plazo and len(titulo_clave) >= MIN_TITULO_PREFIJO:
                 for s, titulo_s, organismo_s in por_plazo.get(plazo, []):
                     corto, largo = sorted((titulo_s, titulo_clave), key=len)
-                    if largo.startswith(corto) and _organismos_compatibles(organismo_s, organismo_clave):
+                    if largo.startswith(corto) and (_organismos_compatibles(organismo_s, organismo_clave)
+                                                    or (titulo_s == titulo_clave and s["fuente"] != r["fuente"])):
                         superviviente = s
                         break
             if superviviente is not None:
@@ -1872,6 +1913,8 @@ def main() -> None:
             grupo.append((r, organismo_clave))
             if plazo and len(titulo_clave) >= MIN_TITULO_PREFIJO:
                 por_plazo.setdefault(plazo, []).append((r, titulo_clave, organismo_clave))
+            if id_procedimiento:
+                por_procedimiento.setdefault(tipo + "|" + id_procedimiento, r)
         finales.append(r)
 
     # fecha_primera_aparicion: cuándo vio ESTE radar el registro por primera
