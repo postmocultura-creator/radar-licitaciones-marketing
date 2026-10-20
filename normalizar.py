@@ -538,9 +538,32 @@ def _historiales(registros: list[dict]) -> None:
     except (KeyError, IndexError, TypeError, ValueError):
         return  # formato inesperado: las tarjetas salen sin resumen
 
-    id_organismo = {}
+    # Todas las variantes del nombre de un organismo (con y sin "(M.P.)",
+    # "Fundació Privada"...) cuentan como el mismo; el enlace va a la ficha
+    # de la que más adjudicaciones tiene.
+    variantes: dict[str, list[int]] = {}
     for i, nombre in enumerate(organismos):
-        id_organismo.setdefault(_normalizar_clave(nombre), i)
+        variantes.setdefault(_clave_organismo(nombre), []).append(i)
+    variantes.pop("", None)
+
+    def organismo_unido(clave: str) -> tuple[int | None, dict | None]:
+        ids = [i for i in variantes.get(clave, []) if i in por_organismo]
+        if not ids:
+            return None, None
+        if len(ids) == 1:
+            return ids[0], por_organismo[ids[0]]
+        unido = {"n": 0, "importe": 0.0, "desde": "", "empresas": {}}
+        for i in ids:
+            o = por_organismo[i]
+            unido["n"] += o["n"]
+            unido["importe"] += o["importe"]
+            if o["desde"] and (not unido["desde"] or o["desde"] < unido["desde"]):
+                unido["desde"] = o["desde"]
+            for i_emp, (n, importe) in o["empresas"].items():
+                par = unido["empresas"].setdefault(i_emp, [0, 0.0])
+                par[0] += n
+                par[1] += importe
+        return max(ids, key=lambda i: por_organismo[i]["n"]), unido
     id_por_nif = {}
     id_por_nombre = {}
     por_nif_enmascarado: dict[str, list[tuple[int, set[str]]]] = {}
@@ -553,7 +576,6 @@ def _historiales(registros: list[dict]) -> None:
         elif nif:
             id_por_nif.setdefault(_nif_limpio(nif), i)
         id_por_nombre.setdefault(_normalizar_clave(nombre), i)
-    id_organismo.pop("", None)
     id_por_nombre.pop("", None)
 
     def buscar_empresa(nif: str, nombre: str) -> int | None:
@@ -580,8 +602,7 @@ def _historiales(registros: list[dict]) -> None:
                 licitador["id"] = i_lic
         # "no publicado" también existe como nombre en el histórico: no es
         # un organismo ni una empresa, no se cruza.
-        i_org = None if r["organismo"] == NO_PUBLICADO else id_organismo.get(_normalizar_clave(r["organismo"]))
-        o = por_organismo.get(i_org) if i_org is not None else None
+        i_org, o = (None, None) if r["organismo"] == NO_PUBLICADO else organismo_unido(_clave_organismo(r["organismo"]))
         if o:
             principales = sorted(o["empresas"].items(), key=lambda par: (-par[1][1], -par[1][0]))[:PRINCIPALES_POR_ORGANISMO]
             r["historial_organismo"] = {
@@ -622,6 +643,14 @@ _RE_EXPJASO = re.compile(r"expjaso\d+")
 # mismo servicio; por debajo de 0,25 empiezan a colarse contratos del mismo
 # organismo que no se parecen (mantenimiento web frente a montaje de stands).
 UMBRAL_PARECIDO = 0.3
+# Segunda vía, para títulos que cambian mucho de una edición a otra (IL3-UB
+# 2023-2026: mismo contrato de SEO y medios, títulos con menos del 30 % de
+# palabras en común): casi las mismas categorías (al menos 3, 80 % en común)
+# y un presupuesto parecido (±25 %). Medido el 2026-10-20 sobre las 377
+# licitaciones abiertas: solo añade las 6 ediciones de IL3-UB.
+MIN_CATEGORIAS_PARECIDO = 3
+UMBRAL_CATEGORIAS = 0.8
+MARGEN_PRESUPUESTO = 0.25
 _PALABRAS_VACIAS_TITULO = frozenset(
     "para del las los con por una unos unas sus servicio servicios contrato contratacion contratos "
     "suministro realizacion prestacion asistencia tecnica tecnicos anos lote lotes mediante procedimiento "
@@ -716,6 +745,7 @@ def _antecedentes(registros: list[dict]) -> None:
     try:
         organismos = c["dic"]["organismo"]
         empresas = c["dic"]["empresa"]
+        categorias = c.get("categorias") or []
         exp = c["exp"]  # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
         prefijo = c.get("prefijo_enlace") or ""
         lotes_por_exp: dict[int, list] = {}
@@ -754,6 +784,8 @@ def _antecedentes(registros: list[dict]) -> None:
         if not candidatos or len(palabras) < 2:
             continue
         propio = r.get("enlace") or ""
+        presupuesto = r.get("presupuesto_valor")
+        mias = {categorias.index(x) for x in r.get("categorias") or [] if x in categorias}
         parecidos = []
         for i in candidatos:
             if propio and propio.endswith(exp[i][8] or "\0"):
@@ -764,6 +796,11 @@ def _antecedentes(registros: list[dict]) -> None:
             comunes = len(palabras & otras)
             if comunes >= 2 and comunes / len(palabras | otras) >= UMBRAL_PARECIDO:
                 parecidos.append(i)
+            elif presupuesto and exp[i][11] and len(mias) >= MIN_CATEGORIAS_PARECIDO:
+                suyas = {k for k in range(len(categorias)) if exp[i][7] >> k & 1}
+                if (len(suyas) >= MIN_CATEGORIAS_PARECIDO and len(mias & suyas) / len(mias | suyas) >= UMBRAL_CATEGORIAS
+                        and abs(exp[i][11] - presupuesto) <= MARGEN_PRESUPUESTO * presupuesto):
+                    parecidos.append(i)
         if not parecidos:
             continue
         fechas = {i: max(l[2] or "" for l in lotes_por_exp[i]) for i in parecidos}
@@ -1950,6 +1987,23 @@ CONVERSORES = {
 # sería el comienzo de demasiados contratos distintos del mismo organismo.
 MIN_TITULO_PREFIJO = 40
 _UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+# TED resume el título y la otra fuente da la descripción larga ("Servicio de
+# elaboración de estudios de mercado para la UOC" frente a "La prestación del
+# servicio consiste en la elaboración de estudios de mercado..."). Con el
+# mismo plazo y organismo, son la misma licitación si el título de TED está
+# casi entero dentro del otro. Medido el 2026-10-20: 4 pares, los 4 la misma.
+MIN_PALABRAS_RESUMEN_TED = 3
+UMBRAL_RESUMEN_TED = 0.6
+
+
+def _resumen_ted_de(s: dict, titulo_s: str, organismo_s: str, r: dict, titulo_r: str, organismo_r: str) -> bool:
+    """Si uno de los dos registros (mismo plazo) es el anuncio de TED del otro."""
+    if (s["fuente"] == "UE") == (r["fuente"] == "UE") or not _organismos_compatibles(organismo_s, organismo_r):
+        return False
+    ted, otro = (titulo_s, titulo_r) if s["fuente"] == "UE" else (titulo_r, titulo_s)
+    palabras_ted, palabras_otro = _palabras_titulo(ted), _palabras_titulo(otro)
+    comunes = len(palabras_ted & palabras_otro)
+    return comunes >= MIN_PALABRAS_RESUMEN_TED and comunes / len(palabras_ted) >= UMBRAL_RESUMEN_TED
 
 
 def main() -> None:
@@ -2097,6 +2151,9 @@ def main() -> None:
                     corto, largo = sorted((titulo_s, titulo_clave), key=len)
                     if largo.startswith(corto) and (_organismos_compatibles(organismo_s, organismo_clave)
                                                     or (titulo_s == titulo_clave and s["fuente"] != r["fuente"])):
+                        superviviente = s
+                        break
+                    if _resumen_ted_de(s, titulo_s, organismo_s, r, titulo_clave, organismo_clave):
                         superviviente = s
                         break
             if superviviente is not None:

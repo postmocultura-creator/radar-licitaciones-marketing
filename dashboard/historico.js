@@ -142,12 +142,16 @@
     return r < 0.0005 ? 0 : r;
   }
 
+  // Si la ganadora es pyme: en los contratos de la plataforma de Euskadi el
+  // dato no es fiable (casi siempre llega «no»: de las empresas que la ficha
+  // de Euskadi da como pyme, 86 contratos vascos decían «no» y 19 «sí»,
+  // medido el 2026-10-20). Se toma como «sin dato».
   var FILAS = H.lotes.map(function (l) {
     var e = H.exp[l[0]];
     var lugar = LUGARES[e[6]] || SIN_LUGAR;
     return {
       exp: l[0], empresa: l[1], anio: l[2] ? l[2].slice(0, 4) : "", fecha: l[2] || "",
-      importe: l[3] || 0, ofertas: l[4], pyme: l[5], rebaja: rebajaDe(e, l),
+      importe: l[3] || 0, ofertas: l[4], pyme: e[1] === 1 ? null : l[5], rebaja: rebajaDe(e, l),
       organismo: e[0], euskadi: e[1] === 1, procedimiento: e[3], menor: e[4] === 1, mascara: e[5],
       provincia: lugar[0], comunidad: lugar[1],
     };
@@ -1152,7 +1156,10 @@
     }
     if (pr.lugar) {
       elLugar.value = pr.lugar;
+      // Un lugar que no existe aquí no se aplica, y el selector vuelve a
+      // enseñar el filtro que sigue activo.
       if (elLugar.value === pr.lugar) estado.lugar = pr.lugar;
+      else elLugar.value = estado.lugar;
     }
     if (pr.ambito === "Estado" || pr.ambito === "Euskadi") {
       estado.ambito = pr.ambito;

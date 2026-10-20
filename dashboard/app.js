@@ -2056,8 +2056,10 @@
       // opción existe en esta vista.
       var desdeEnlace = function (el, valor, poner) {
         if (!valor) return;
+        var antes = el.value;
         el.value = valor;
         if (el.value === valor) poner(valor);
+        else el.value = antes;  // opción que no existe en esta vista: se queda lo que había
       };
       desdeEnlace(elPais, p.pais, function (v) { estado.pais = v; });
       desdeEnlace(elLugar, p.lugar, function (v) { estado.lugar = v; });

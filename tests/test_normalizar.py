@@ -490,6 +490,47 @@ def test_antecedentes_del_mismo_organismo(tmp_path, monkeypatch):
     assert "antecedentes_resumen" not in registros[0]
 
 
+def test_antecedentes_por_categorias_y_presupuesto(tmp_path, monkeypatch):
+    # Mismo contrato con títulos que cambian mucho (IL3-UB, 2026-10-20).
+    cats = ["SEO", "SEM", "Redes", "Web", "Medios"]
+    historico = {
+        "categorias": cats,
+        "dic": {"organismo": ["Fundació Privada Ejemplo (M.P.)"], "empresa": [["B00000001", "Agencia Uno SL"]]},
+        "exp": [
+            # SEO, SEM, Redes y Medios (máscara 1+2+4+16), presupuesto parecido: es la edición anterior.
+            ["a", "Servei de posicionament i campanyes digitals", 0, 0, 0, 0, 0, 23, "1", 0, "2025-01-01", 480000.0, 0],
+            # Mismas categorías pero la mitad de presupuesto: no.
+            ["b", "Altres serveis de màrqueting", 0, 0, 0, 0, 0, 23, "2", 0, "2025-01-01", 240000.0, 0],
+            # Presupuesto parecido pero otras categorías: no.
+            ["c", "Disseny web", 0, 0, 0, 0, 0, 8, "3", 0, "2025-01-01", 480000.0, 0],
+        ],
+        "lotes": [[0, 0, "2025-01-01", 470000, 1, 1], [1, 0, "2025-01-01", 200000, 1, 1], [2, 0, "2025-01-01", 470000, 1, 1]],
+    }
+    ruta = tmp_path / "historico.json"
+    ruta.write_text(json.dumps(historico), encoding="utf-8")
+    monkeypatch.setattr(normalizar, "HISTORICO_COMPLETO", ruta)
+    monkeypatch.setattr(normalizar, "_HISTORICO_COMPLETO_CACHE", False)
+    monkeypatch.setattr(normalizar, "LICITADORAS_EUSKADI", tmp_path / "no_existe.json")
+    r = {"tipo_registro": "licitacion", "organismo": "Fundació Ejemplo", "enlace": "https://otro",
+         "titulo": "Contractació del servei de SEO, Google Ads i pla de mitjans 2027", "presupuesto_valor": 497000.0,
+         "categorias": ["SEO", "SEM", "Redes", "Medios"]}
+    normalizar._antecedentes([r])
+    assert [x["titulo"] for x in r["antecedentes"]] == ["Servei de posicionament i campanyes digitals"]
+
+
+def test_titulo_resumido_de_ted_es_la_misma_licitacion():
+    ted = {"fuente": "UE"}
+    estado = {"fuente": "Estado"}
+    org = "fundacio per a la universitat oberta de catalunya"
+    corto = "servicio de elaboracion de estudios de mercado para la uoc"
+    largo = "la prestacion del servicio consiste en la elaboracion de estudios de mercado cuantitativos y cualitativos"
+    assert normalizar._resumen_ted_de(ted, corto, org, estado, largo, org)
+    # Dos fuentes que no son TED, otro organismo o títulos que no se parecen: no.
+    assert not normalizar._resumen_ted_de({"fuente": "Euskadi"}, corto, org, estado, largo, org)
+    assert not normalizar._resumen_ted_de(ted, corto, org, estado, largo, "ayuntamiento de ejemplo")
+    assert not normalizar._resumen_ted_de(ted, corto, org, estado, "mantenimiento de la web corporativa y del hosting", org)
+
+
 def test_resumen_de_antecedentes_con_todos_los_parecidos():
     lista = [{"ofertas": 5, "rebaja": 20.0}, {"ofertas": None, "rebaja": None},
              {"ofertas": 2, "rebaja": 30.5}, {"ofertas": 3, "rebaja": None}]
