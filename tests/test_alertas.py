@@ -7,6 +7,7 @@ from datetime import date
 import pytest
 
 import alertas
+import encaje
 
 
 def registro(id_, tipo="licitacion", primera="2026-10-05", **extra):
@@ -22,6 +23,10 @@ def rutas(tmp_path, monkeypatch):
     monkeypatch.setattr(alertas, "DATOS", tmp_path / "tenders.json")
     monkeypatch.setattr(alertas, "ENVIADAS", tmp_path / "alertas_enviadas.json")
     monkeypatch.setattr(alertas, "PRUEBA", tmp_path / "prueba.html")
+    monkeypatch.setattr(alertas, "LICITADORAS", tmp_path / "euskadi_licitadoras.json")
+    # Sin el perfil real de la agencia: cada prueba pone el suyo.
+    monkeypatch.delenv("PERFIL_AGENCIA", raising=False)
+    monkeypatch.setattr(encaje, "PERFIL_LOCAL", tmp_path / "perfil_agencia.json")
     for clave in ("ALERTAS_SMTP_SERVIDOR", "ALERTAS_SMTP_USUARIO", "ALERTAS_SMTP_CLAVE", "ALERTAS_DE", "ALERTAS_PARA"):
         monkeypatch.setenv(clave, "x@ejemplo.es")
     enviados = []
@@ -93,8 +98,36 @@ def test_solo_licitaciones_euskadi_espana_europa(rutas):
         registro("a"), registro("adj", tipo="adjudicacion"), registro("call", tipo="convocatoria_ue")]), encoding="utf-8")
     alertas.main()
     assert enviados == ["1 licitación nueva, 5 oct: 1 en el resto de España"]
-    # Solo se recuerdan licitaciones: lo demás no va en el correo.
-    assert json.loads((carpeta / "alertas_enviadas.json").read_text(encoding="utf-8"))["ids"] == ["a"]
+    # Se recuerdan licitaciones y adjudicaciones (por los rivales que ganan); las calls no.
+    assert json.loads((carpeta / "alertas_enviadas.json").read_text(encoding="utf-8"))["ids"] == ["a", "adj"]
+
+
+def test_rivales_vigilados_del_perfil_y_de_los_concursos_vascos():
+    acumulado = {
+        "e1": {"licitadoras": [{"nif": "B10000000"}, {"nif": "B20000000"}, {"nif": "***4567**"}]},
+        "e2": {"licitadoras": [{"nif": "B10000000"}, {"nif": "B20000000"}, {"nif": "B30000000"}]},
+        "e3": {"licitadoras": [{"nif": "B30000000"}, {"nif": "B40000000"}]},  # sin la agencia
+    }
+    perfil = {"nif": "B10000000", "competidores": {"A90000000"}}
+    # B20000000 coincide dos veces; B30000000, una (no llega); las personas físicas, nunca.
+    assert alertas.competidores(perfil, acumulado) == {"A90000000", "B20000000"}
+    assert alertas.competidores(None, acumulado) == set()
+
+
+def test_rivales_que_ganan_van_en_el_correo(rutas, monkeypatch):
+    carpeta, enviados = rutas
+    (carpeta / "perfil_agencia.json").write_text(json.dumps({"competidores": ["B20000000"]}), encoding="utf-8")
+    (carpeta / "tenders.json").write_text(json.dumps([
+        registro("adj", tipo="adjudicacion", empresa_nif="B20000000", empresa_adjudicataria="Rival SL", primera="2026-10-04"),
+        registro("vieja", tipo="adjudicacion", empresa_nif="B20000000", primera="2026-09-01"),  # de hace un mes: no
+        registro("otra", tipo="adjudicacion", empresa_nif="B99999999")]), encoding="utf-8")
+    (carpeta / "alertas_enviadas.json").write_text(json.dumps({"ids": []}), encoding="utf-8")
+    alertas.main()
+    assert enviados == ["1 adjudicación de rivales, 5 oct"]
+    # Al día siguiente ya no se repite.
+    monkeypatch.setattr(alertas.sys, "argv", ["alertas.py", "--hoy", "2026-10-06"])
+    alertas.main()
+    assert len(enviados) == 1
 
 
 def test_correo_por_bloques_con_datos_de_la_ficha():

@@ -162,6 +162,19 @@ def _titulo_ted_sin_prefijo(titulo: str) -> str:
     return partes[2] if len(partes) == 3 else titulo
 
 
+_RE_MEDIO_PROPIO = re.compile(r"\(\s*m\.?\s*p\.?\s*\)", re.I)
+_RE_FUNDACION_PRIVADA = re.compile(r"\b(fundacio|fundacion|fundazioa) (privada|privat) ")
+
+
+def _clave_organismo(nombre: str) -> str:
+    """Nombre del organismo para cruzarlo con el histórico, sin lo que cada
+    plataforma añade o quita: "(M.P.)" (medio propio), el "Privada" de
+    "Fundació Privada" y la puntuación. IL3-UB salía con cuatro nombres y su
+    licitación de 2026 no encontraba las ediciones anteriores (benchmark de
+    Gobierto, 2026-10-20)."""
+    return re.sub(r"\s+", " ", _RE_FUNDACION_PRIVADA.sub(r"\1 ", _normalizar_clave(_RE_MEDIO_PROPIO.sub(" ", nombre or "")))).strip()
+
+
 def _organismos_compatibles(a: str, b: str) -> bool:
     """Mismo organismo aunque una fuente añada el departamento detrás
     ("Gobierno Vasco - Bienestar, Juventud..." en TED frente a "Gobierno
@@ -599,7 +612,10 @@ def _historiales(registros: list[dict]) -> None:
 
 
 HISTORICO_COMPLETO = Path(__file__).resolve().parent / "data" / "historico_adjudicaciones.json"
+LICITADORAS_EUSKADI = Path(__file__).resolve().parent / "data" / "euskadi_licitadoras.json"
 MAX_ANTECEDENTES = 3
+MAX_HABITUALES = 6
+_RE_EXPJASO = re.compile(r"expjaso\d+")
 # Dos títulos son "el mismo contrato" si comparten al menos el 30 % de sus
 # palabras con contenido y dos como mínimo. Medido el 2026-10-04 sobre las
 # licitaciones abiertas: con 0,3 salen sobre todo ediciones anteriores del
@@ -632,6 +648,45 @@ def _historico_completo() -> dict | None:
     return _HISTORICO_COMPLETO_CACHE
 
 
+def _licitadoras_euskadi() -> dict:
+    """data/euskadi_licitadoras.json (quién se presentó a cada concurso
+    vasco, ver euskadi.acumular_licitadoras), o {}."""
+    try:
+        return json.loads(LICITADORAS_EUSKADI.read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError, OSError):
+        return {}
+
+
+def _habituales(entradas: list[dict], empresas: list, id_por_nif: dict[str, int]) -> dict | None:
+    """Quién suele presentarse a los contratos parecidos del organismo:
+    {"concursos": cuántos tienen la lista de licitadoras, "empresas":
+    [{nombre, id (ficha del histórico, si ha ganado algo), veces, ganadas}]}.
+    Solo sociedades: las personas físicas se cuentan en cada concurso, pero
+    no se nombran."""
+    cuenta: dict[str, list] = {}
+    for entrada in entradas:
+        for n in {l.get("nif") for l in entrada.get("licitadoras") or []}:
+            if not nif.es_sociedad(n):
+                continue
+            x = cuenta.setdefault(n, [0, 0, None])
+            x[0] += 1
+            x[1] += n in (entrada.get("ganadoras") or [])
+            x[2] = x[2] or next((l.get("nombre") for l in entrada["licitadoras"] if l.get("nif") == n and l.get("nombre")), None)
+    lista = []
+    for n, (veces, ganadas, nombre) in sorted(cuenta.items(), key=lambda kv: (-kv[1][0], -kv[1][1], kv[0])):
+        i = id_por_nif.get(n)
+        nombre = nombre or (empresas[i][1] if i is not None else None)
+        if not nombre:
+            continue
+        salida = {"nombre": nombre, "veces": veces, "ganadas": ganadas}
+        if i is not None:
+            salida["id"] = i
+        lista.append(salida)
+    if not lista:
+        return None
+    return {"concursos": len(entradas), "empresas": lista[:MAX_HABITUALES]}
+
+
 def _palabras_titulo(titulo: str) -> frozenset[str]:
     titulo = _RE_PREFIJO_TED.sub("", titulo or "")
     return frozenset(w for w in _normalizar_clave(titulo).split()
@@ -647,6 +702,7 @@ def _antecedentes(registros: list[dict]) -> None:
       antecedentes: [{titulo, anio, enlace, importe, ofertas, rebaja,
                       empresas: [{id, nombre}]}, ...]  (los más recientes)
       antecedentes_total: cuántos parecidos hay en total
+      habituales: quién se presentó a los parecidos vascos (_habituales)
 
     Usa el histórico completo (data/historico_adjudicaciones.json), que
     tiene los títulos; el del dashboard no. Mismos índices de expediente y
@@ -668,12 +724,15 @@ def _antecedentes(registros: list[dict]) -> None:
     except (ValueError, KeyError, TypeError, OSError):
         return
 
-    clave_org = [_normalizar_clave(o) for o in organismos]
+    clave_org = [_clave_organismo(o) for o in organismos]
     por_organismo: dict[str, list[int]] = {}
     for i, e in enumerate(exp):
         if i in lotes_por_exp:
             por_organismo.setdefault(clave_org[e[2]], []).append(i)
     por_organismo.pop("", None)
+
+    concursos = _licitadoras_euskadi()
+    id_por_nif = {d[0]: i for i, d in enumerate(empresas) if len(d) == 2 and d[0]}
 
     def empresa(i_emp: int) -> dict:
         datos = empresas[i_emp]
@@ -686,7 +745,7 @@ def _antecedentes(registros: list[dict]) -> None:
     for r in registros:
         if r["tipo_registro"] != "licitacion" or r["organismo"] == NO_PUBLICADO:
             continue
-        candidatos = por_organismo.get(_normalizar_clave(r["organismo"]))
+        candidatos = por_organismo.get(_clave_organismo(r["organismo"]))
         # El nombre del organismo dentro del título no dice nada del servicio
         # y hacía parecer iguales "mantenimiento de la web de la Agencia
         # Española de X" y "montaje de escaparates de la Agencia Española de X".
@@ -710,6 +769,7 @@ def _antecedentes(registros: list[dict]) -> None:
         fechas = {i: max(l[2] or "" for l in lotes_por_exp[i]) for i in parecidos}
         parecidos.sort(key=lambda i: fechas[i], reverse=True)
         lista = []
+        con_licitadoras = []
         repetidos = set()  # el histórico tiene algún contrato dos veces (mismo título, empresa e importe)
         for i in parecidos:
             e = exp[i]
@@ -735,6 +795,9 @@ def _antecedentes(registros: list[dict]) -> None:
                 continue
             repetidos.add(firma)
             enlace = e[8] if e[8].startswith("http") or not e[8] else prefijo + e[8]
+            clave = _RE_EXPJASO.search(e[8] or "")
+            if clave and concursos.get(clave.group(0), {}).get("licitadoras"):
+                con_licitadoras.append(concursos[clave.group(0)])
             lista.append({
                 "titulo": titulo, "anio": fechas[i][:4] or None, "enlace": enlace or None,
                 "importe": importe, "ofertas": ofertas, "rebaja": rebaja, "empresas": lista_empresas[:3],
@@ -744,10 +807,112 @@ def _antecedentes(registros: list[dict]) -> None:
         resumen = _resumen_antecedentes(lista)
         if resumen:
             r["antecedentes_resumen"] = resumen
+        habituales = _habituales(con_licitadoras, empresas, id_por_nif)
+        if habituales:
+            r["habituales"] = habituales
 
 
 # Con un solo dato, la "media" es ese contrato, que ya se ve en la tarjeta.
 MIN_DATOS_RESUMEN = 2
+
+# Previsión de competencia y rebaja (_prevision). Con las reglas que enseña
+# Gobierto (benchmark del 2026-10-20): solo concursos abiertos (ni menores
+# ni negociados), sin subidas ni rebajas de más del 60 % y con al menos 5
+# datos por grupo. Antes que el grupo, los contratos parecidos del mismo
+# organismo, si hay al menos MIN_PARECIDOS_PREVISION con dato.
+MIN_DATOS_PREVISION = 5
+MIN_PARECIDOS_PREVISION = 3
+REBAJA_MAX_PREVISION = 0.6
+ANIOS_PREVISION = 3
+NIVELES_PREVISION = (("provincia", "provincia"), ("comunidad", "comunidad"), ("espana", None))
+
+
+def _grupos_prevision(c: dict, hoy: date) -> dict:
+    """{(nivel, lugar, índice de categoría): ([ofertas], [rebajas en %])}
+    de los concursos abiertos de los últimos ANIOS_PREVISION años del
+    histórico. nivel: provincia, comunidad o espana (lugar "España")."""
+    try:
+        d = c["dic"]
+        abiertos = {i for i, p in enumerate(d["procedimiento"]) if p in ("Abierto", "Abierto simplificado")}
+        desde = (hoy - timedelta(days=365 * ANIOS_PREVISION)).isoformat()
+        lotes_por_exp: dict[int, int] = {}
+        for l in c["lotes"]:
+            lotes_por_exp[l[0]] = lotes_por_exp.get(l[0], 0) + 1
+        grupos: dict[tuple, tuple[list, list]] = {}
+        for l in c["lotes"]:  # [exp, empresa, fecha, importe, ofertas, pyme]
+            e = c["exp"][l[0]]
+            if e[6] or e[5] not in abiertos or (l[2] or "") < desde:
+                continue
+            ofertas = l[4] or None
+            rebaja = None
+            if lotes_por_exp[l[0]] == 1 and e[11] and l[3]:
+                x = 1 - l[3] / e[11]
+                if 0.005 <= x <= REBAJA_MAX_PREVISION:
+                    rebaja = round(x * 100, 1)
+            if not ofertas and rebaja is None:
+                continue
+            lugar = d["lugar"][e[12]] if len(e) > 12 and e[12] is not None else (None, None)
+            claves = [("provincia", lugar[0]), ("comunidad", lugar[1]), ("espana", "España")]
+            for cat in range(len(c["categorias"])):
+                if not e[7] >> cat & 1:
+                    continue
+                for nivel, sitio in claves:
+                    if sitio:
+                        g = grupos.setdefault((nivel, sitio, cat), ([], []))
+                        if ofertas:
+                            g[0].append(ofertas)
+                        if rebaja is not None:
+                            g[1].append(rebaja)
+    except (KeyError, IndexError, TypeError, ValueError):
+        return {}
+    return grupos
+
+
+def _mediana(valores: list[float]) -> float:
+    v = sorted(valores)
+    m = len(v) // 2
+    return v[m] if len(v) % 2 else (v[m - 1] + v[m]) / 2
+
+
+def _prevision(r: dict, grupos: dict, categorias: list[str]) -> dict | None:
+    """Cuántas ofertas y cuánta rebaja cabe esperar:
+    {"ofertas": {valor, n, base, lugar?, categoria?}, "rebaja": {...}}.
+    base: "parecidos" (media de los contratos parecidos del organismo) o el
+    nivel del grupo (mediana de la categoría en la provincia, la comunidad o
+    España, el primero con MIN_DATOS_PREVISION datos)."""
+    resumen = r.get("antecedentes_resumen") or {}
+    cats = [categorias.index(x) for x in r.get("categorias") or [] if x in categorias]
+    prevision = {}
+    for campo, i in (("ofertas", 0), ("rebaja", 1)):
+        if resumen.get(campo) and resumen[campo]["n"] >= MIN_PARECIDOS_PREVISION:
+            prevision[campo] = {"valor": resumen[campo]["media"], "n": resumen[campo]["n"], "base": "parecidos"}
+            continue
+        for nivel, campo_lugar in NIVELES_PREVISION:
+            sitio = r.get(campo_lugar) if campo_lugar else "España"
+            candidatos = [(cat, grupos.get((nivel, sitio, cat), ([], []))[i]) for cat in cats] if sitio else []
+            cat, valores = max(candidatos, key=lambda x: len(x[1]), default=(None, []))
+            if len(valores) >= MIN_DATOS_PREVISION:
+                prevision[campo] = {"valor": round(_mediana(valores), 1), "n": len(valores), "base": nivel,
+                                    "lugar": sitio, "categoria": categorias[cat]}
+                break
+    return prevision or None
+
+
+def anadir_previsiones(registros: list[dict], hoy: date | None = None) -> int:
+    """Añade "prevision" a las licitaciones españolas. Devuelve cuántas."""
+    c = _historico_completo()
+    if not c:
+        return 0
+    grupos = _grupos_prevision(c, hoy or date.today())
+    n = 0
+    for r in registros:
+        if r.get("tipo_registro") != "licitacion" or r.get("pais_territorio") not in ("España", "País Vasco"):
+            continue
+        prevision = _prevision(r, grupos, c.get("categorias") or [])
+        if prevision:
+            r["prevision"] = prevision
+            n += 1
+    return n
 
 
 def _resumen_antecedentes(lista: list[dict]) -> dict | None:
@@ -1518,6 +1683,33 @@ def _reparto_placsp(criterios: list[dict]) -> dict | None:
 MAX_LOTES = 40
 
 
+_MESES_TED = {"YEAR": 12, "MONTH": 1, "WEEK": 7 / 30, "DAY": 1 / 30}
+_MESES_PLACSP = {"ANN": 12, "MON": 1, "DAY": 1 / 30}
+
+
+def _duracion_meses(registro: dict) -> float | None:
+    """Duración del contrato en meses, sin prórrogas, si la fuente la da:
+    PLACSP (PlannedPeriod), TED (BT-36, la del lote más largo) y Euskadi
+    (ficha pública). Con el presupuesto da el valor anual, que marca la
+    solvencia económica que se puede pedir (encaje.py)."""
+    item = registro["original"]
+    fuente = registro["fuente"]
+    try:
+        if fuente in ("Estado", "Estado-agregadas"):
+            unidad = _MESES_PLACSP.get(item.get("duracion_unidad"))
+            meses = float(item["duracion_valor"]) * unidad if unidad and item.get("duracion_valor") else None
+        elif fuente == "UE":
+            pares = zip(item.get("duration-period-value-lot") or [], item.get("duration-period-unit-lot") or [])
+            meses = max((float(v) * _MESES_TED[u] for v, u in pares if u in _MESES_TED), default=None)
+        elif fuente == "Euskadi":
+            meses = (item.get("ficha") or {}).get("duracion_meses")
+        else:
+            meses = None
+    except (TypeError, ValueError):
+        return None
+    return round(meses, 1) if meses else None
+
+
 def _lotes(registro: dict) -> list[dict]:
     """Lotes de una licitación, con lo que publique su fuente:
     [{id, nombre, importe (sin IVA) | None, precio: % | None}].
@@ -1688,6 +1880,8 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
         superviviente["presupuesto_display"] = duplicado["presupuesto_display"]
     if not superviviente.get("codigo_expediente") and duplicado.get("codigo_expediente"):
         superviviente["codigo_expediente"] = duplicado["codigo_expediente"]
+    if not superviviente.get("duracion_meses") and duplicado.get("duracion_meses"):
+        superviviente["duracion_meses"] = duplicado["duracion_meses"]
     # Las ofertas y la rebaja solo vienen de PLACSP y de Euskadi.
     for campo in ("ofertas", "rebaja"):
         if not superviviente.get(campo) and duplicado.get(campo):
@@ -1784,6 +1978,9 @@ def main() -> None:
             lotes = _lotes(registro)
             if lotes:
                 salida["lotes"] = lotes
+            duracion = _duracion_meses(registro)
+            if duracion:
+                salida["duracion_meses"] = duracion
         elif tipo_registro == "adjudicacion":
             # Actas de la mesa, informes de valoración y resolución: PLACSP
             # los publica en el feed (perfiles propios, ver
@@ -1960,8 +2157,13 @@ def main() -> None:
 
     _historiales(finales)
     _antecedentes(finales)
+    print(f"[normalizar] {anadir_previsiones(finales)} licitaciones con previsión de competencia y rebaja")
     # Después de los antecedentes: la nota los usa (misma empresa ganando).
     import encaje
+    for r in finales:
+        solvencia = encaje.solvencia_exigible(r) if r.get("tipo_registro") == "licitacion" else None
+        if solvencia:
+            r["solvencia"] = solvencia
     print(f"[normalizar] {encaje.anadir_notas(finales, historico=_historico_completo())} licitaciones con nota de encaje")
 
     # Orden final: fecha límite ascendente para lo que tiene plazo; dentro

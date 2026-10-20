@@ -170,6 +170,8 @@ def test_euskadi_lee_la_ficha(monkeypatch):
         {"descripcion": "Precio", "peso": 70.0, "tipo": "precio"},
         {"descripcion": "Criterios cualitativos", "peso": 30.0, "tipo": "otro"},
     ]
+    # Duración sin prórrogas ("12 Meses"), para el valor anual del contrato.
+    assert ficha["duracion_meses"] == 12
     # Pliegos de la pestaña Ficheros, según el tipo que les pone el organismo.
     assert [p["tipo"] for p in ficha["pliegos"]] == esperado["pliegos"]
     assert all(p["url"].startswith(euskadi.URL_DESCARGA_FICHERO.split("{")[0]) for p in ficha["pliegos"])
@@ -197,7 +199,8 @@ def test_euskadi_criterio_de_precio(descripcion, tipo):
 def test_euskadi_fichas_solo_de_licitaciones_en_plazo_y_de_agencia(monkeypatch):
     leidas = []
     monkeypatch.setattr(euskadi, "leer_ficha", lambda url: leidas.append(url) or {
-        "documentos": [], "licitadores": [{"nombre": "X"}], "pliegos": [{"tipo": "tecnico"}], "criterios": [], "lotes": []})
+        "documentos": [], "licitadores": [{"nombre": "X"}], "pliegos": [{"tipo": "tecnico"}], "criterios": [], "lotes": [],
+        "duracion_meses": 24.0})
     monkeypatch.setattr(euskadi.time, "sleep", lambda s: None)
     items = [
         {"object": "Servicio de gestión de redes sociales", "deadlineDate": "2026-10-20T00:00:00", "mainEntityOfPage": "u1"},
@@ -211,8 +214,8 @@ def test_euskadi_fichas_solo_de_licitaciones_en_plazo_y_de_agencia(monkeypatch):
     ]
     euskadi.anadir_fichas_licitaciones(items, hoy="2026-10-04")
     assert leidas == ["u1"]
-    # De la ficha de una licitación solo se guardan pliegos, criterios y lotes.
-    assert items[0]["ficha"] == {"pliegos": [{"tipo": "tecnico"}], "criterios": [], "lotes": []}
+    # De la ficha de una licitación solo se guardan pliegos, criterios, lotes y duración.
+    assert items[0]["ficha"] == {"pliegos": [{"tipo": "tecnico"}], "criterios": [], "lotes": [], "duracion_meses": 24.0}
     assert items[4]["ficha"] == items[0]["ficha"] and "ficha" not in items[3]
 
 

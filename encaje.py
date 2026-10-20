@@ -29,6 +29,17 @@ PUNTOS_PROVINCIA_PRIORITARIA = 2
 PUNTOS_ESPANA = 1
 PUNTOS_EXTRANJERA = 2         # se restan
 IMPORTE_ALTO = 1_000_000      # a partir de aquí la solvencia exigida suele dejar fuera a una agencia mediana
+# Solvencia económica (LCSP art. 87.3.a): se puede pedir una facturación
+# anual de hasta 1,5 veces el valor anual medio del contrato (el valor
+# entero si dura un año o menos). Comprobado con IL3-UB (2026): 497.521 €
+# en 13 meses -> el pliego pedía 688.875 €. Sin la duración, el valor anual
+# está entre el valor entero (un año) y una quinta parte (los servicios
+# duran como mucho 5 años con prórrogas, art. 29.4).
+# La facturación de la agencia NO entra aquí: la ficha es pública y, viendo
+# qué licitaciones dan el aviso, se podría deducir. La comparación la hace
+# el navegador con la cifra que cada uno teclea (app.js, «solvencia»).
+FACTOR_SOLVENCIA = 1.5
+ANIOS_MAXIMOS_SERVICIO = 5
 DIAS_PLAZO_CORTO = 3
 EDICIONES_MISMA_EMPRESA = 2   # la misma adjudicataria en las N últimas ediciones parecidas
 # Poca competencia: provincias donde los concursos abiertos de agencia
@@ -58,6 +69,10 @@ def leer_perfil() -> dict | None:
         "principales": set(perfil.get("servicios_principales") or []),
         "secundarios": set(perfil.get("servicios_secundarios") or []),
         "provincias": set(perfil.get("provincias_prioritarias") or []),
+        # Para el aviso de rivales que ganan (alertas.py): el NIF de la
+        # agencia y las empresas que se quieren vigilar.
+        "nif": perfil.get("nif"),
+        "competidores": set(perfil.get("competidores") or []),
     }
 
 
@@ -134,6 +149,24 @@ def _frase_precio(cr: dict) -> str:
     if precio == 0:
         return "El precio no puntúa"
     return f"El precio cuenta el {_pct(precio)}"
+
+
+def solvencia_exigible(r: dict) -> dict | None:
+    """Facturación anual que el pliego puede pedir como mucho (LCSP art.
+    87): {"hasta": para todo el contrato, "seguro": la más baja que puede
+    pedir en el mejor caso (lote más barato y, sin la duración, 5 años)}.
+    Quien factura menos que "seguro" no llega; entre "seguro" y "hasta",
+    depende de la duración o del lote. Solo licitaciones españolas."""
+    presupuesto = r.get("presupuesto_valor")
+    if not presupuesto or r.get("pais_territorio") not in ("España", "País Vasco"):
+        return None
+    importes = [l.get("importe") for l in r.get("lotes") or []]
+    lote_menor = min(importes) if len(importes) > 1 and all(importes) else None
+    meses = r.get("duracion_meses")
+    anios = meses / 12 if meses else 1
+    hasta = FACTOR_SOLVENCIA * presupuesto / max(1, anios)
+    seguro = FACTOR_SOLVENCIA * (lote_menor or presupuesto) / max(1, anios if meses else ANIOS_MAXIMOS_SERVICIO)
+    return {"hasta": round(hasta), "seguro": round(min(seguro, hasta)), "duracion": bool(meses), "lotes": bool(lote_menor)}
 
 
 def nota(r: dict, perfil: dict, hoy: date | None = None, competencia: dict | None = None) -> dict:

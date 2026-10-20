@@ -29,6 +29,12 @@ Brevo, Outlook...). Variables de entorno, en GitHub como secretos:
 Si falta alguna, no se envía nada y el paso termina bien: la alerta es
 opcional y no debe tumbar la actualización.
 
+Rivales que ganan (desde el 2026-10-20): el correo añade las adjudicaciones
+nuevas de las empresas vigiladas. Son las del perfil privado de la agencia
+(PERFIL_AGENCIA, "competidores") y, si el perfil trae el NIF de la agencia
+("nif"), las que más coinciden con ella en los concursos vascos
+(data/euskadi_licitadoras.json). Sin perfil, no hay sección de rivales.
+
 Ejecutar:
     python alertas.py            # envía (si hay configuración) y guarda el estado
     python alertas.py --prueba   # escribe data/alerta_prueba.html; no envía ni guarda
@@ -51,11 +57,20 @@ BASE = Path(__file__).resolve().parent
 DATOS = BASE / "data" / "tenders.json"
 DATOS_PUBLICADOS = BASE / "dashboard" / "tenders-data.js"
 ENVIADAS = BASE / "data" / "alertas_enviadas.json"
+LICITADORAS = BASE / "data" / "euskadi_licitadoras.json"
+# Rivales automáticos: los que han coincidido con la agencia en al menos
+# MIN_COINCIDENCIAS concursos vascos, como mucho MAX_RIVALES.
+MIN_COINCIDENCIAS = 2
+MAX_RIVALES = 15
+# Adjudicaciones de rivales: las vistas por primera vez en la última semana
+# que no se han enviado (la primera noche no manda de golpe el mes entero).
+DIAS_RIVALES = 7
+MAX_RIVALES_CORREO = 20
 PRUEBA = BASE / "data" / "alerta_prueba.html"
 DASHBOARD = "https://licitacionesmarketing.vercel.app/"
 NO_PUBLICADO = "no publicado"
 
-RUTA_POR_TIPO = {"licitacion": "licitaciones/abiertas"}
+RUTA_POR_TIPO = {"licitacion": "licitaciones/abiertas", "adjudicacion": "adjudicaciones"}
 # Cuántas licitaciones como mucho por bloque; el resto, con un enlace al radar.
 MAX_POR_SECCION = {"euskadi": 40, "espana": 40, "europa": 20}
 MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
@@ -79,6 +94,42 @@ def novedades(registros: list[dict], enviadas: set[str] | None, hoy: str) -> lis
     if enviadas is None:
         return [r for r in registros if r.get("fecha_primera_aparicion") == hoy]
     return [r for r in registros if r["id"] not in enviadas]
+
+
+def competidores(perfil: dict | None, acumulado: dict | None = None) -> set[str]:
+    """NIF de las empresas vigiladas: las del perfil más las que más
+    coinciden con la agencia en los concursos vascos."""
+    if not perfil:
+        return set()
+    vigiladas = set(perfil.get("competidores") or [])
+    propio = perfil.get("nif")
+    if propio:
+        if acumulado is None:
+            try:
+                acumulado = json.loads(LICITADORAS.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                acumulado = {}
+        veces: dict[str, int] = {}
+        for entrada in acumulado.values():
+            nifs = {l.get("nif") for l in entrada.get("licitadoras") or []}
+            if propio in nifs:
+                for n in nifs - {propio, None}:
+                    if "*" not in n and not n.startswith("XXX"):
+                        veces[n] = veces.get(n, 0) + 1
+        frecuentes = sorted((n for n, v in veces.items() if v >= MIN_COINCIDENCIAS), key=lambda n: (-veces[n], n))
+        vigiladas |= set(frecuentes[:MAX_RIVALES])
+    vigiladas.discard(propio)
+    return vigiladas
+
+
+def ganan_rivales(datos: list[dict], vigiladas: set[str], enviadas: set[str] | None, hoy: date) -> list[dict]:
+    """Adjudicaciones nuevas de las empresas vigiladas, la más reciente primero."""
+    if not vigiladas:
+        return []
+    desde = date.fromordinal(hoy.toordinal() - DIAS_RIVALES).isoformat()
+    return sorted((r for r in datos if r.get("tipo_registro") == "adjudicacion" and r.get("empresa_nif") in vigiladas
+                   and r["id"] not in (enviadas or set()) and (r.get("fecha_primera_aparicion") or "") >= desde),
+                  key=lambda r: r.get("fecha_adjudicacion") or "", reverse=True)
 
 
 def _guardar_enviadas(registros: list[dict], enviadas: set[str] | None, nuevas: list[dict]) -> None:
@@ -207,16 +258,34 @@ def _secciones(nuevas: list[dict]) -> list[tuple[str, str, list[dict]]]:
     ]
 
 
-def asunto(nuevas: list[dict], hoy: date) -> str:
+def asunto(nuevas: list[dict], hoy: date, rivales: list[dict] | None = None) -> str:
     n = {clave: len(regs) for clave, _, regs in _secciones(nuevas)}
     partes = [f"{cuantas} en {donde}" for cuantas, donde in
               ((n["euskadi"], "Euskadi"), (n["espana"], "el resto de España"), (n["europa"], "Europa")) if cuantas]
     total = sum(n.values())
+    ganan = f"{len(rivales)} adjudicaci{'ón' if len(rivales) == 1 else 'ones'} de rivales" if rivales else ""
+    if not total:
+        return f"{(ganan or 'nada nuevo').capitalize()}, {hoy.day} {MESES[hoy.month - 1]}"
     return (f"{total} licitaci{'ón nueva' if total == 1 else 'ones nuevas'}, {hoy.day} {MESES[hoy.month - 1]}: "
-            + ", ".join(partes))
+            + ", ".join(partes) + (f" · {ganan}" if ganan else ""))
 
 
-def cuerpo_html(nuevas: list[dict], hoy: date) -> str:
+def _bloque_rivales(rivales: list[dict]) -> str:
+    if not rivales:
+        return ""
+    filas = []
+    for r in rivales[:MAX_RIVALES_CORREO]:
+        importe = _importe(r.get("importe_adjudicado_valor"), r.get("importe_adjudicado_display"))
+        datos = " · ".join(x for x in (_fecha(r.get("fecha_adjudicacion")), importe, r.get("organismo")) if x)
+        filas.append(
+            f'<p style="font-size:14px;margin:0 0 12px;"><strong>{_e(r.get("empresa_adjudicataria"))}</strong> ganó '
+            f'<a href="{_e(_enlace_radar(r))}" style="{ESTILO_ENLACE}">{_e(r["titulo"])}</a><br>'
+            f'<span style="font-size:12.5px;color:#6b7280;">{_e(datos)}</span></p>')
+    return (f'<h2 style="font-size:15px;color:#ffffff;background:{COLOR_MARCA};margin:26px 0 12px;padding:8px 12px;">'
+            f"Rivales que han ganado algo · {len(rivales)}</h2>" + "".join(filas))
+
+
+def cuerpo_html(nuevas: list[dict], hoy: date, rivales: list[dict] | None = None) -> str:
     secciones = _secciones(nuevas)
     total = sum(len(regs) for _, _, regs in secciones)
     resumen = " · ".join(f"{titulo}: {len(regs)}" for _, titulo, regs in secciones)
@@ -239,16 +308,17 @@ def cuerpo_html(nuevas: list[dict], hoy: date) -> str:
         '<div style="max-width:660px;margin:0 auto;padding:24px 16px;font-family:Inter,Segoe UI,Arial,sans-serif;'
         'background:#ffffff;color:#111827;">'
         f'<p style="font-size:13px;color:#6b7280;margin:0;">Radar de licitaciones · {hoy.day} {MESES[hoy.month - 1]} {hoy.year}</p>'
-        f'<h1 style="font-size:21px;margin:6px 0 4px;">{total} licitaci{"ón nueva" if total == 1 else "ones nuevas"}</h1>'
-        f'<p style="font-size:13.5px;color:#374151;margin:0;">Las que han aparecido desde el último correo. {_e(resumen)}.</p>'
-        + "".join(bloques) +
+        + (f'<h1 style="font-size:21px;margin:6px 0 4px;">{total} licitaci{"ón nueva" if total == 1 else "ones nuevas"}</h1>'
+           f'<p style="font-size:13.5px;color:#374151;margin:0;">Las que han aparecido desde el último correo. {_e(resumen)}.</p>'
+           if total else '<h1 style="font-size:21px;margin:6px 0 4px;">Ninguna licitación nueva</h1>')
+        + "".join(bloques) + _bloque_rivales(rivales or []) +
         f'<p style="font-size:12px;color:#6b7280;margin:28px 0 0;">Todo lo que sigue en plazo está en '
         f'<a href="{DASHBOARD}" style="{ESTILO_ENLACE}">el radar</a>; por qué entra cada licitación, en '
         f'<a href="{DASHBOARD}filtro.html" style="{ESTILO_ENLACE}">Cómo se filtra</a>.</p>'
         "</div></body></html>")
 
 
-def cuerpo_texto(nuevas: list[dict]) -> str:
+def cuerpo_texto(nuevas: list[dict], rivales: list[dict] | None = None) -> str:
     lineas = ["Licitaciones nuevas del radar", ""]
     for clave, titulo, regs in _secciones(nuevas):
         if not regs:
@@ -256,6 +326,11 @@ def cuerpo_texto(nuevas: list[dict]) -> str:
         lineas.append(f"{titulo} ({len(regs)})")
         for r in regs[:MAX_POR_SECCION[clave]]:
             lineas.append(f"- {r['titulo']}\n  {r.get('organismo') or ''}\n  {_enlace_radar(r)}")
+        lineas.append("")
+    if rivales:
+        lineas.append(f"Rivales que han ganado algo ({len(rivales)})")
+        for r in rivales[:MAX_RIVALES_CORREO]:
+            lineas.append(f"- {r.get('empresa_adjudicataria')}: {r['titulo']}\n  {r.get('organismo') or ''}\n  {_enlace_radar(r)}")
         lineas.append("")
     lineas.append(DASHBOARD)
     return "\n".join(lineas)
@@ -319,7 +394,7 @@ def main() -> None:
     if datos is None:
         print("[alertas] No hay datos (data/tenders.json). Ejecuta antes normalizar.py.", file=sys.stderr)
         return
-    registros = [r for r in datos if r.get("tipo_registro") in RUTA_POR_TIPO]
+    registros = [r for r in datos if r.get("tipo_registro") == "licitacion"]
     # --hoy AAAA-MM-DD: para probar con datos de otro día.
     hoy = date.fromisoformat(sys.argv[sys.argv.index("--hoy") + 1]) if "--hoy" in sys.argv else date.today()
     enviadas = _leer_enviadas()
@@ -330,11 +405,15 @@ def main() -> None:
         nuevas = [r for r in registros if r.get("fecha_primera_aparicion") == ultimo]
     if enviadas is None:
         print("[alertas] Primera vez: cuenta como nuevo lo visto hoy por primera vez.")
-    print(f"[alertas] {len(nuevas)} novedades")
+    import encaje  # noqa: E402
+    vigiladas = competidores(encaje.leer_perfil())
+    rivales = ganan_rivales(datos, vigiladas, enviadas, hoy)
+    # Sin cuántos rivales se vigilan: el registro de Actions es público.
+    print(f"[alertas] {len(nuevas)} novedades; {len(rivales)} adjudicaciones de rivales")
 
     if prueba:
-        PRUEBA.write_text(cuerpo_html(nuevas, hoy), encoding="utf-8")
-        print(f"[alertas] Prueba: {asunto(nuevas, hoy) if nuevas else '(nada nuevo)'} -> {PRUEBA}")
+        PRUEBA.write_text(cuerpo_html(nuevas, hoy, rivales), encoding="utf-8")
+        print(f"[alertas] Prueba: {asunto(nuevas, hoy, rivales) if nuevas or rivales else '(nada nuevo)'} -> {PRUEBA}")
         return
 
     conf = _configuracion()
@@ -345,10 +424,10 @@ def main() -> None:
         if sin_guardar:
             sys.exit(1)
         return
-    if nuevas:
-        titulo = ("[Prueba] " if sin_guardar else "") + asunto(nuevas, hoy)
+    if nuevas or rivales:
+        titulo = ("[Prueba] " if sin_guardar else "") + asunto(nuevas, hoy, rivales)
         try:
-            enviar(conf, titulo, cuerpo_texto(nuevas), cuerpo_html(nuevas, hoy))
+            enviar(conf, titulo, cuerpo_texto(nuevas, rivales), cuerpo_html(nuevas, hoy, rivales))
         except (smtplib.SMTPException, OSError) as e:
             # Sin guardar: lo de hoy irá en el próximo correo.
             print(f"[alertas] AVISO: no se pudo enviar el correo: {e}", file=sys.stderr)
@@ -359,7 +438,9 @@ def main() -> None:
     else:
         print("[alertas] Nada nuevo: no se envía correo.")
     if not sin_guardar:
-        _guardar_enviadas(registros, enviadas, nuevas)
+        adjudicaciones = [r for r in datos if r.get("tipo_registro") == "adjudicacion"]
+        # Solo las que han cabido en el correo: las demás, al siguiente.
+        _guardar_enviadas(registros + adjudicaciones, enviadas, nuevas + rivales[:MAX_RIVALES_CORREO])
 
 
 if __name__ == "__main__":

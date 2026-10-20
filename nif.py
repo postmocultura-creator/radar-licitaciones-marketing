@@ -82,6 +82,15 @@ def enmascarado(nif: str | None) -> bool:
     return bool(nif) and ("*" in nif or nif.startswith("XXX"))
 
 
+def es_sociedad(nif: str | None) -> bool:
+    """NIF de una sociedad (B..., A..., G...): ni persona física, ni
+    enmascarado, ni de relleno. Solo de estas se publica el nombre como
+    licitadora."""
+    # Sin E (comunidades de bienes) ni J (sociedades civiles): suelen llevar
+    # nombres de personas ("García Pérez y otro, C.B.").
+    return bool(nif) and nif[0] in "ABCDFGHNPQRSUVW" and not enmascarado(nif) and not es_relleno(nif)
+
+
 def es_relleno(nif: str | None) -> bool:
     """NIF que no es de nadie: vacío, "A00000000", "X00000000", "0",
     "NOCONSTITUIDO"... Agrupaban bajo una misma ficha a UTE y personas sin

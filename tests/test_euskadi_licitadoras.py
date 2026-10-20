@@ -24,8 +24,37 @@ def test_acumula_solo_lo_que_trae_ficha():
     acumulado = {}
     assert euskadi.acumular_licitadoras(adjudicaciones, acumulado) == 1
     assert acumulado == {"expjaso100001": {
-        "fecha": "2026-09-15", "ganadoras": ["B10000001"],
-        "licitadoras": [{"nif": "B10000001", "pyme": True}, {"nif": "A10000002", "pyme": False}]}}
+        "fecha": "2026-09-15", "ganadoras": ["B10000001"], "nombres": True,
+        "licitadoras": [{"nif": "B10000001", "pyme": True, "nombre": "Una SL"},
+                        {"nif": "A10000002", "pyme": False, "nombre": "Otra SA"}]}}
+
+
+def test_de_las_personas_fisicas_nunca_el_nombre():
+    licitadoras = [{"nombre": "Nombre Inventado", "nif": "***4567**", "pyme": True},
+                   {"nombre": "Otro Inventado", "nif": "12345678Z", "pyme": True},
+                   {"nombre": "Sin NIF", "nif": None, "pyme": None},
+                   {"nombre": "Una SL", "nif": "B10000001", "pyme": True}]
+    entrada = euskadi._entrada("2026-01-01", [], licitadoras, "Título", "Organismo")
+    assert [l.get("nombre") for l in entrada["licitadoras"]] == [None, None, None, "Una SL"]
+    assert (entrada["titulo"], entrada["organismo"]) == ("Título", "Organismo")
+
+
+def test_concursos_para_la_ficha_de_competidor(tmp_path, monkeypatch):
+    monkeypatch.setattr(euskadi, "HISTORICO", _historico(tmp_path))
+    acumulado = {
+        # Del histórico: título y organismo salen de allí; el nombre de la ganadora, también.
+        "expjaso200001": {"fecha": "2024-02-01", "ganadoras": ["B10000001"],
+                          "licitadoras": [{"nif": "B10000001"}, {"nif": "A10000002", "nombre": "Otra SA"}, {"nif": "***4567**"}]},
+        "expjaso300001": {"fecha": "2026-05-01", "ganadoras": ["***4567**"], "titulo": "T9", "organismo": "Ayto.",
+                          "licitadoras": [{"nif": "***4567**"}, {"nif": "A10000002"}]},
+        "expjaso300002": {"fecha": "2026-06-01", "ganadoras": [], "licitadoras": []},  # sin licitadoras: no sale
+    }
+    c = euskadi.concursos(acumulado)
+    assert c["concursos"] == [
+        ["2026-05-01", "T9", "Ayto.", "expjaso300001", [None], [None, "A10000002"]],
+        ["2024-02-01", "T1", "Organismo", "expjaso200001", ["B10000001"], ["B10000001", "A10000002", None]],
+    ]
+    assert c["empresas"] == {"A10000002": "Otra SA", "B10000001": "Una SL"}
 
 
 def test_indice_exito_sin_personas_fisicas():
@@ -53,7 +82,8 @@ def _historico(tmp_path):
     ]
     empresas = [["B10000001", "Una SL"], [None, "UNA, S.L.", 0]]  # la segunda, fusionada en la primera
     ruta = tmp_path / "historico.json"
-    ruta.write_text(json.dumps({"exp": exp, "lotes": [[0, 1], [1, 0]], "dic": {"empresa": empresas}}), encoding="utf-8")
+    ruta.write_text(json.dumps({"exp": exp, "lotes": [[0, 1], [1, 0]], "dic": {"empresa": empresas, "organismo": ["Organismo"]}}),
+                    encoding="utf-8")
     return ruta
 
 
@@ -72,3 +102,8 @@ def test_rellenar_desde_historico(tmp_path, monkeypatch):
     assert euskadi.rellenar_desde_historico(acumulado) == 2
     assert acumulado["expjaso200002"]["ganadoras"] == ["B10000001"]
     assert euskadi.rellenar_desde_historico(acumulado) == 0   # ya no queda nada pendiente
+    # Las leídas antes de guardar los nombres se vuelven a leer, al final.
+    acumulado["expjaso200001"] = {"fecha": "2024-02-01", "ganadoras": ["B10000001"], "licitadoras": [{"nif": "B10000001"}]}
+    monkeypatch.setattr(euskadi, "leer_ficha", lambda url: {"licitadores": [{"nif": "B10000001", "pyme": True, "nombre": "Una SL"}]})
+    assert euskadi.rellenar_desde_historico(acumulado) == 1
+    assert acumulado["expjaso200001"]["licitadoras"] == [{"nif": "B10000001", "pyme": True, "nombre": "Una SL"}]

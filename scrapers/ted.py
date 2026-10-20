@@ -71,6 +71,12 @@ CAMPOS = [
     # Identificador del procedimiento (BT-04): para reconocer la misma
     # licitación en la plataforma catalana (ver normalizar._id_procedimiento_ted).
     "procedure-identifier",
+    # Duración de cada lote sin prórrogas (BT-36: "2" + "YEAR"). Medido en
+    # vivo el 2026-10-20: la traen 8 de 8 avisos españoles de publicidad de
+    # septiembre. Con el valor estimado da el valor anual, que marca la
+    # solvencia económica que se puede pedir (encaje.py).
+    "duration-period-value-lot",
+    "duration-period-unit-lot",
 ]
 # Se piden los dos campos de fecha límite porque se comprobó con datos
 # reales que "deadline-date-lot" viene vacío en muchísimos anuncios

@@ -206,6 +206,7 @@
     lugar: "",
     soloRevisarManual: false,
     soloPropuesta: false,
+    verDescartadas: false,
     presupuestoMin: 0,
     presupuestoMax: null,
     orden: ordenPorDefecto("recientes"),
@@ -243,6 +244,8 @@
   var elReset = document.getElementById("boton-reset");
   var elContenedor = document.getElementById("contenedor-tarjetas");
   var elConteo = document.getElementById("conteo-resultados");
+  var elFranja = document.getElementById("franja-cifras");
+  var ultimosFiltrados = [];
   var elBotonRevisar = document.getElementById("boton-revisar");
   var elBotonPropuesta = document.getElementById("boton-propuesta");
   var elSinResultados = document.getElementById("sin-resultados");
@@ -407,6 +410,53 @@
     return String(valor).replace(".", ",");
   }
 
+  // Solvencia económica que el pliego puede pedir (encaje.solvencia_exigible)
+  // y, si quien mira ha guardado su facturación en este navegador, si llega.
+  // La facturación nunca sale del navegador: la ficha es pública.
+  var CLAVE_FACTURACION = "radar-facturacion";
+  function facturacionGuardada() {
+    try { return Number(localStorage.getItem(CLAVE_FACTURACION)) || 0; } catch (e) { return 0; }
+  }
+  function veredictoSolvencia(s) {
+    var f = facturacionGuardada();
+    if (!f) return null;
+    if (f < s.seguro) return { clase: "riesgo", texto: "Con tu facturación, no llegáis" + (s.lotes ? " ni en el lote más barato" : "") };
+    if (f < s.hasta) return { clase: "aviso", texto: s.lotes ? "Llegáis a algún lote, no a todos" : "Depende de lo que dure: mirar el pliego" };
+    return { clase: "ok", texto: "Llegáis aunque pidan el máximo" };
+  }
+  function textoSolvencia(s, html) {
+    var rango = s.seguro < s.hasta
+      ? "entre " + euros(s.seguro) + " y " + euros(s.hasta) + (s.lotes ? " (según el lote)" : " (según lo que dure)")
+      : "hasta " + euros(s.hasta);
+    var v = veredictoSolvencia(s);
+    if (!html) return rango + " de facturación anual" + (v ? ". " + v.texto : "");
+    return rango + ' de facturación anual <span class="barras__sec">(1,5 × el valor anual, LCSP art. 87)</span>' +
+      (v ? '<br><span class="solvencia solvencia--' + v.clase + '">' + v.texto + "</span> " : "<br>") +
+      '<button type="button" class="boton boton--texto" data-facturacion>' + (facturacionGuardada() ? "Cambiar tu facturación" : "Comparar con tu facturación") + "</button>";
+  }
+
+  // De dónde sale cada cifra de la previsión (normalizar._prevision).
+  function basePrevision(x) {
+    if (x.base === "parecidos") return "media de " + cuantos(x.n, "contrato parecido", "contratos parecidos") + " de este organismo";
+    return "mediana de " + cuantos(x.n, "concurso abierto", "concursos abiertos") + " de «" + x.categoria + "» " +
+      "en " + (x.base === "espana" ? "toda España" : x.lugar) + " (últimos 3 años)";
+  }
+
+  // Quién suele presentarse a los contratos parecidos vascos (normalizar._habituales).
+  function textoHabituales(t, nombre) {
+    var h = t.habituales;
+    return "Quién se presentó " + (h.concursos === 1 ? "a la edición anterior con lista de licitadoras" : "a " + h.concursos + " de ellos (los que tienen lista de licitadoras)") + ": " +
+      h.empresas.map(function (e) {
+        return nombre(e) + " (" + (h.concursos === 1 ? (e.ganadas ? "ganó" : "no ganó") : e.veces + (e.ganadas ? ", ganó " + e.ganadas : ", no ganó")) + ")";
+      }).join(", ") + ".";
+  }
+
+  // "2 años", "13 meses", "1,5 meses", "15 días".
+  function duracionTexto(meses) {
+    if (meses >= 12 && meses % 12 === 0) return cuantos(meses / 12, "año", "años");
+    return meses < 1 ? cuantos(Math.round(meses * 30), "día", "días") : numeroEs(meses) + (meses === 1 ? " mes" : " meses");
+  }
+
   // "1 empresa", "16 empresas".
   function cuantos(n, uno, varios) {
     return miles(n) + " " + (n === 1 ? uno : varios);
@@ -537,6 +587,84 @@
     escribirGuardadas();
   }
 
+  // ---------- Descartadas (con motivo) ----------
+  // {id: {motivo, fecha_limite, titulo, fecha}} en el navegador. Se quitan
+  // del listado; «Ver descartadas» las enseña solas. Los motivos servirán
+  // para afinar la nota de encaje (encaje.py).
+  var CLAVE_DESCARTADAS = "radar-descartadas";
+  var MOTIVOS_DESCARTE = [["precio", "Precio"], ["solvencia", "Solvencia"], ["plazo", "Plazo"], ["servicio", "No es nuestro servicio"],
+    ["organismo", "Organismo"], ["otro", "Otro"]];
+  var descartadas = (function () {
+    try { return JSON.parse(localStorage.getItem(CLAVE_DESCARTADAS)) || {}; } catch (e) { return {}; }
+  })();
+  function escribirDescartadas() {
+    try { localStorage.setItem(CLAVE_DESCARTADAS, JSON.stringify(descartadas)); } catch (e) { /* sin almacenamiento: dura lo que la página */ }
+  }
+  function estaDescartada(id) {
+    return Object.prototype.hasOwnProperty.call(descartadas, id);
+  }
+  function nombreMotivo(clave) {
+    var m = MOTIVOS_DESCARTE.filter(function (x) { return x[0] === clave; })[0];
+    return m ? m[1] : clave;
+  }
+  function purgarDescartadas() {
+    var cambio = false;
+    Object.keys(descartadas).forEach(function (id) {
+      if (caducada(descartadas[id].fecha_limite)) { delete descartadas[id]; cambio = true; }
+    });
+    if (cambio) escribirDescartadas();
+  }
+
+  // ---------- Añadir al calendario (.ics) ----------
+  function textoIcs(s) {
+    return String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+  function fechaIcs(d) {
+    return d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2);
+  }
+  // Tantos días laborables antes (sin sábados ni domingos; los festivos no
+  // los sabe el radar).
+  function laborablesAntes(fecha, dias) {
+    var d = new Date(fecha.getTime());
+    while (dias > 0) {
+      d.setDate(d.getDate() - 1);
+      if (d.getDay() !== 0 && d.getDay() !== 6) dias--;
+    }
+    return d;
+  }
+  var DIAS_AVISO_CALENDARIO = 3;
+  function ics(t) {
+    var limite = parsearFecha(t.fecha_limite);
+    var hora = /^(\d{1,2}):(\d{2})/.exec(t.hora_limite || "");
+    var aviso = laborablesAntes(limite, DIAS_AVISO_CALENDARIO);
+    aviso.setHours(9, 0, 0, 0);
+    var utc = aviso.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    var fin = new Date(limite.getTime());
+    fin.setDate(fin.getDate() + 1);
+    var enlaceRadar = location.origin + location.pathname + "#/" + RUTA_POR_TIPO[t.tipo_registro] + "?id=" + encodeURIComponent(t.id);
+    return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Radar de licitaciones//ES", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+      "UID:" + t.id + "@radar-licitaciones",
+      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""),
+      hora ? "DTSTART:" + fechaIcs(limite) + "T" + ("0" + hora[1]).slice(-2) + hora[2] + "00" : "DTSTART;VALUE=DATE:" + fechaIcs(limite),
+      hora ? "DURATION:PT30M" : "DTEND;VALUE=DATE:" + fechaIcs(fin),
+      "SUMMARY:" + textoIcs("Cierre: " + t.titulo),
+      "DESCRIPTION:" + textoIcs([t.organismo, t.codigo_expediente ? "Expediente " + t.codigo_expediente : "",
+        importeTexto(t.presupuesto_display) ? "Presupuesto " + importeTexto(t.presupuesto_display) : "", "Radar: " + enlaceRadar,
+        t.enlace && t.enlace !== NO_PUBLICADO ? "Anuncio: " + t.enlace : ""].filter(Boolean).join("\n")),
+      "URL:" + enlaceRadar,
+      "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + textoIcs("Quedan " + DIAS_AVISO_CALENDARIO + " días laborables: " + t.titulo),
+      "TRIGGER;VALUE=DATE-TIME:" + utc, "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n") + "\r\n";
+  }
+
+  function descargar(nombre, contenido, tipoMime) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([contenido], { type: tipoMime }));
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
   function deTipo(tipo) {
     if (tipo === "guardadas") {
       return DATOS.filter(function (t) { return estaGuardada(t.id) && !caducada(t.fecha_limite); });
@@ -547,7 +675,16 @@
   }
 
   function subconjuntoActivo() {
-    return deTipo(estado.tipoRegistro);
+    var lista = deTipo(estado.tipoRegistro);
+    if (estado.tipoRegistro === "guardadas") return lista;
+    return lista.filter(function (t) { return estado.verDescartadas ? estaDescartada(t.id) : !estaDescartada(t.id); });
+  }
+
+  function pintarBotonDescartadas() {
+    var b = document.getElementById("boton-descartadas");
+    var n = deTipo(estado.tipoRegistro).filter(function (t) { return estaDescartada(t.id); }).length;
+    b.hidden = estado.tipoRegistro === "guardadas" || (!n && !estado.verDescartadas);
+    b.textContent = estado.verDescartadas ? "Volver a las no descartadas" : "Ver descartadas (" + n + ")";
   }
 
   // ---------- Controles del listado ----------
@@ -1023,6 +1160,8 @@
       if (t.rebaja) importes.push(par("Rebaja sobre el presupuesto", numeroEs(t.rebaja) + " %", true));
     } else {
       importes.push(par(esCall ? "Presupuesto de la convocatoria" : "Presupuesto", presupuesto || "No publicado", true));
+      if (t.duracion_meses) importes.push(par("Duración (sin prórrogas)", duracionTexto(t.duracion_meses), true));
+      if (t.solvencia) importes.push(par("Solvencia económica que pueden pedir", textoSolvencia(t.solvencia, true)));
       // Calls for proposals: cuántos proyectos se van a financiar y con cuánto.
       if (t.proyectos_previstos) importes.push(par("Proyectos que se prevé financiar", String(t.proyectos_previstos), true));
       if (t.subvencion_maxima) importes.push(par("Subvención máxima por proyecto", euros(Math.round(t.subvencion_maxima)), true));
@@ -1084,6 +1223,25 @@
         '<p class="tarjeta__nota">Nota orientativa con los datos de la ficha (servicio, provincia, cómo se puntúa, competencia, plazo). No lee el pliego: la solvencia y los requisitos hay que mirarlos en él.</p></div>';
     }
 
+    // Previsión de competencia y rebaja (normalizar._prevision).
+    var previsionHtml = "";
+    var pv = t.prevision;
+    if (pv) {
+      var cifra = function (valor, unidad) {
+        return '<div class="prevision__dato"><span class="prevision__cifra">' + valor + "</span><span>" + unidad + "</span></div>";
+      };
+      previsionHtml = '<div class="tarjeta__bloque"><h4>Previsión: competencia y rebaja</h4><div class="prevision">' +
+        (pv.ofertas ? cifra(numeroEs(pv.ofertas.valor), pv.ofertas.valor === 1 ? "oferta" : "ofertas") : "") +
+        (pv.rebaja ? cifra(numeroEs(pv.rebaja.valor) + " %", "de rebaja de la ganadora") : "") + "</div>" +
+        '<p class="tarjeta__nota">' + escaparHtml([pv.ofertas ? "Ofertas: " + basePrevision(pv.ofertas) : "",
+          pv.rebaja ? "Rebaja: " + basePrevision(pv.rebaja) : ""].filter(Boolean).join(". ") + ".") + "</p>" +
+        '<details class="prevision__info"><summary>' + Nav.icono("info") + "Cómo se calcula</summary><p class=\"tarjeta__nota\">" +
+        "Primero, los contratos parecidos de este mismo organismo (casi siempre, ediciones anteriores del servicio), si hay al menos 3 con dato: su media. " +
+        "Si no, la mediana de los concursos abiertos de la misma categoría de servicio de los últimos 3 años, en la provincia; si allí hay menos de 5, en la comunidad, y si no, en toda España. " +
+        "No cuentan los contratos menores ni los negociados, las subidas de precio ni las rebajas de más del 60 % (suelen ser errores o importes en unidades distintas). " +
+        "La rebaja solo se calcula en contratos de un lote con presupuesto publicado. Es una orientación, no una garantía.</p></details></div>";
+    }
+
     // Contratos anteriores parecidos del mismo organismo (casi siempre,
     // ediciones anteriores del mismo servicio): quién lo ganó y a qué
     // precio. Los busca normalizar._antecedentes en el histórico.
@@ -1109,6 +1267,10 @@
             '<span class="tarjeta__antecedente-datos">' + datos + "</span></li>";
         }).join("") + "</ul>" +
         (t.antecedentes_resumen ? '<p class="tarjeta__resumen-texto">' + resumenAntecedentes(t, function (s) { return "<strong>" + s + "</strong>"; }) + "</p>" : "") +
+        (t.habituales ? '<p class="tarjeta__resumen-texto">' + textoHabituales(t, function (e) {
+          var nombre = escaparHtml(e.nombre);
+          return e.id != null ? '<a class="enlace" href="historico.html#/empresa/' + e.id + '">' + nombre + "</a>" : nombre;
+        }) + "</p>" : "") +
         '<p class="tarjeta__nota">Importes adjudicados sin IVA. La rebaja solo se calcula en contratos de un lote con presupuesto publicado. Parecido = comparten buena parte de las palabras del título; conviene abrirlos para confirmarlo.</p></div>';
     }
     // Otras en plazo del mismo organismo o, en las calls, del mismo programa.
@@ -1258,10 +1420,29 @@
     } else {
       acciones += '<span class="chip">Enlace no publicado</span>';
     }
+    if (tipo === "licitacion" && parsearFecha(t.fecha_limite)) {
+      acciones += '<button type="button" class="boton boton--contorno" data-calendario="' + escaparHtml(t.id) + '">' +
+        Nav.icono("calendario") + "<span>Añadir al calendario</span></button>";
+    }
+    if (tipo === "licitacion") {
+      acciones += estaDescartada(t.id)
+        ? '<span class="chip chip--descartada">Descartada: ' + escaparHtml(nombreMotivo(descartadas[t.id].motivo)) + "</span>" +
+          '<button type="button" class="boton boton--texto" data-recuperar="' + escaparHtml(t.id) + '">Recuperar</button>'
+        : '<details class="descartar"><summary class="boton boton--texto">Descartar</summary><p class="descartar__motivos">Motivo: ' +
+          MOTIVOS_DESCARTE.map(function (m) {
+            return '<button type="button" class="tarjeta__pregunta" data-descartar="' + escaparHtml(t.id) + '" data-motivo="' + m[0] + '">' + m[1] + "</button>";
+          }).join("") + "</p></details>";
+    }
     if (esGuardable(t)) {
       acciones += botonGuardar(t.id);
       acciones += '<button type="button" class="boton boton--contorno" data-copiar-ficha="' + escaparHtml(t.id) + '">' +
         Nav.icono("documento") + "<span>Copiar ficha para el asistente</span></button>";
+      if (tipo === "licitacion") {
+        acciones += '<p class="tarjeta__preguntas">O cópiala con una pregunta: ' + PREGUNTAS_ASISTENTE.map(function (p) {
+          return '<button type="button" class="tarjeta__pregunta" data-copiar-ficha="' + escaparHtml(t.id) + '" data-pregunta="' + p.clave + '"><span>' +
+            p.boton + "</span></button>";
+        }).join("") + "</p>";
+      }
     }
     if (conEmpresa && t.empresa_adjudicataria !== NO_PUBLICADO) {
       // Por NIF si el registro lo trae (es como identifica a cada empresa el
@@ -1312,6 +1493,7 @@
           "</div>" +
           '<div class="tarjeta__bloque"><h4>Descripción</h4><p class="tarjeta__resumen-texto">' + escaparHtml(t.resumen) + "</p></div>" +
           encajeHtml +
+          previsionHtml +
           lotesHtml +
           criteriosHtml +
           pliegosHtml +
@@ -1356,7 +1538,22 @@
   // se pega en un chat nuevo. Solo datos que ya enseña la tarjeta.
   var TIPOS_CRITERIO = { precio: "precio", formula: "fórmula", juicio: "juicio de valor" };
 
-  function fichaAsistente(t) {
+  // Preguntas sugeridas para el chat de la licitación: se copian detrás de
+  // la ficha. Piden lo que la ficha no puede saber sin leer los pliegos.
+  var PREGUNTAS_ASISTENTE = [
+    { clave: "solvencia", boton: "¿Cumplimos la solvencia?",
+      texto: "Lee los pliegos (PCAP y PPT) y dime si la agencia cumple la solvencia económica y técnica, las certificaciones y el equipo mínimo que piden, " +
+        "con los datos de la biblioteca de la agencia. Para cada requisito: cumple, no cumple o pendiente, con el documento que lo acredita; si falta un dato " +
+        "de la agencia, «pendiente», nunca estimado. Termina con una línea: GO, GO CONDICIONADO, NO-GO o PENDIENTE, y la fecha límite para decidir en días laborables." },
+    { clave: "antecedentes", boton: "Antecedentes y rebaja ganadora",
+      texto: "Busca las ediciones anteriores de este contrato (actas, informes de valoración y resoluciones): quién se presentó, quién ganó, con qué puntuación técnica " +
+        "y con qué rebaja. Con eso y con lo que diga el pliego sobre ofertas anormalmente bajas, propón un rango de rebaja para ganar sin caer en baja anormal." },
+    { clave: "memoria", boton: "Estructura de la memoria",
+      texto: "Lee los criterios de adjudicación y propón la estructura de la memoria técnica: un apartado por criterio y subcriterio, con su peso, " +
+        "la extensión y el formato que permite el pliego y qué hay que demostrar en cada uno para sacar la máxima puntuación." },
+  ];
+
+  function fichaAsistente(t, pregunta) {
     var lineas = ["Licitación para preparar con el asistente de licitaciones (skill comunicacion-publica-licitaciones).", ""];
     var anadir = function (etiqueta, valor) { if (valor) lineas.push("- " + etiqueta + ": " + valor); };
     anadir("Título", t.titulo);
@@ -1367,6 +1564,12 @@
     anadir("Fecha límite", fechaLarga(t.fecha_limite, "no publicada") + (t.hora_limite ? ", " + t.hora_limite : "") +
       " (" + infoUrgencia(t.fecha_limite, t).texto + ")");
     anadir("Presupuesto", importeTexto(t.presupuesto_display));
+    anadir("Duración sin prórrogas", t.duracion_meses ? duracionTexto(t.duracion_meses) : "");
+    anadir("Solvencia económica que pueden pedir", t.solvencia ? textoSolvencia(t.solvencia, false) : "");
+    if (t.prevision) {
+      anadir("Previsión de ofertas", t.prevision.ofertas ? numeroEs(t.prevision.ofertas.valor) + " (" + basePrevision(t.prevision.ofertas) + ")" : "");
+      anadir("Previsión de rebaja", t.prevision.rebaja ? numeroEs(t.prevision.rebaja.valor) + " % (" + basePrevision(t.prevision.rebaja) + ")" : "");
+    }
     anadir("Lugar", textoLugar(t));
     anadir("Tipo de contrato", t.tipo_contrato);
     anadir("Categorías", (t.categorias || []).join(", "));
@@ -1397,6 +1600,7 @@
           a.ofertas ? cuantos(a.ofertas, "oferta", "ofertas") : "", a.rebaja != null ? "rebaja " + String(a.rebaja).replace(".", ",") + " %" : "", a.enlace].filter(Boolean).join(" · "));
       });
       if (t.antecedentes_resumen) lineas.push("  - " + resumenAntecedentes(t, function (s) { return s; }));
+      if (t.habituales) lineas.push("  - " + textoHabituales(t, function (e) { return e.nombre; }));
     }
     if (t.encaje) {
       anadir("Encaje con la agencia", t.encaje.nota + "/10" +
@@ -1404,6 +1608,8 @@
         (t.encaje.riesgos.length ? ". Riesgos: " + t.encaje.riesgos.join("; ") : ""));
     }
     anadir("En el radar", location.origin + location.pathname + "#/" + RUTA_POR_TIPO[t.tipo_registro] + "?id=" + encodeURIComponent(t.id));
+    var p = PREGUNTAS_ASISTENTE.filter(function (x) { return x.clave === pregunta; })[0];
+    if (p) lineas.push("", p.texto);
     return lineas.join("\n");
   }
 
@@ -1455,9 +1661,16 @@
     var abiertas = estado.tipoRegistro === "recientes";
 
     elConteo.textContent = filtrados.length + " de " + subconjunto.length + " " + ETIQUETAS_CONTEO[estado.tipoRegistro];
+    ultimosFiltrados = filtrados;
+    pintarFranja(filtrados);
+    pintarEnlaceMercado();
+    pintarBotonDescartadas();
     var esGuardadas = estado.tipoRegistro === "guardadas";
-    elContenedor.innerHTML = filtrados.map(function (t) { return plantillaTarjeta(t, abiertas); }).join("") +
-      (esGuardadas ? bloqueGuardadasFuera() : "");
+    var enTabla = modoTabla && estado.tipoRegistro !== "convocatoria_ue" && filtrados.length > 0;
+    elContenedor.innerHTML = enTabla
+      ? plantillaTabla(filtrados) + (esGuardadas ? bloqueGuardadasFuera() : "")
+      : filtrados.map(function (t) { return plantillaTarjeta(t, abiertas); }).join("") + (esGuardadas ? bloqueGuardadasFuera() : "");
+    pintarSelectorColumnas();
     elSinResultados.textContent = esGuardadas && subconjunto.length === 0
       ? "Todavía no has guardado ninguna licitación. Abre una y pulsa «Guardar»: aparecerá aquí hasta su fecha límite."
       : TEXTO_SIN_RESULTADOS;
@@ -1466,6 +1679,178 @@
     var activos = contarFiltrosActivos();
     elFiltrosActivos.hidden = activos === 0;
     elFiltrosActivos.textContent = activos;
+  }
+
+  // ---------- Cifras de la búsqueda, enlace y CSV ----------
+
+  function enEuros(t, campo) {
+    var display = campo === "presupuesto_valor" ? t.presupuesto_display : t.importe_adjudicado_display;
+    return t[campo] && /EUR$/.test(display || "") ? t[campo] : null;
+  }
+
+  function media(lista) {
+    return lista.length ? lista.reduce(function (s, x) { return s + x; }, 0) / lista.length : null;
+  }
+
+  function cifraCorta(valor) {
+    if (valor >= 1e6) return numeroEs(Math.round(valor / 1e5) / 10) + " M€";
+    if (valor >= 1e4) return miles(Math.round(valor / 1e3)) + " k€";
+    return euros(Math.round(valor));
+  }
+
+  // Franja sobre el listado: lo que suman las licitaciones que se ven y la
+  // competencia y rebaja que cabe esperar (media de sus previsiones).
+  function pintarFranja(filtrados) {
+    var tipo = estado.tipoRegistro;
+    var importe = IMPORTE_POR_TIPO[tipo];
+    if (!importe || !filtrados.length) { elFranja.hidden = true; return; }
+    var importes = filtrados.map(function (t) { return enEuros(t, importe.campo); }).filter(function (x) { return x; });
+    var total = importes.reduce(function (s, x) { return s + x; }, 0);
+    var cifras = [[importe.nombre + " total", importes.length ? cifraCorta(total) : "—",
+      "Suma de " + cuantos(importes.length, "importe publicado", "importes publicados") + " en euros, sin IVA"],
+      [importe.nombre + " medio", importes.length ? cifraCorta(total / importes.length) : "—", "Media de los importes publicados"]];
+    var ofertas, rebajas;
+    if (tipo === "adjudicacion") {
+      ofertas = filtrados.map(function (t) { return t.ofertas; }).filter(function (x) { return x; });
+      rebajas = filtrados.map(function (t) { return t.rebaja; }).filter(function (x) { return x; });
+      cifras.push(["Ofertas por concurso", ofertas.length ? numeroEs(Math.round(10 * media(ofertas)) / 10) : "—", "Media de las " + cuantos(ofertas.length, "adjudicación", "adjudicaciones") + " que publican cuántas ofertas recibieron"]);
+      cifras.push(["Rebaja de la ganadora", rebajas.length ? numeroEs(Math.round(10 * media(rebajas)) / 10) + " %" : "—", "Media de las " + cuantos(rebajas.length, "adjudicación", "adjudicaciones") + " con rebaja calculable"]);
+    } else if (tipo !== "contrato_menor_venciendo") {
+      ofertas = filtrados.map(function (t) { return t.prevision && t.prevision.ofertas && t.prevision.ofertas.valor; }).filter(function (x) { return x; });
+      rebajas = filtrados.map(function (t) { return t.prevision && t.prevision.rebaja && t.prevision.rebaja.valor; }).filter(function (x) { return x; });
+      if (ofertas.length) {
+        cifras.push(["Competencia prevista", numeroEs(Math.round(10 * media(ofertas)) / 10) + " ofertas",
+          "Media de la previsión de ofertas de " + cuantos(ofertas.length, "licitación", "licitaciones") + " (ver «Previsión» en cada una)"]);
+      }
+      if (rebajas.length) {
+        cifras.push(["Rebaja prevista", numeroEs(Math.round(10 * media(rebajas)) / 10) + " %",
+          "Media de la previsión de rebaja de " + cuantos(rebajas.length, "licitación", "licitaciones")]);
+      }
+    }
+    elFranja.innerHTML = cifras.map(function (c) {
+      return '<div title="' + escaparHtml(c[2]) + '"><dt>' + c[0] + "</dt><dd>" + c[1] + "</dd></div>";
+    }).join("");
+    elFranja.hidden = false;
+  }
+
+  // «Informe de mercado»: el análisis del histórico con la misma categoría,
+  // lugar y fuente (solo Estado o Euskadi: el histórico no tiene TED de fuera).
+  function pintarEnlaceMercado() {
+    var el = document.getElementById("enlace-mercado");
+    var partes = [];
+    if (estado.categoria) partes.push("cat=" + encodeURIComponent(estado.categoria));
+    if (estado.lugar && estado.lugar !== "sin") partes.push("lugar=" + encodeURIComponent(estado.lugar));
+    if (estado.fuente === "Estado" || estado.fuente === "Euskadi") partes.push("ambito=" + estado.fuente);
+    el.hidden = !IMPORTE_POR_TIPO[estado.tipoRegistro] || estado.tipoRegistro === "contrato_menor_venciendo";
+    el.href = "historico.html#/mercado" + (partes.length ? "?" + partes.join("&") : "");
+  }
+
+  function enlaceBusqueda() {
+    var partes = [];
+    var poner = function (clave, valor) { if (valor) partes.push(clave + "=" + encodeURIComponent(valor)); };
+    poner("q", elTexto.value.trim());
+    poner("fuente", estado.fuente);
+    poner("cat", estado.categoria);
+    poner("pais", estado.pais);
+    poner("lugar", estado.lugar);
+    poner("min", estado.presupuestoMin ? String(estado.presupuestoMin) : "");
+    poner("max", estado.presupuestoMax || "");
+    if (estado.orden && estado.orden !== ordenPorDefecto(estado.tipoRegistro)) poner("orden", estado.orden);
+    if (estado.soloPropuesta) poner("propuesta", "1");
+    return location.origin + location.pathname + "#/" + RUTA_POR_TIPO[estado.tipoRegistro] + (partes.length ? "?" + partes.join("&") : "");
+  }
+
+  // CSV para Excel en español: punto y coma, coma decimal y BOM para que
+  // respete las tildes.
+  var COLUMNAS_CSV = {
+    general: [
+      ["Título", function (t) { return t.titulo; }], ["Organismo", function (t) { return t.organismo; }],
+      ["Fuente", function (t) { return t.fuente; }], ["Expediente", function (t) { return t.codigo_expediente; }],
+      ["Provincia", function (t) { return t.provincia; }], ["Comunidad", function (t) { return t.comunidad; }],
+      ["País", function (t) { return t.pais_territorio; }], ["Fecha límite", function (t) { return t.fecha_limite; }],
+      ["Presupuesto", function (t) { return enEuros(t, "presupuesto_valor"); }],
+      ["Duración (meses)", function (t) { return t.duracion_meses; }],
+      ["Encaje", function (t) { return t.encaje && t.encaje.nota; }],
+      ["Precio (%)", function (t) { return t.criterios && t.criterios.precio; }],
+      ["Ofertas previstas", function (t) { return t.prevision && t.prevision.ofertas && t.prevision.ofertas.valor; }],
+      ["Rebaja prevista (%)", function (t) { return t.prevision && t.prevision.rebaja && t.prevision.rebaja.valor; }],
+      ["Categorías", function (t) { return (t.categorias || []).join(", "); }],
+      ["Descartada", function (t) { return estaDescartada(t.id) ? nombreMotivo(descartadas[t.id].motivo) : ""; }],
+      ["Anuncio", function (t) { return t.enlace !== NO_PUBLICADO ? t.enlace : ""; }],
+    ],
+    adjudicacion: [
+      ["Título", function (t) { return t.titulo; }], ["Organismo", function (t) { return t.organismo; }],
+      ["Empresa", function (t) { return t.empresa_adjudicataria; }],
+      ["NIF", function (t) { return nifPublicable(t.empresa_nif) ? t.empresa_nif : ""; }],
+      ["Fecha de adjudicación", function (t) { return t.fecha_adjudicacion; }],
+      ["Importe adjudicado", function (t) { return enEuros(t, "importe_adjudicado_valor"); }],
+      ["Ofertas", function (t) { return t.ofertas; }], ["Rebaja (%)", function (t) { return t.rebaja; }],
+      ["Provincia", function (t) { return t.provincia; }], ["Anuncio", function (t) { return t.enlace !== NO_PUBLICADO ? t.enlace : ""; }],
+    ],
+  };
+
+  // ---------- Vista de tabla (opcional) ----------
+  // Las mismas columnas que el CSV; cuáles se ven se recuerda en el navegador.
+  var CLAVE_MODO = "radar-modo-listado";
+  var modoTabla = (function () { try { return localStorage.getItem(CLAVE_MODO) === "tabla"; } catch (e) { return false; } })();
+  var COLUMNAS_POR_DEFECTO = {
+    general: ["Organismo", "Provincia", "Fecha límite", "Presupuesto", "Encaje", "Precio (%)"],
+    adjudicacion: ["Organismo", "Empresa", "Fecha de adjudicación", "Importe adjudicado", "Ofertas", "Rebaja (%)"],
+  };
+  function grupoColumnas() { return COLUMNAS_CSV[estado.tipoRegistro] ? estado.tipoRegistro : "general"; }
+  function columnasVisibles() {
+    try {
+      var v = JSON.parse(localStorage.getItem("radar-columnas-" + grupoColumnas()));
+      if (Array.isArray(v)) return v;
+    } catch (e) { /* sin almacenamiento: las de por defecto */ }
+    return COLUMNAS_POR_DEFECTO[grupoColumnas()];
+  }
+  function celdaTabla(nombre, v) {
+    if (v == null || v === "" || v === NO_PUBLICADO) return "<td>—</td>";
+    if (/^(Presupuesto|Importe)/.test(nombre)) return '<td class="num">' + euros(Math.round(v)) + "</td>";
+    if (/^Fecha/.test(nombre)) return '<td class="num">' + fechaLarga(v) + "</td>";
+    if (typeof v === "number") return '<td class="num">' + numeroEs(v) + (/%/.test(nombre) ? " %" : "") + "</td>";
+    if (/^https?:/.test(v)) return '<td><a href="' + escaparHtml(v) + '" target="_blank" rel="noopener noreferrer">Abrir</a></td>';
+    return "<td>" + escaparHtml(v) + "</td>";
+  }
+  function plantillaTabla(filas) {
+    var visibles = columnasVisibles();
+    var cols = (COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general).filter(function (c) {
+      return c[0] !== "Título" && visibles.indexOf(c[0]) !== -1;
+    });
+    var numerica = function (c) { return /^(Presupuesto|Importe|Fecha|Encaje|Ofertas|Duración)|%/.test(c[0]); };
+    return '<div class="tabla-listado"><table class="tabla-radar"><thead><tr><th scope="col">Título</th>' +
+      cols.map(function (c) { return '<th scope="col"' + (numerica(c) ? ' class="num"' : "") + ">" + c[0] + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + filas.map(function (t) {
+        return '<tr><td><a href="#" data-abrir="' + escaparHtml(t.id) + '">' + escaparHtml(t.titulo) + "</a></td>" +
+          cols.map(function (c) { return celdaTabla(c[0], c[1](t)); }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function pintarSelectorColumnas() {
+    var selector = document.getElementById("selector-columnas");
+    var boton = document.getElementById("boton-modo");
+    boton.textContent = modoTabla ? "Ver como tarjetas" : "Ver como tabla";
+    boton.setAttribute("aria-pressed", modoTabla ? "true" : "false");
+    boton.hidden = estado.tipoRegistro === "convocatoria_ue";
+    selector.hidden = !modoTabla || boton.hidden;
+    var visibles = columnasVisibles();
+    document.getElementById("columnas-lista").innerHTML = (COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general)
+      .filter(function (c) { return c[0] !== "Título"; }).map(function (c) {
+        return '<label><input type="checkbox" value="' + escaparHtml(c[0]) + '"' + (visibles.indexOf(c[0]) !== -1 ? " checked" : "") + ">" + c[0] + "</label>";
+      }).join("");
+  }
+
+  function csv(filas) {
+    var columnas = COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general;
+    var celda = function (v) {
+      if (v == null || v === NO_PUBLICADO) return "";
+      if (typeof v === "number") return String(v).replace(".", ",");
+      v = String(v);
+      return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
+    return "\ufeff" + [columnas.map(function (c) { return c[0]; }).join(";")].concat(filas.map(function (t) {
+      return columnas.map(function (c) { return celda(c[1](t)); }).join(";");
+    })).join("\r\n");
   }
 
   function pintarResumenCabecera() {
@@ -1657,6 +2042,7 @@
       // construirControles la descarta si en la vista nueva no existe.
       estado.soloRevisarManual = false;
       estado.soloPropuesta = false;
+      estado.verDescartadas = false;
       elTexto.value = p.q || "";
 
       Nav.activar(vista.nav);
@@ -1666,6 +2052,29 @@
       pintarPestanas(ruta);
       construirControlesDeVista();
       construirControles();
+      // Filtros de un enlace compartido (enlaceBusqueda): solo si la
+      // opción existe en esta vista.
+      var desdeEnlace = function (el, valor, poner) {
+        if (!valor) return;
+        el.value = valor;
+        if (el.value === valor) poner(valor);
+      };
+      desdeEnlace(elPais, p.pais, function (v) { estado.pais = v; });
+      desdeEnlace(elLugar, p.lugar, function (v) { estado.lugar = v; });
+      desdeEnlace(elPresupuestoMin, p.min, function (v) { estado.presupuestoMin = Number(v) || 0; });
+      desdeEnlace(elPresupuestoMax, p.max, function (v) { estado.presupuestoMax = v; });
+      desdeEnlace(elOrden, p.orden, function (v) { estado.orden = v; });
+      if (p.propuesta === "1" && !elBotonPropuesta.hidden) {
+        estado.soloPropuesta = true;
+        elBotonPropuesta.setAttribute("aria-pressed", "true");
+      }
+      // Un enlace a una licitación concreta (correo, «Copiar ficha»,
+      // enlace compartido) la abre siempre: en tarjetas y aunque esté
+      // descartada en este navegador.
+      if (p.id) {
+        modoTabla = false;
+        if (estaDescartada(p.id)) estado.verDescartadas = true;
+      }
       pintarResumenCabecera();
       aplicarFiltros();
 
@@ -1692,6 +2101,7 @@
     if (window.matchMedia("(max-width: 900px)").matches) elFiltros.open = false;
 
     purgarGuardadas();
+    purgarDescartadas();
     conteosNav = {
       licitaciones: deTipo("licitacion").length,
       calls: deTipo("convocatoria_ue").length,
@@ -1708,13 +2118,43 @@
       if (copiar) {
         var registro = porId[copiar.getAttribute("data-copiar-ficha")];
         var etiqueta = copiar.querySelector("span");
+        var original = etiqueta.textContent;
         if (!registro) return;
-        copiarTexto(fichaAsistente(registro)).then(function () {
-          etiqueta.textContent = "Ficha copiada: pégala en un chat nuevo";
+        copiarTexto(fichaAsistente(registro, copiar.getAttribute("data-pregunta"))).then(function () {
+          etiqueta.textContent = "Copiada: pégala en un chat nuevo";
         }, function () {
           etiqueta.textContent = "No se pudo copiar";
         });
-        setTimeout(function () { etiqueta.textContent = "Copiar ficha para el asistente"; }, 3000);
+        setTimeout(function () { etiqueta.textContent = original; }, 3000);
+        return;
+      }
+      if (ev.target.closest && ev.target.closest("[data-facturacion]")) {
+        var actual = facturacionGuardada();
+        var dato = window.prompt("Facturación anual de tu empresa (mejor de los tres últimos ejercicios, en euros). Se guarda solo en este navegador; déjalo vacío para borrarla.", actual ? String(actual) : "");
+        if (dato === null) return;
+        var numero = Number(String(dato).replace(/[^\d]/g, ""));
+        try {
+          if (numero) localStorage.setItem(CLAVE_FACTURACION, String(numero)); else localStorage.removeItem(CLAVE_FACTURACION);
+        } catch (e) { /* sin almacenamiento */ }
+        aplicarFiltros();
+        return;
+      }
+      var cal = ev.target.closest && ev.target.closest("[data-calendario]");
+      if (cal) {
+        var lic = porId[cal.getAttribute("data-calendario")];
+        if (lic) descargar("licitacion-" + (lic.codigo_expediente || lic.id).replace(/[^\w.-]+/g, "_") + ".ics", ics(lic), "text/calendar;charset=utf-8");
+        return;
+      }
+      var descarte = ev.target.closest && ev.target.closest("[data-descartar], [data-recuperar]");
+      if (descarte) {
+        var idD = descarte.getAttribute("data-descartar") || descarte.getAttribute("data-recuperar");
+        var regD = porId[idD];
+        if (descarte.hasAttribute("data-recuperar")) delete descartadas[idD];
+        else if (regD) descartadas[idD] = { motivo: descarte.getAttribute("data-motivo"), fecha_limite: regD.fecha_limite, titulo: regD.titulo,
+          fecha: new Date().toISOString().slice(0, 10) };
+        escribirDescartadas();
+        if (estado.verDescartadas && !deTipo(estado.tipoRegistro).some(function (t) { return estaDescartada(t.id); })) estado.verDescartadas = false;
+        if (!elVistaListado.hidden) { construirControles(); aplicarFiltros(); } else { pintarInicio(); }
         return;
       }
       var boton = ev.target.closest && ev.target.closest("[data-guardar]");
@@ -1794,6 +2234,42 @@
       construirControlesDeVista();  // importe y orden, a sus valores por defecto
       elBotonRevisar.setAttribute("aria-pressed", "false");
       marcarFuente();
+      aplicarFiltros();
+    });
+
+    document.getElementById("boton-enlace").addEventListener("click", function (ev) {
+      var b = ev.currentTarget;
+      copiarTexto(enlaceBusqueda()).then(function () { b.textContent = "Enlace copiado"; }, function () { b.textContent = "No se pudo copiar"; });
+      setTimeout(function () { b.textContent = "Copiar enlace"; }, 2500);
+    });
+    document.getElementById("boton-csv").addEventListener("click", function () {
+      descargar("radar-" + RUTA_POR_TIPO[estado.tipoRegistro].replace("/", "-") + "-" + new Date().toISOString().slice(0, 10) + ".csv",
+        csv(ultimosFiltrados), "text/csv;charset=utf-8");
+    });
+    document.getElementById("boton-modo").addEventListener("click", function () {
+      modoTabla = !modoTabla;
+      try { localStorage.setItem(CLAVE_MODO, modoTabla ? "tabla" : "tarjetas"); } catch (e) { /* sin almacenamiento */ }
+      aplicarFiltros();
+    });
+    document.getElementById("columnas-lista").addEventListener("change", function () {
+      var marcadas = Array.prototype.map.call(document.querySelectorAll("#columnas-lista input:checked"), function (i) { return i.value; });
+      try { localStorage.setItem("radar-columnas-" + grupoColumnas(), JSON.stringify(marcadas)); } catch (e) { /* sin almacenamiento */ }
+      var abierto = document.getElementById("selector-columnas").open;
+      aplicarFiltros();
+      document.getElementById("selector-columnas").open = abierto;
+    });
+    elContenedor.addEventListener("click", function (ev) {
+      var a = ev.target.closest && ev.target.closest("[data-abrir]");
+      if (!a) return;
+      ev.preventDefault();
+      modoTabla = false;
+      try { localStorage.setItem(CLAVE_MODO, "tarjetas"); } catch (e) { /* sin almacenamiento */ }
+      aplicarFiltros();
+      mostrarTarjeta(a.getAttribute("data-abrir"));
+    });
+    document.getElementById("boton-descartadas").addEventListener("click", function () {
+      estado.verDescartadas = !estado.verDescartadas;
+      construirControles();
       aplicarFiltros();
     });
 

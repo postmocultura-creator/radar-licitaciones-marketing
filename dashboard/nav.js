@@ -56,6 +56,7 @@
         ["mercado", "Análisis de mercado", "historico.html", "#/mercado", "grafico"],
         ["empresas", "Empresas", "historico.html", "#/empresas", "edificio"],
         ["organismos", "Organismos", "historico.html", "#/organismos", "institucion"],
+        ["competencia", "Nuestra competencia", "historico.html", "#/competencia", "radar"],
       ],
     },
     {

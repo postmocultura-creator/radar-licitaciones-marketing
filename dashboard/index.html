@@ -110,10 +110,22 @@
 
             <div class="barra-estado">
               <p class="conteo" id="conteo-resultados" aria-live="polite"></p>
-              <label class="orden" id="campo-orden">Ordenar por
-                <select id="filtro-orden"></select>
-              </label>
+              <div class="barra-estado__acciones">
+                <button type="button" class="boton boton--texto" id="boton-modo" aria-pressed="false">Ver como tabla</button>
+                <details class="columnas" id="selector-columnas" hidden>
+                  <summary class="boton boton--texto">Columnas</summary>
+                  <div class="columnas__lista" id="columnas-lista"></div>
+                </details>
+                <button type="button" class="boton boton--texto" id="boton-descartadas" hidden></button>
+                <button type="button" class="boton boton--texto" id="boton-enlace" title="Copia un enlace que abre esta misma búsqueda, con sus filtros">Copiar enlace</button>
+                <button type="button" class="boton boton--texto" id="boton-csv" title="Descarga lo que se ve, con estos filtros, para abrirlo en Excel">Descargar CSV</button>
+                <a class="boton boton--texto" id="enlace-mercado" href="historico.html#/mercado" title="Quién gana, cuánto rebaja y cuánta competencia hay en lo ya adjudicado, con la misma categoría, lugar y fuente" hidden>Informe de mercado</a>
+                <label class="orden" id="campo-orden">Ordenar por
+                  <select id="filtro-orden"></select>
+                </label>
+              </div>
             </div>
+            <dl class="franja-cifras" id="franja-cifras" hidden></dl>
 
             <section id="contenedor-tarjetas" class="lista-tarjetas" aria-label="Resultados"></section>
 

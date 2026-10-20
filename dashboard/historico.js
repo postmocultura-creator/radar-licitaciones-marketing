@@ -50,6 +50,11 @@
       descripcion: "Todos los organismos públicos españoles que han adjudicado contratos de servicios de agencia desde 2021. Los filtros (ámbito, tipo de adjudicación, año, categoría, provincia e importe) recalculan las cifras de cada organismo. Pulsa un organismo para ver qué empresas ganan en él.",
       buscar: "Buscar organismo…",
     },
+    competencia: {
+      nav: "competencia",
+      titulo: "Nuestra competencia",
+      descripcion: "Las empresas que sigues, con lo que han ganado en los últimos 12 meses frente a los 12 anteriores (hasta la fecha del histórico). Se guardan en este navegador, como las guardadas del radar: no se comparten. Los filtros de ámbito, tipo, categoría, provincia e importe se aplican; el de año no. Para añadir una, pulsa «Seguir» en su ficha.",
+    },
     empresa: { nav: "empresas" },
     organismo: { nav: "organismos" },
   };
@@ -185,7 +190,25 @@
     mercado: document.getElementById("vista-mercado"),
     directorio: document.getElementById("vista-directorio"),
     ficha: document.getElementById("vista-ficha"),
+    competencia: document.getElementById("vista-competencia"),
   };
+
+  // ---------- Empresas que se siguen ----------
+  // {nif: nombre} en el navegador. Por NIF y no por id: los ids del
+  // histórico cambian cuando se vuelve a generar.
+  var CLAVE_SEGUIDAS = "radar-competencia";
+  function leerSeguidas() {
+    try { return JSON.parse(localStorage.getItem(CLAVE_SEGUIDAS)) || {}; } catch (e) { return {}; }
+  }
+  function escribirSeguidas(s) {
+    try { localStorage.setItem(CLAVE_SEGUIDAS, JSON.stringify(s)); } catch (e) { /* sin almacenamiento: no se recuerda */ }
+  }
+  function alternarSeguida(nif, nombre) {
+    var s = leerSeguidas();
+    if (s[nif]) delete s[nif]; else s[nif] = nombre;
+    escribirSeguidas(s);
+    return !!s[nif];
+  }
 
   // ---------- Controles ----------
 
@@ -710,6 +733,175 @@
       "gana " + miles(x[1]) + " de " + miles(x[0]) + (x[2] ? " desde " + x[2].slice(0, 4) : "")]];
   }
 
+  // ---------- Concursos vascos: a qué se presenta y cara a cara ----------
+  // concursos-data.js (ver euskadi.concursos): cada concurso del portal de
+  // Euskadi con quién se presentó y quién ganó. Se descarga la primera vez
+  // que se abre una ficha de empresa. Las personas físicas vienen como null.
+  var URL_CONCURSO_EUSKADI = "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/";
+  var MAX_CONCURSOS_FICHA = 100;
+  var TOP_RIVALES = 15;
+  var cargaConcursos = null;
+  function cargarConcursos() {
+    if (!cargaConcursos) {
+      cargaConcursos = new Promise(function (resolver, rechazar) {
+        var s = document.createElement("script");
+        s.src = "concursos-data.js?v=" + encodeURIComponent(H.actualizado);
+        s.onload = function () { resolver(window.CONCURSOS_EUSKADI); };
+        s.onerror = function () { cargaConcursos = null; rechazar(new Error("sin concursos")); };
+        document.head.appendChild(s);
+      });
+    }
+    return cargaConcursos;
+  }
+
+  var ID_POR_NIF = null;
+  function idEmpresaPorNif(nif) {
+    if (!ID_POR_NIF) {
+      ID_POR_NIF = {};
+      D.empresa.forEach(function (e, i) { if (e[0] && e.length === 2) ID_POR_NIF[e[0]] = i; });
+    }
+    return Object.prototype.hasOwnProperty.call(ID_POR_NIF, nif) ? ID_POR_NIF[nif] : -1;
+  }
+
+  // Nombre de una licitadora, con enlace a su ficha si ha ganado algo.
+  function empresaConcurso(C, nif) {
+    if (!nif) return "una persona física";
+    var id = idEmpresaPorNif(nif);
+    var nombre = escaparHtml((C.empresas && C.empresas[nif]) || (id !== -1 ? D.empresa[id][1] : "NIF " + nif));
+    return id !== -1 ? '<a href="#/empresa/' + id + '">' + nombre + "</a>" : nombre;
+  }
+
+  function analizarConcursos(C, nif) {
+    var suyos = C.concursos.filter(function (c) { return c[5].indexOf(nif) !== -1; });
+    var porAnio = {};
+    var rivales = {};
+    suyos.forEach(function (c) {
+      var gana = c[4].indexOf(nif) !== -1;
+      var anio = (c[0] || "").slice(0, 4) || "—";
+      var a = porAnio[anio] || (porAnio[anio] = { clave: anio, numero: 0, ganadas: 0 });
+      a.numero++;
+      a.ganadas += gana ? 1 : 0;
+      var vistos = {};
+      c[5].forEach(function (otra) {
+        if (!otra || otra === nif || vistos[otra]) return;
+        vistos[otra] = true;
+        var r = rivales[otra] || (rivales[otra] = { nif: otra, veces: 0, ganaEsta: 0, ganaOtra: 0, tercera: 0 });
+        r.veces++;
+        if (gana) r.ganaEsta++;
+        else if (c[4].indexOf(otra) !== -1) r.ganaOtra++;
+        else r.tercera++;
+      });
+    });
+    return {
+      suyos: suyos,
+      porAnio: Object.keys(porAnio).sort().reverse().map(function (k) { return porAnio[k]; }),
+      rivales: Object.keys(rivales).map(function (k) { return rivales[k]; })
+        .sort(function (a, b) { return b.veces - a.veces || b.ganaOtra - a.ganaOtra; }),
+    };
+  }
+
+  function resultadoConcurso(C, c, nif) {
+    if (c[4].indexOf(nif) !== -1) return '<span class="ficha__resultado--ganada">Ganada</span>';
+    if (!c[4].length) return "Sin adjudicataria conocida";
+    return "Perdida · ganó " + c[4].map(function (g) { return empresaConcurso(C, g); }).join(", ");
+  }
+
+  function tablaSimple(cabeceras, filas) {
+    return '<div class="tabla-envoltorio tabla-envoltorio--interna"><table class="tabla"><thead><tr>' +
+      cabeceras.map(function (c) { return '<th scope="col"' + (c[1] ? ' class="num"' : "") + ">" + c[0] + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + filas.join("") + "</tbody></table></div>";
+  }
+
+  function pintarConcursos(idEmpresa) {
+    var panel = document.getElementById("ficha-concursos");
+    var cuerpo = document.getElementById("ficha-concursos-cuerpo");
+    var nif = nifPublicable(D.empresa[idEmpresa][0]);
+    panel.hidden = true;
+    if (!nif) return;
+    cargarConcursos().then(function (C) {
+      if (estado.vista !== "empresa" || estado.id !== idEmpresa || !C) return;
+      var a = analizarConcursos(C, nif);
+      if (!a.suyos.length) return;
+      var ganadas = a.suyos.filter(function (c) { return c[4].indexOf(nif) !== -1; }).length;
+      var exito = function (x, total) { return total ? Math.round(100 * x / total) + " %" : "—"; };
+      var num = function (n) { return '<td class="num">' + miles(n) + "</td>"; };
+      cuerpo.innerHTML =
+        '<p class="panel__nota">Se ha presentado a <strong>' + miles(a.suyos.length) + "</strong> y ha ganado <strong>" + miles(ganadas) +
+        "</strong> (" + exito(ganadas, a.suyos.length) + ").</p>" +
+        '<h3 class="ficha__subtitulo">Por año</h3>' +
+        tablaSimple([["Año"], ["Se presenta", true], ["Gana", true], ["Éxito", true]], a.porAnio.map(function (x) {
+          return "<tr><td>" + x.clave + "</td>" + num(x.numero) + num(x.ganadas) + '<td class="num">' + exito(x.ganadas, x.numero) + "</td></tr>";
+        })) +
+        (a.rivales.length
+          ? '<h3 class="ficha__subtitulo">Cara a cara: con quién coincide más</h3>' +
+            '<p class="panel__nota">En cuántos concursos coinciden y quién se lo lleva: esta empresa, la rival o ninguna de las dos (gana una tercera o queda sin adjudicar).' +
+            (a.rivales.length > TOP_RIVALES ? " Las " + TOP_RIVALES + " con más coincidencias, de " + miles(a.rivales.length) + "." : "") + "</p>" +
+            tablaSimple([["Rival"], ["Coinciden", true], ["Gana esta", true], ["Gana la rival", true], ["Ni una ni otra", true]],
+              a.rivales.slice(0, TOP_RIVALES).map(function (r) {
+                return "<tr><td>" + empresaConcurso(C, r.nif) + "</td>" + num(r.veces) + num(r.ganaEsta) + num(r.ganaOtra) + num(r.tercera) + "</tr>";
+              }))
+          : "") +
+        '<h3 class="ficha__subtitulo">Concursos' + (a.suyos.length > MAX_CONCURSOS_FICHA ? " (los " + MAX_CONCURSOS_FICHA + " más recientes)" : "") + "</h3>" +
+        tablaSimple([["Fecha"], ["Concurso"], ["Organismo"], ["Licitadoras", true], ["Resultado"]],
+          a.suyos.slice(0, MAX_CONCURSOS_FICHA).map(function (c) {
+            var titulo = escaparHtml(c[1] || "Expediente " + c[3]);
+            return '<tr><td class="col-fecha">' + (c[0] ? fechaLarga(c[0]) : "—") + '</td><td><a href="' + URL_CONCURSO_EUSKADI + encodeURIComponent(c[3]) +
+              '/es_doc/index.html" target="_blank" rel="noopener noreferrer">' + titulo + "</a></td><td>" + escaparHtml(c[2] || "—") +
+              "</td>" + num(c[5].length) + "<td>" + resultadoConcurso(C, c, nif) + "</td></tr>";
+          }));
+      panel.hidden = false;
+    }).catch(function () { /* sin el fichero, la ficha sigue sin esta sección */ });
+  }
+
+  // ---------- Rebajas de una empresa (al estilo de Gobierto) ----------
+  // Solo contratos con rebaja calculable y mayor que cero (ver rebajaDe).
+  var MIN_REBAJAS_GRUPO = 3;
+  var TRAMOS_REBAJA = [[0, 0.05, "Menos del 5 %"], [0.05, 0.1, "Del 5 al 10 %"], [0.1, 0.2, "Del 10 al 20 %"],
+    [0.2, 0.3, "Del 20 al 30 %"], [0.3, 0.45, "Del 30 al 45 %"], [0.45, 1, "45 % o más"]];
+
+  function rebajasPor(filas, clave) {
+    var g = {};
+    filas.forEach(function (f) {
+      if (!(f.rebaja > 0)) return;
+      [].concat(clave(f)).forEach(function (k) { (g[k] || (g[k] = [])).push(f.rebaja); });
+    });
+    return Object.keys(g).filter(function (k) { return g[k].length >= MIN_REBAJAS_GRUPO; })
+      .map(function (k) { return { clave: k, numero: g[k].length, rebaja: mediana(g[k]) }; })
+      .sort(function (a, b) { return b.numero - a.numero; });
+  }
+
+  function tablaPorAnio(filas) {
+    var lista = porAnio(filas);
+    if (!lista.length) return '<p class="barras__vacio">Sin datos con estos filtros.</p>';
+    return '<div class="tabla-envoltorio tabla-envoltorio--interna"><table class="tabla"><thead><tr><th scope="col">Año</th>' +
+      '<th scope="col" class="num">Contratos</th><th scope="col" class="num">Importe</th><th scope="col" class="num" title="Rebaja mediana al ganar">Rebaja</th></tr></thead><tbody>' +
+      lista.map(function (x) {
+        var r = mediana(filas.filter(function (f) { return f.anio === x.clave && f.rebaja > 0; }).map(function (f) { return f.rebaja; }));
+        return "<tr><td>" + x.clave + '</td><td class="num">' + miles(x.numero) + '</td><td class="num">' + euros(x.importe) +
+          '</td><td class="num">' + (r == null ? "—" : porcentaje(r)) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  function pintarRebajasEmpresa(filas) {
+    document.getElementById("ficha-anios").innerHTML = tablaPorAnio(filas);
+    var conRebaja = filas.filter(function (f) { return f.rebaja > 0; });
+    barras(document.getElementById("ficha-tramos"), TRAMOS_REBAJA.map(function (t, i) {
+      var en = conRebaja.filter(function (f) { return f.rebaja >= t[0] && f.rebaja < t[1]; });
+      return { clave: i, numero: en.length, importe: en.reduce(function (s, f) { return s + f.importe; }, 0) };
+    }).filter(function (x) { return x.numero; }), "numero", function (x) { return TRAMOS_REBAJA[x.clave][2]; });
+    barras(document.getElementById("ficha-rebaja-cat"), rebajasPor(filas, function (f) {
+      return CATEGORIAS.map(function (c, i) { return i; }).filter(function (i) { return f.mascara & (1 << i); });
+    }).slice(0, TOP_FICHA), "rebaja", function (x) { return CATEGORIAS[x.clave]; });
+    barras(document.getElementById("ficha-rebaja-org"), rebajasPor(filas, function (f) { return f.organismo; }).slice(0, TOP_FICHA), "rebaja",
+      function (x) { return D.organismo[x.clave]; }, function (x) { return "#/organismo/" + x.clave; });
+    ["ficha-rebaja-cat", "ficha-rebaja-org"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el.querySelector(".barras__fila")) {
+        el.innerHTML = '<li class="barras__vacio">Hacen falta al menos ' + MIN_REBAJAS_GRUPO + " contratos con rebaja en el mismo grupo.</li>";
+      }
+    });
+  }
+
   // Las fichas respetan ámbito/tipo/año/categoría, pero no el texto de
   // búsqueda (que solo sirve para encontrar la empresa o el organismo).
   function pintarFichaEmpresa(idEmpresa) {
@@ -727,12 +919,17 @@
 
     document.getElementById("ficha-bloques").innerHTML =
       panelBarras("Organismos a los que vende", "ficha-b1") + panelBarras("Categorías", "ficha-b2") +
-      panelBarras("Procedimiento", "ficha-b3") + panelBarras("Por año", "ficha-b4");
+      panelBarras("Procedimiento", "ficha-b3") + panelBarras("Por año", "ficha-b4") +
+      '<section class="panel"><h2>Año a año: importe y rebaja</h2><div id="ficha-anios"></div></section>' +
+      panelBarras("Cuánto rebaja al ganar (contratos por tramo)", "ficha-tramos") +
+      panelBarras("Rebaja mediana por categoría", "ficha-rebaja-cat") + panelBarras("Rebaja mediana por organismo", "ficha-rebaja-org");
     barras(document.getElementById("ficha-b1"), ordenar(agrupar(filas, function (f) { return f.organismo; }), "numero").slice(0, TOP_FICHA), "numero",
       function (x) { return D.organismo[x.clave]; }, function (x) { return "#/organismo/" + x.clave; });
     barras(document.getElementById("ficha-b2"), porCategoria(filas), "numero", function (x) { return CATEGORIAS[x.clave]; });
     barras(document.getElementById("ficha-b3"), porProcedimiento(filas), "numero", nombreProcedimiento);
     barras(document.getElementById("ficha-b4"), porAnio(filas), "numero", function (x) { return x.clave; });
+    pintarRebajasEmpresa(filas);
+    pintarConcursos(idEmpresa);
 
     document.getElementById("ficha-contratos-titulo").textContent = tituloContratos(filas);
     document.getElementById("ficha-contratos-nota").hidden = true;
@@ -765,6 +962,7 @@
   }
 
   function pintarFichaOrganismo(idOrganismo) {
+    document.getElementById("ficha-concursos").hidden = true;
     var filas = FILAS.filter(function (f) { return f.organismo === idOrganismo && pasaFiltros(f); });
     var r = resumen(filas);
     pintarKpis(document.getElementById("ficha-kpis"), [
@@ -799,6 +997,66 @@
       : '<p class="barras__vacio" style="padding:12px 20px 20px">Sin adjudicaciones con estos filtros.</p>';
   }
 
+  // Cifras de las empresas que se siguen: últimos 12 meses frente a los 12
+  // anteriores, contados hacia atrás desde la fecha del histórico.
+  function pintarCompetencia() {
+    var seguidas = leerSeguidas();
+    var nifs = Object.keys(seguidas);
+    var tabla = document.getElementById("competencia-tabla");
+    document.getElementById("competencia-vacio").hidden = nifs.length > 0;
+    tabla.parentNode.hidden = !nifs.length;
+    if (!nifs.length) return;
+    var fin = H.actualizado.slice(0, 10);
+    var hace = function (meses) {
+      var d = new Date(fin + "T12:00:00");
+      d.setMonth(d.getMonth() - meses);
+      return d.toISOString().slice(0, 10);
+    };
+    var hace12 = hace(12), hace24 = hace(24);
+    var anioFiltro = estado.anio;
+    estado.anio = "";
+    var filas = nifs.map(function (nif) {
+      var id = idEmpresaPorNif(nif);
+      var suyas = id === -1 ? [] : FILAS.filter(function (f) { return f.empresa === id && pasaFiltros(f); });
+      var ahora = suyas.filter(function (f) { return f.fecha > hace12; });
+      var antes = suyas.filter(function (f) { return f.fecha > hace24 && f.fecha <= hace12; });
+      var suma = function (l) { return l.reduce(function (s, f) { return s + f.importe; }, 0); };
+      var ultima = suyas.reduce(function (m, f) { return f.fecha > m ? f.fecha : m; }, "");
+      return { nif: nif, id: id, nombre: id !== -1 ? D.empresa[id][1] : seguidas[nif], ahora: ahora.length, antes: antes.length,
+        importeAhora: suma(ahora), importeAntes: suma(antes), rebaja: mediana(ahora.filter(function (f) { return f.rebaja > 0; }).map(function (f) { return f.rebaja; })),
+        ultima: ultima, exito: LICITADORAS[nif] };
+    });
+    estado.anio = anioFiltro;
+    filas.sort(function (a, b) { return b.importeAhora - a.importeAhora || b.ahora - a.ahora; });
+    var variacion = function (ahora, antes) {
+      if (!antes) return ahora ? '<span class="barras__sec">nuevo</span>' : "";
+      var v = Math.round(100 * (ahora - antes) / antes);
+      return '<span class="barras__sec">' + (v > 0 ? "+" : "") + v + " %</span>";
+    };
+    tabla.innerHTML = '<thead><tr><th scope="col">Empresa</th><th scope="col" class="num" title="Adjudicaciones de los últimos 12 meses y variación frente a los 12 anteriores">Gana (12 m)</th>' +
+      '<th scope="col" class="num" title="Importe adjudicado en los últimos 12 meses y variación">Importe (12 m)</th><th scope="col" class="num" title="Rebaja mediana al ganar, últimos 12 meses">Rebaja</th><th scope="col">Última</th>' +
+      '<th scope="col" class="num" title="Concursos vascos ganados de los que se presentó">Éxito Euskadi</th><th scope="col"><span class="visualmente-oculto">Quitar</span></th></tr></thead><tbody>' +
+      filas.map(function (x) {
+        var nombre = escaparHtml(x.nombre || "NIF " + x.nif);
+        return "<tr><td>" + (x.id !== -1 ? '<a href="#/empresa/' + x.id + '">' + nombre + "</a>" : nombre) +
+          '<div class="barras__sec">NIF ' + escaparHtml(x.nif) + "</div></td>" +
+          '<td class="num">' + miles(x.ahora) + " " + variacion(x.ahora, x.antes) + "</td>" +
+          '<td class="num">' + euros(x.importeAhora) + " " + variacion(x.importeAhora, x.importeAntes) + "</td>" +
+          '<td class="num">' + (x.rebaja == null ? "—" : porcentaje(x.rebaja)) + "</td>" +
+          '<td class="col-fecha">' + (x.ultima ? fechaLarga(x.ultima) : "—") + "</td>" +
+          '<td class="num">' + (x.exito && x.exito[0] >= MIN_CONCURSOS_EXITO ? Math.round(100 * x.exito[1] / x.exito[0]) + " %" +
+            '<div class="barras__sec">' + x.exito[1] + " de " + x.exito[0] + "</div>" : "—") + "</td>" +
+          '<td><button type="button" class="boton boton--contorno" data-dejar="' + escaparHtml(x.nif) + '">Quitar</button></td></tr>';
+      }).join("") + "</tbody>";
+  }
+
+  document.getElementById("vista-competencia").addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest("[data-dejar]");
+    if (!b) return;
+    alternarSeguida(b.getAttribute("data-dejar"), null);
+    pintarCompetencia();
+  });
+
   // ---------- Rutas ----------
 
   function pintarCabecera() {
@@ -806,8 +1064,12 @@
     var html;
     if (estado.vista === "empresa") {
       var e = D.empresa[estado.id];
+      var nifSeguible = nifPublicable(e[0]);
+      var seguida = nifSeguible && leerSeguidas()[nifSeguible];
       html = '<nav class="migas" aria-label="Ruta"><a href="#/empresas">Empresas</a><span aria-hidden="true">›</span><span>Ficha de empresa</span></nav>' +
         '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(e[1]) + "</h1>" +
+        (nifSeguible ? '<p><button type="button" class="boton boton--contorno" data-seguir="' + escaparHtml(nifSeguible) + '" aria-pressed="' + (seguida ? "true" : "false") + '">' +
+          (seguida ? "Siguiendo · dejar de seguir" : "Seguir") + "</button></p>" : "") +
         '<p class="pagina__descripcion">' + (nifPublicable(e[0]) ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con los filtros seleccionados (ámbito, tipo, año, categoría, provincia e importe).</p></div></header>";
       document.title = e[1] + " — Radar de licitaciones";
     } else if (estado.vista === "organismo") {
@@ -829,9 +1091,11 @@
     elVistas.mercado.hidden = estado.vista !== "mercado";
     elVistas.directorio.hidden = !esDirectorio;
     elVistas.ficha.hidden = !esFicha;
-    elCampoTexto.hidden = esFicha;
+    elVistas.competencia.hidden = estado.vista !== "competencia";
+    elCampoTexto.hidden = esFicha || estado.vista === "competencia";
 
     if (estado.vista === "mercado") pintarMercado();
+    else if (estado.vista === "competencia") pintarCompetencia();
     else if (esDirectorio) pintarDirectorio();
     else if (estado.vista === "empresa") pintarFichaEmpresa(estado.id);
     else pintarFichaOrganismo(estado.id);
@@ -879,6 +1143,24 @@
       }
     }
 
+    // Filtros que llegan del radar («Análisis de mercado con estos
+    // filtros»): categoría por nombre, lugar y ámbito con los mismos valores.
+    var pr = leida.params;
+    if (pr.cat && CATEGORIAS.indexOf(pr.cat) !== -1) {
+      estado.categoria = CATEGORIAS.indexOf(pr.cat);
+      elCategoria.value = String(estado.categoria);
+    }
+    if (pr.lugar) {
+      elLugar.value = pr.lugar;
+      if (elLugar.value === pr.lugar) estado.lugar = pr.lugar;
+    }
+    if (pr.ambito === "Estado" || pr.ambito === "Euskadi") {
+      estado.ambito = pr.ambito;
+      Array.prototype.forEach.call(document.getElementById("segmented-ambito").children, function (b) {
+        b.setAttribute("aria-pressed", b.textContent === pr.ambito ? "true" : "false");
+      });
+    }
+
     var q = (leida.params.q || "").trim();
     if (vista === "empresas" || vista === "organismos") {
       var exacto = -1;
@@ -910,6 +1192,14 @@
   var textoActualizado = "Histórico actualizado el " + fechaLarga(H.actualizado) + ".";
   Nav.actualizado(textoActualizado);
   document.getElementById("fecha-generacion").textContent = textoActualizado;
+
+  elCabecera.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest("[data-seguir]");
+    if (!b) return;
+    var sigue = alternarSeguida(b.getAttribute("data-seguir"), D.empresa[estado.id][1]);
+    b.setAttribute("aria-pressed", sigue ? "true" : "false");
+    b.textContent = sigue ? "Siguiendo · dejar de seguir" : "Seguir";
+  });
 
   window.addEventListener("hashchange", function () { navegar(false); });
   navegar(true);

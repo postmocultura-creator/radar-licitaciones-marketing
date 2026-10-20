@@ -44,7 +44,7 @@ import peticiones
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
-from nif import enmascarado, es_relleno, limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
+from nif import enmascarado, es_relleno, es_sociedad, limpiar as limpiar_nif, ocultar_en_texto  # noqa: E402
 
 FUENTE = "Euskadi"
 BASE_URL = "https://api.euskadi.eus/procurements/contracting-notices"
@@ -540,12 +540,36 @@ def leer_ficha(url: str) -> dict:
     docs = sorted(documentos.values(), key=lambda d: orden.index(d["tipo"]))
     orden_pliegos = ["administrativo", "tecnico", "caratula"]
     lista_pliegos = sorted(pliegos.values(), key=lambda p: orden_pliegos.index(p["tipo"]))
+    # Los criterios y la duración generales, sin la pestaña de lotes: cada
+    # lote repite allí los suyos y se mezclarían.
+    general = pagina.replace(pestanas.get("Lotes", ""), "") if pestanas.get("Lotes") else pagina
     return {"documentos": docs[:MAX_DOCUMENTOS_FICHA], "licitadores": licitadores,
             "pliegos": lista_pliegos[:MAX_PLIEGOS_FICHA],
-            # Los criterios generales, sin la pestaña de lotes: cada lote
-            # repite allí los suyos y se mezclarían.
-            "criterios": _criterios(pagina.replace(pestanas.get("Lotes", ""), "") if pestanas.get("Lotes") else pagina),
+            "criterios": _criterios(general),
+            "duracion_meses": _duracion_meses(general),
             "lotes": _lotes(pestanas.get("Lotes", ""))}
+
+
+_MESES_POR_UNIDAD = {"mes": 1, "meses": 1, "ano": 12, "anos": 12, "dia": 1 / 30, "dias": 1 / 30,
+                     "semana": 7 / 30, "semanas": 7 / 30}
+
+
+def _duracion_meses(pagina: str) -> float | None:
+    """"Duración del contrato" de la ficha en meses, sin las prórrogas
+    ("12 Meses", "2 Años"). Sirve para el valor anual del contrato, que
+    marca la solvencia económica que se puede pedir (encaje.py)."""
+    for m in _RE_FILA.finditer(pagina):
+        if m.group("etiqueta") is None or _plano(_limpio(m.group("etiqueta"))) != "duracion del contrato":
+            continue
+        partes = re.match(r"([\d.,]+)\s*(\w+)", _plano(_limpio(m.group("valor"))))
+        if partes and partes.group(2) in _MESES_POR_UNIDAD:
+            try:
+                valor = float(partes.group(1).replace(".", "").replace(",", "."))
+            except ValueError:
+                return None
+            return round(valor * _MESES_POR_UNIDAD[partes.group(2)], 1) or None
+        return None
+    return None
 
 
 # Tope de tiempo de las fichas de las licitaciones en plazo: son unas 70
@@ -556,7 +580,7 @@ SEGUNDOS_FICHAS_LICITACIONES = 300
 def anadir_fichas_licitaciones(items: list[dict], hoy: str | None = None) -> None:
     """Pliegos y criterios de adjudicación de las licitaciones en plazo que
     el radar va a enseñar (las que encajan con la taxonomía): la API no los
-    da, la ficha pública sí. De la ficha solo se guardan eso y los lotes."""
+    da, la ficha pública sí. De la ficha solo se guardan eso, los lotes y la duración."""
     from clasificar import clasificar_texto  # noqa: E402
 
     hoy = hoy or datetime.now(timezone.utc).date().isoformat()
@@ -588,7 +612,8 @@ def anadir_fichas_licitaciones(items: list[dict], hoy: str | None = None) -> Non
         except requests.RequestException as exc:
             print(f"[euskadi] AVISO: no se pudo leer la ficha {url} ({exc})", file=sys.stderr)
             continue
-        item["ficha"] = ya_leidas[url] = {"pliegos": ficha["pliegos"], "criterios": ficha["criterios"], "lotes": ficha["lotes"]}
+        item["ficha"] = ya_leidas[url] = {"pliegos": ficha["pliegos"], "criterios": ficha["criterios"], "lotes": ficha["lotes"],
+                                          "duracion_meses": ficha.get("duracion_meses")}
         leidas += 1
         vacias += not ficha["pliegos"] and not ficha["criterios"]
         time.sleep(1 / PETICIONES_POR_SEGUNDO)
@@ -635,13 +660,18 @@ def anadir_fichas(items: list[dict]) -> None:
 # de los concursos vascos del histórico de adjudicaciones (1.398 no menores
 # de 2021 a 2026, medido el 2026-10-04: unas diez noches).
 #
-# De cada licitadora se guarda solo el NIF y si es pyme: para el índice no
-# hace falta el nombre (el dashboard lo saca del histórico).
+# De cada licitadora se guarda el NIF, si es pyme y, si es una sociedad, el
+# nombre: la ficha de competidor (concursos-data.js) enseña también a las
+# rivales que nunca han ganado y no están en el histórico. De las personas
+# físicas (autónomos), nunca el nombre. Las fichas leídas antes del
+# 2026-10-20 no lo guardaban: se vuelven a leer poco a poco
+# (rellenar_desde_historico).
 # ---------------------------------------------------------------------------
 _RAIZ = Path(__file__).resolve().parent.parent
 LICITADORAS_ACUMULADO = _RAIZ / "data" / "euskadi_licitadoras.json"
 HISTORICO = _RAIZ / "data" / "historico_adjudicaciones.json"
 SALIDA_LICITADORAS = _RAIZ / "dashboard" / "licitadoras-data.js"
+SALIDA_CONCURSOS = _RAIZ / "dashboard" / "concursos-data.js"
 FICHAS_RELLENO_POR_NOCHE = 150
 # Tope de tiempo del relleno: el paso de Euskadi tiene 25 minutos en total.
 SEGUNDOS_RELLENO_MAX = 300
@@ -667,12 +697,27 @@ def guardar_licitadoras(acumulado: dict) -> None:
     LICITADORAS_ACUMULADO.write_text(json.dumps(acumulado, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
-def _entrada(fecha: str | None, ganadoras: list[str | None], licitadoras: list[dict]) -> dict:
+def _licitadora(l: dict) -> dict:
+    salida = {"nif": l.get("nif"), "pyme": l.get("pyme")}
+    if es_sociedad(l.get("nif")) and l.get("nombre"):
+        salida["nombre"] = l["nombre"]
+    return salida
+
+
+def _entrada(fecha: str | None, ganadoras: list[str | None], licitadoras: list[dict],
+             titulo: str | None = None, organismo: str | None = None) -> dict:
     """Una ficha sin licitadoras (desierto, ficha vacía) también se guarda,
-    para no volver a pedirla cada noche."""
-    return {"fecha": (fecha or "")[:10] or None,
-            "ganadoras": sorted({g for g in ganadoras if g}),
-            "licitadoras": [{"nif": l.get("nif"), "pyme": l.get("pyme")} for l in licitadoras]}
+    para no volver a pedirla cada noche. "nombres": ya se guardan los
+    nombres de las sociedades (si es False, la ficha se volverá a leer)."""
+    entrada = {"fecha": (fecha or "")[:10] or None,
+               "ganadoras": sorted({g for g in ganadoras if g}),
+               "licitadoras": [_licitadora(l) for l in licitadoras],
+               "nombres": True}
+    if titulo:
+        entrada["titulo"] = titulo
+    if organismo:
+        entrada["organismo"] = organismo
+    return entrada
 
 
 def acumular_licitadoras(adjudicaciones: list[dict], acumulado: dict) -> int:
@@ -684,13 +729,15 @@ def acumular_licitadoras(adjudicaciones: list[dict], acumulado: dict) -> int:
         if not clave or "ficha" not in item:
             continue
         nuevas += clave not in acumulado
-        acumulado[clave] = _entrada(item.get("awardDate"), [item.get("CIF")], item["ficha"]["licitadores"])
+        acumulado[clave] = _entrada(item.get("awardDate"), [item.get("CIF")], item["ficha"]["licitadores"],
+                                    item.get("object"), (item.get("contractingAuthority") or {}).get("name"))
     return nuevas
 
 
 def _pendientes_del_historico(acumulado: dict) -> list[tuple[str, str, str, list[str]]]:
     """(clave, enlace, fecha, NIF de las ganadoras) de los concursos vascos
-    del histórico sin ficha leída, del más reciente al más antiguo. Los
+    del histórico sin ficha leída, del más reciente al más antiguo, y
+    después los leídos antes de guardar los nombres de las licitadoras. Los
     contratos menores no: no tienen concurso."""
     try:
         c = json.loads(HISTORICO.read_text(encoding="utf-8"))
@@ -703,15 +750,20 @@ def _pendientes_del_historico(acumulado: dict) -> list[tuple[str, str, str, list
         if len(empresa) > 2:  # ficha fusionada: [None, nombre, índice de la buena]
             empresa = empresas[empresa[2]]
         ganadoras.setdefault(l[0], []).append(empresa[0])
-    pendientes = []
+    pendientes, sin_nombres = [], []
     for i, e in enumerate(c["exp"]):
         if not e[3] or e[6] or not str(e[8]).startswith("http"):
             continue
         clave = clave_expediente(e[8])
-        if clave and clave not in acumulado:
+        if not clave:
+            continue
+        if clave not in acumulado:
             pendientes.append((clave, e[8], e[10], ganadoras.get(i, [])))
+        elif not acumulado[clave].get("nombres") and any(es_sociedad(l.get("nif")) for l in acumulado[clave].get("licitadoras") or []):
+            sin_nombres.append((clave, e[8], e[10], acumulado[clave].get("ganadoras") or []))
     pendientes.sort(key=lambda p: p[2], reverse=True)
-    return pendientes
+    sin_nombres.sort(key=lambda p: p[2], reverse=True)
+    return pendientes + sin_nombres
 
 
 def rellenar_desde_historico(acumulado: dict, maximo: int = FICHAS_RELLENO_POR_NOCHE,
@@ -762,6 +814,54 @@ def publicar_indice_exito(acumulado: dict) -> None:
         encoding="utf-8")
 
 
+def concursos(acumulado: dict) -> dict:
+    """Para la ficha de competidor del histórico (a qué se presenta cada
+    empresa, ganadas y perdidas, cara a cara):
+    {"empresas": {nif: nombre}, "concursos": [[fecha, título, organismo,
+    clave, [NIF ganadoras], [NIF licitadoras]]]}, del más reciente al más
+    antiguo. Las personas físicas y las licitadoras sin NIF van como null:
+    se cuentan, pero no se dice quiénes son. Título y organismo, de la
+    ficha o, si no, del histórico de adjudicaciones; los nombres, de la
+    ficha o del histórico."""
+    try:
+        c = json.loads(HISTORICO.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        c = {"exp": [], "dic": {"empresa": [], "organismo": []}}
+    por_clave = {}
+    for e in c["exp"]:
+        clave = clave_expediente(str(e[8])) if e[3] else None
+        if clave:
+            por_clave[clave] = (e[1], c["dic"]["organismo"][e[2]] if e[2] is not None else None)
+    nombres: dict[str, str] = {}
+    for empresa in c["dic"]["empresa"]:
+        if es_sociedad(empresa[0]):
+            nombres[empresa[0]] = empresa[1]
+    publicable = lambda nif: nif if es_sociedad(nif) else None  # noqa: E731
+    filas, usadas = [], {}
+    for clave, entrada in acumulado.items():
+        licitadoras = [publicable(l.get("nif")) for l in entrada["licitadoras"]]
+        if not licitadoras:
+            continue
+        for l in entrada["licitadoras"]:
+            if l.get("nombre") and es_sociedad(l.get("nif")):
+                usadas[l["nif"]] = l["nombre"]
+        titulo, organismo = por_clave.get(clave, (None, None))
+        filas.append([entrada.get("fecha"), entrada.get("titulo") or titulo, entrada.get("organismo") or organismo, clave,
+                      [publicable(g) for g in entrada["ganadoras"]], licitadoras])
+    filas.sort(key=lambda f: f[0] or "", reverse=True)
+    nifs = {n for f in filas for n in f[4] + f[5] if n}
+    return {"empresas": {n: usadas.get(n) or nombres.get(n) for n in sorted(nifs) if usadas.get(n) or nombres.get(n)},
+            "concursos": filas}
+
+
+def publicar_concursos(acumulado: dict) -> None:
+    SALIDA_CONCURSOS.write_text(
+        "// Generado por scrapers/euskadi.py (ver concursos). No editar a mano.\n"
+        "// {empresas: {nif: nombre}, concursos: [[fecha, título, organismo, expediente, [ganadoras], [licitadoras]]]}\n"
+        "window.CONCURSOS_EUSKADI = " + json.dumps(concursos(acumulado), ensure_ascii=False, separators=(",", ":")) + ";\n",
+        encoding="utf-8")
+
+
 def guardar_crudo(items: list[dict], prefijo: str = "euskadi") -> Path:
     return comun.guardar_crudo(FUENTE, prefijo, items)
 
@@ -803,6 +903,7 @@ def main() -> None:
     nuevas = acumular_licitadoras(adjudicaciones, licitadoras)
     guardar_licitadoras(licitadoras)
     publicar_indice_exito(licitadoras)
+    publicar_concursos(licitadoras)
     print(f"[euskadi] licitadoras: {nuevas} expedientes nuevos, {len(licitadoras)} acumulados")
 
     # Ventana distinta a la de arriba a propósito: "adjudicado hace poco"
@@ -824,6 +925,7 @@ def main() -> None:
     rellenadas = rellenar_desde_historico(licitadoras, segundos_max=max(0.0, min(SEGUNDOS_RELLENO_MAX, restante)))
     guardar_licitadoras(licitadoras)
     publicar_indice_exito(licitadoras)
+    publicar_concursos(licitadoras)
     print(f"[euskadi] licitadoras: {rellenadas} fichas del histórico leídas, "
           f"{len(_pendientes_del_historico(licitadoras))} pendientes")
 

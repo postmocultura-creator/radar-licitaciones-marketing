@@ -107,3 +107,27 @@ def test_perfil_desde_el_secreto(monkeypatch, tmp_path):
     registros = [licitacion(), {"tipo_registro": "adjudicacion"}]
     assert encaje.anadir_notas(registros, HOY) == 1
     assert registros[0]["encaje"]["nota"] == 8 and "encaje" not in registros[1]
+
+
+
+def test_solvencia_que_puede_pedir_el_pliego():
+    # IL3-UB: 497.521 € en 13 meses -> se pueden pedir 688.875 € al año.
+    assert encaje.solvencia_exigible(licitacion(presupuesto_valor=497_521.0, duracion_meses=13)) == {
+        "hasta": 688_875, "seguro": 688_875, "duracion": True, "lotes": False}
+    # Por lotes: el más barato marca el mínimo.
+    s = encaje.solvencia_exigible(licitacion(presupuesto_valor=800_000.0, duracion_meses=12,
+                                             lotes=[{"importe": 600_000.0}, {"importe": 200_000.0}]))
+    assert (s["hasta"], s["seguro"]) == (1_200_000, 300_000)
+    # Sin duración: entre un año y cinco.
+    s = encaje.solvencia_exigible(licitacion(presupuesto_valor=2_000_000.0))
+    assert (s["hasta"], s["seguro"], s["duracion"]) == (3_000_000, 600_000, False)
+    # Fuera de España no se aplica la LCSP; sin presupuesto, nada.
+    assert encaje.solvencia_exigible(licitacion(pais_territorio="Francia")) is None
+    assert encaje.solvencia_exigible(licitacion(presupuesto_valor=None)) is None
+
+
+def test_la_facturacion_de_la_agencia_no_cambia_la_nota():
+    # La ficha es pública: la nota no puede depender de la facturación.
+    perfil = dict(PERFIL, volumen=100_000)
+    r = licitacion(presupuesto_valor=900_000.0, duracion_meses=12)
+    assert encaje.nota(r, perfil, HOY) == encaje.nota(r, PERFIL, HOY)

@@ -2,6 +2,7 @@
 """NIF, fechas, horas, importes y lugar: las conversiones que comparten el
 radar diario y el histórico."""
 import json
+from datetime import date
 
 import pytest
 
@@ -179,6 +180,16 @@ def test_competencia_euskadi_cuenta_licitadoras():
     assert _competencia({"fuente": "Euskadi", "original": {}}, licitadoras) == {"ofertas": 2}
 
 
+def test_clave_del_organismo_sin_lo_que_anade_cada_plataforma():
+    # El mismo organismo con cuatro nombres en el histórico (IL3-UB, 2026-10-20).
+    nombres = ["Fundació Privada Institut de Formació Contínua de la Universitat de Barcelona (IL3-UB)(M.P.)",
+               "Fundació Institut de Formació Contínua de la Universitat de Barcelona (IL3-UB).",
+               "Fundació Privada Institut de Formació Contínua de la Universitat de Barcelona (IL3-UB)"]
+    assert len({normalizar._clave_organismo(n) for n in nombres}) == 1
+    # Organismos distintos siguen siendo distintos.
+    assert normalizar._clave_organismo("Ayuntamiento de Getxo") != normalizar._clave_organismo("Ayuntamiento de Getafe")
+
+
 def test_organismos_compatibles():
     assert _organismos_compatibles("gobierno vasco", "gobierno vasco bienestar juventud")
     assert not _organismos_compatibles("gobierno vasco", "gobierno de navarra")
@@ -345,6 +356,81 @@ def test_lotes_ted_y_euskadi():
     # Sin criterios generales, la ficha enseña los del primer lote y lo avisa.
     criterios = normalizar._criterios(euskadi)
     assert (criterios["precio"], criterios["resto"], criterios["por_lotes"]) == (35, 65, True)
+
+
+def test_duracion_del_contrato_en_meses():
+    estado = {"fuente": "Estado", "original": {"duracion_valor": "2", "duracion_unidad": "ANN"}}
+    assert normalizar._duracion_meses(estado) == 24
+    # TED: la del lote más largo.
+    ted = {"fuente": "UE", "original": {"duration-period-value-lot": ["12", "2"],
+                                        "duration-period-unit-lot": ["MONTH", "YEAR"]}}
+    assert normalizar._duracion_meses(ted) == 24
+    euskadi = {"fuente": "Euskadi", "original": {"ficha": {"duracion_meses": 12.0}}}
+    assert normalizar._duracion_meses(euskadi) == 12
+    # Sin dato, o con una unidad que no se conoce: nada.
+    assert normalizar._duracion_meses({"fuente": "Estado", "original": {"duracion_valor": "3"}}) is None
+    assert normalizar._duracion_meses({"fuente": "UE", "original": {"duration-period-value-lot": ["x"],
+                                                                     "duration-period-unit-lot": ["YEAR"]}}) is None
+    # Al fusionar, la que se queda hereda la duración si no la tiene.
+    superviviente = {"presupuesto_valor": 1.0}
+    normalizar._heredar_hora_y_pliegos(superviviente, {"duracion_meses": 13.0})
+    assert superviviente["duracion_meses"] == 13
+
+
+def test_quien_suele_presentarse_a_los_parecidos():
+    entradas = [
+        {"ganadoras": ["B10000001"], "licitadoras": [{"nif": "B10000001"}, {"nif": "A10000002", "nombre": "Otra SA"},
+                                                     {"nif": "***4567**", "nombre": "Nombre Inventado"}]},
+        {"ganadoras": ["A10000002"], "licitadoras": [{"nif": "B10000001"}, {"nif": "A10000002"}, {"nif": "B10000009"}]},
+    ]
+    empresas = [["B10000001", "Una SL"]]
+    h = normalizar._habituales(entradas, empresas, {"B10000001": 0})
+    # La que no ha ganado nada ni tiene nombre en la ficha no sale; las
+    # personas físicas, nunca.
+    assert h == {"concursos": 2, "empresas": [
+        {"nombre": "Otra SA", "veces": 2, "ganadas": 1},
+        {"nombre": "Una SL", "veces": 2, "ganadas": 1, "id": 0}]}
+    assert normalizar._habituales([{"ganadoras": [], "licitadoras": [{"nif": "***4567**"}]}], empresas, {}) is None
+
+
+def _historico_prevision():
+    # exp: [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar]
+    # Categoría 0 = Redes sociales (máscara 1). Lugar 0 = Soria; 1 = Madrid.
+    c = {"categorias": ["Redes sociales / community management", "Diseño y desarrollo web"],
+         "dic": {"procedimiento": ["Abierto", "Contrato menor"], "lugar": [["Soria", "Castilla y León"], ["Madrid", "Madrid"]]},
+         "exp": [], "lotes": []}
+
+    def contrato(lugar, ofertas, importe, proc=0, menor=0, fecha="2025-06-01"):
+        c["exp"].append(["x", "t", 0, 0, 0, proc, menor, 1, "", 0, fecha, 100.0, lugar])
+        c["lotes"].append([len(c["exp"]) - 1, 0, fecha, importe, ofertas, 1])
+    for _ in range(5):
+        contrato(0, 2, 80.0)         # Soria: 2 ofertas, 20 % de rebaja
+    contrato(0, 9, 30.0)             # rebaja del 70 %: no cuenta (sí sus ofertas)
+    contrato(0, 1, 99.0, menor=1)    # menor: no cuenta
+    contrato(0, 1, 120.0)            # subida: no cuenta la rebaja
+    contrato(0, 1, 90.0, fecha="2020-01-01")  # más de 3 años: no cuenta
+    for _ in range(3):
+        contrato(1, 6, 90.0)         # Madrid: solo 3, no llega a 5
+    return c
+
+
+def test_prevision_de_competencia_y_rebaja():
+    c = _historico_prevision()
+    grupos = normalizar._grupos_prevision(c, date(2026, 10, 20))
+    assert grupos[("provincia", "Soria", 0)] == ([2, 2, 2, 2, 2, 9, 1], [20.0] * 5)
+    r = {"categorias": ["Redes sociales / community management"], "provincia": "Soria", "comunidad": "Castilla y León"}
+    p = normalizar._prevision(r, grupos, c["categorias"])
+    assert p["ofertas"] == {"valor": 2, "n": 7, "base": "provincia", "lugar": "Soria",
+                            "categoria": "Redes sociales / community management"}
+    assert p["rebaja"]["valor"] == 20.0
+    # En Madrid hay menos de 5: sube a la comunidad (la misma) y a España.
+    madrid = normalizar._prevision(dict(r, provincia="Madrid", comunidad="Madrid"), grupos, c["categorias"])
+    assert madrid["ofertas"]["base"] == "espana" and madrid["ofertas"]["n"] == 10
+    # Con 3 contratos parecidos del organismo, mandan ellos.
+    r["antecedentes_resumen"] = {"ofertas": {"media": 4.3, "min": 3, "max": 6, "n": 3}}
+    assert normalizar._prevision(r, grupos, c["categorias"])["ofertas"] == {"valor": 4.3, "n": 3, "base": "parecidos"}
+    # Sin categoría conocida, no hay grupo.
+    assert normalizar._prevision({"categorias": ["Otra"], "provincia": "Soria"}, grupos, c["categorias"]) is None
 
 
 def test_un_solo_lote_no_se_ensena():

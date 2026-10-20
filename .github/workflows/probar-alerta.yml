@@ -33,4 +33,5 @@ jobs:
           ALERTAS_SMTP_CLAVE: ${{ secrets.ALERTAS_SMTP_CLAVE }}
           ALERTAS_DE: ${{ secrets.ALERTAS_DE }}
           ALERTAS_PARA: ${{ secrets.ALERTAS_PARA }}
+          PERFIL_AGENCIA: ${{ secrets.PERFIL_AGENCIA }}
         run: python alertas.py --sin-guardar

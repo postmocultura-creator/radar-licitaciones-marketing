@@ -117,10 +117,23 @@
         <p class="sin-resultados" id="directorio-vacio" hidden>Ningún resultado con estos filtros.</p>
       </section>
 
+      <!-- Empresas que se siguen (Nuestra competencia) -->
+      <section id="vista-competencia" hidden>
+        <div class="tabla-envoltorio">
+          <table class="tabla" id="competencia-tabla"></table>
+        </div>
+        <p class="sin-resultados" id="competencia-vacio" hidden>Todavía no sigues a ninguna empresa. Abre la ficha de una (desde <a class="enlace" href="#/empresas">Empresas</a>) y pulsa «Seguir».</p>
+      </section>
+
       <!-- Ficha de una empresa o de un organismo -->
       <section id="vista-ficha" hidden>
         <div class="kpis" id="ficha-kpis"></div>
         <div class="rejilla" id="ficha-bloques"></div>
+        <section class="panel ficha__contratos" id="ficha-concursos" aria-labelledby="ficha-concursos-titulo" hidden>
+          <h2 id="ficha-concursos-titulo">Concursos vascos a los que se presenta</h2>
+          <p class="panel__nota">Concursos del portal de contratación de Euskadi en los que figura como licitadora, con las demás empresas que se presentaron. No cambian con los filtros. Las personas físicas (autónomos) se cuentan, pero no se nombran.</p>
+          <div id="ficha-concursos-cuerpo" aria-live="polite"></div>
+        </section>
         <section class="panel ficha__contratos" aria-labelledby="ficha-contratos-titulo">
           <h2 id="ficha-contratos-titulo"></h2>
           <p class="panel__nota" id="ficha-contratos-nota" hidden></p>

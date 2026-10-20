@@ -207,6 +207,8 @@ jobs:
           ALERTAS_SMTP_CLAVE: ${{ secrets.ALERTAS_SMTP_CLAVE }}
           ALERTAS_DE: ${{ secrets.ALERTAS_DE }}
           ALERTAS_PARA: ${{ secrets.ALERTAS_PARA }}
+          # Rivales vigilados (NIF de la agencia y competidores): ver alertas.competidores.
+          PERFIL_AGENCIA: ${{ secrets.PERFIL_AGENCIA }}
         run: python alertas.py
 
       # El scraping tarda 15-30 minutos; en ese rato puede haber caído un
@@ -235,7 +237,7 @@ jobs:
           sh .github/publicar_estado.sh $estado
           # Después lo que sirve la web (main, que Vercel publica).
           git reset origin/main
-          git add dashboard/tenders-data.js dashboard/licitadoras-data.js dashboard/filtro-data.js
+          git add dashboard/tenders-data.js dashboard/licitadoras-data.js dashboard/concursos-data.js dashboard/filtro-data.js
           if [ "${{ steps.historico.outcome }}" = "success" ]; then
             git add dashboard/historico-data.js dashboard/historico-detalle
           fi
