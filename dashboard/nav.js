@@ -96,12 +96,20 @@
   var elLateral = document.getElementById("lateral");
   var elAbrir = document.getElementById("abrir-menu");
 
+  // Nombre, lema y logo de la instancia: marca.js.
+  var MARCA = window.RADAR_MARCA || { nombre: "Radar de licitaciones", lema: "Marketing digital y publicidad", logo: null };
+  if (MARCA.nombre !== "Radar de licitaciones") {
+    document.title = document.title.replace("Radar de licitaciones", MARCA.nombre);
+  }
+
   function pintar() {
+    var simbolo = MARCA.logo
+      ? '<img class="marca__logo" src="' + MARCA.logo + '" alt="">'
+      : '<span class="marca__simbolo">' + icono("radar", "") + "</span>";
     var html =
-      '<a class="marca" href="' + enlace("index.html", "#/inicio") + '">' +
-        '<span class="marca__simbolo">' + icono("radar", "") + "</span>" +
-        '<span class="marca__texto"><span class="marca__nombre">Radar de licitaciones</span>' +
-        '<span class="marca__lema">Marketing digital y publicidad</span></span>' +
+      '<a class="marca" href="' + enlace("index.html", "#/inicio") + '">' + simbolo +
+        '<span class="marca__texto"><span class="marca__nombre">' + MARCA.nombre + "</span>" +
+        '<span class="marca__lema">' + MARCA.lema + "</span></span>" +
       "</a>" +
       '<nav class="nav" aria-label="Secciones">';
     GRUPOS.forEach(function (grupo) {

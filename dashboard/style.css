@@ -157,6 +157,7 @@ main:focus { outline: none; }
   color: #fff;
 }
 .marca__simbolo svg { width: 18px; height: 18px; }
+.marca__logo { height: 32px; width: auto; max-width: 96px; flex: 0 0 auto; object-fit: contain; }
 
 .marca__texto { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
 .marca__nombre { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
