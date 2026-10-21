@@ -71,6 +71,18 @@ def test_si_el_envio_falla_no_marca_nada(rutas, monkeypatch):
     assert not (carpeta / "alertas_enviadas.json").exists()
 
 
+def test_avisa_si_el_servidor_rechaza_destinatarios(rutas, monkeypatch, capsys):
+    carpeta, _ = rutas
+    (carpeta / "tenders.json").write_text(json.dumps([registro("a")]), encoding="utf-8")
+    monkeypatch.setenv("ALERTAS_PARA", "x@ejemplo.es, y@ejemplo.es")
+    monkeypatch.setattr(alertas, "enviar", lambda *a: {"y@ejemplo.es": (550, b"no existe")})
+    alertas.main()
+    salida = capsys.readouterr()
+    assert "rechazó 1 de 2" in salida.err
+    assert "y@ejemplo.es" not in salida.err + salida.out  # el registro puede ser público
+    assert "Enviado a 1 destinatario(s)" in salida.out
+
+
 def test_prueba_con_lo_publicado_sin_marcar_nada(rutas, monkeypatch):
     carpeta, enviados = rutas
     # Sin data/tenders.json: lee lo publicado en el dashboard.

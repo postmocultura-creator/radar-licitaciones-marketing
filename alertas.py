@@ -354,7 +354,8 @@ def _configuracion() -> dict | None:
     }
 
 
-def enviar(conf: dict, asunto_correo: str, texto: str, html_correo: str) -> None:
+def enviar(conf: dict, asunto_correo: str, texto: str, html_correo: str) -> dict:
+    """Devuelve las direcciones que el servidor rechazó (vacío si ninguna)."""
     mensaje = EmailMessage()
     nombre, direccion = parseaddr(conf["de"])
     mensaje["From"] = formataddr((nombre or "Radar de licitaciones", direccion))
@@ -365,12 +366,12 @@ def enviar(conf: dict, asunto_correo: str, texto: str, html_correo: str) -> None
     if conf["puerto"] == 465:
         with smtplib.SMTP_SSL(conf["servidor"], conf["puerto"], timeout=60) as smtp:
             smtp.login(conf["usuario"], conf["clave"])
-            smtp.send_message(mensaje)
+            return smtp.send_message(mensaje)
     else:
         with smtplib.SMTP(conf["servidor"], conf["puerto"], timeout=60) as smtp:
             smtp.starttls()
             smtp.login(conf["usuario"], conf["clave"])
-            smtp.send_message(mensaje)
+            return smtp.send_message(mensaje)
 
 
 def _leer_registros() -> list[dict] | None:
@@ -427,14 +428,18 @@ def main() -> None:
     if nuevas or rivales:
         titulo = ("[Prueba] " if sin_guardar else "") + asunto(nuevas, hoy, rivales)
         try:
-            enviar(conf, titulo, cuerpo_texto(nuevas, rivales), cuerpo_html(nuevas, hoy, rivales))
+            rechazadas = enviar(conf, titulo, cuerpo_texto(nuevas, rivales), cuerpo_html(nuevas, hoy, rivales)) or {}
         except (smtplib.SMTPException, OSError) as e:
             # Sin guardar: lo de hoy irá en el próximo correo.
             print(f"[alertas] AVISO: no se pudo enviar el correo: {e}", file=sys.stderr)
             if sin_guardar:
                 sys.exit(1)  # en la prueba, que el fallo se vea en rojo
             return
-        print(f"[alertas] Enviado a {len(conf['para'])} destinatario(s): {titulo}")
+        if rechazadas:
+            # Sin las direcciones: el registro de Actions puede ser público.
+            print(f"[alertas] AVISO: el servidor rechazó {len(rechazadas)} de {len(conf['para'])} "
+                  "destinatario(s); revisa ALERTAS_PARA.", file=sys.stderr)
+        print(f"[alertas] Enviado a {len(conf['para']) - len(rechazadas)} destinatario(s): {titulo}")
     else:
         print("[alertas] Nada nuevo: no se envía correo.")
     if not sin_guardar:
