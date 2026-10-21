@@ -1517,6 +1517,116 @@ def _guardar_cache_traduccion() -> None:
     _RUTA_CACHE_TRADUCCION.write_text(json.dumps(vigentes, ensure_ascii=False), encoding="utf-8")
 
 
+# --- Encaje de una call for proposals con la agencia ---
+# Una call no se licita: la Comisión subvenciona un proyecto y la agencia
+# entra como socio de comunicación del consorcio que lo presenta, como
+# solicitante (algunas líneas de Europa Creativa) o como proveedor de quien
+# la gane. El encaje sale del tipo de acción y de cuánto habla de
+# comunicación el texto de la convocatoria.
+
+# Familias de términos de comunicación en el texto (en inglés). Cuenta cuántas
+# familias distintas aparecen, no cuántas veces: "dissemination" repetido diez
+# veces sigue siendo una sola idea.
+_FAMILIAS_COMUNICACION = {
+    "comunicación": r"\bcommunicat(?:e|es|ing|ion|ions)\b(?! (?:networks?|technolog\w*|infrastructure|protocols?|systems?|channels?))",
+    "difusión": r"\bdisseminat\w*",
+    "sensibilización": r"\b(?:awareness[- ]raising|rais\w* (?:public )?awareness|awareness campaigns?)\b",
+    "divulgación": r"\boutreach\b",
+    "campañas": r"\bcampaigns?\b",
+    "participación": r"\b(?:citizens?|public|stakeholders?|communit(?:y|ies)) (?:engagement|participation)\b|\bengag\w* (?:with )?(?:citizens|the public)\b",
+    "redes sociales": r"\bsocial media\b",
+    "relato": r"\bstorytelling\b",
+    "eventos": r"\b(?:webinars?|conferences?|workshops?|festivals?)\b",
+    "audiovisual": r"\b(?:audiovisual|videos?|films?|documentar(?:y|ies)|podcasts?)\b",
+    "web": r"\bwebsites?\b",
+    "marca": r"\b(?:branding|visual identity)\b",
+    "visibilidad": r"\bvisibility\b",
+}
+_RE_FAMILIAS = {k: re.compile(p, re.IGNORECASE) for k, p in _FAMILIAS_COMUNICACION.items()}
+# Una "Communication" de la Comisión es un documento político, no comunicación:
+# se quita antes de contar. Distingue mayúsculas a propósito.
+_RE_COMUNICACION_POLITICA = re.compile(r"\b(?:Commission )?Communications? (?:on|of the Commission|from the Commission)\b|\bCommission Communications?\b")
+
+# Programa por el prefijo del identificador del tema (HORIZON-CL2-2027-...).
+_PROGRAMAS_CALL = {
+    "HORIZON": "Horizon Europe", "CREA": "Europa Creativa", "DIGITAL": "Europa Digital",
+    "EURATOM": "Euratom", "LIFE": "LIFE", "CERV": "Ciudadanos, Igualdad, Derechos y Valores (CERV)",
+    "ERASMUS": "Erasmus+", "EU4H": "EU4Health", "AGRIP": "Promoción de productos agrícolas (AGRIP)",
+    "SMP": "Mercado Único", "EMFAF": "Fondo Europeo Marítimo, de Pesca y Acuicultura",
+    "CEF": "Mecanismo Conectar Europa", "I3": "Inversiones Interregionales en Innovación (I3)",
+}
+
+# Tipo de acción (typesOfAction del portal) -> nombre y sigla.
+_ACCIONES_CALL = [
+    ("Coordination and Support", "Acción de coordinación y apoyo (CSA)", "CSA"),
+    ("Research and Innovation", "Proyecto de investigación e innovación (RIA)", "RIA"),
+    ("Innovation Action", "Proyecto de innovación (IA)", "IA"),
+    ("Cofund", "Cofinanciación de programas (Cofund)", "COFUND"),
+    ("Lump Sum", "Subvención a tanto alzado", "LS"),
+    ("Project Grant", "Subvención a proyecto", "PG"),
+    ("Simple Grant", "Subvención simple", "SG"),
+]
+
+
+def _frases_comunicacion(texto: str, maximo: int = 3) -> list[str]:
+    """Las frases de la convocatoria que más hablan de comunicación, en su
+    orden original. Solo las que tocan al menos una familia."""
+    frases = [f.strip() for f in re.split(r"(?<=[.;:])\s+(?=[A-Z•\-–])|\s*[•▪]\s*", texto) if f and f.strip()]
+    puntuadas = []
+    for i, f in enumerate(frases):
+        if len(f) < 40:
+            continue
+        n = sum(1 for r in _RE_FAMILIAS.values() if r.search(_RE_COMUNICACION_POLITICA.sub("", f)))
+        if n:
+            puntuadas.append((n, i, f))
+    elegidas = sorted(sorted(puntuadas, key=lambda x: (-x[0], x[1]))[:maximo], key=lambda x: x[1])
+    return [f if len(f) <= 300 else f[:297].rsplit(" ", 1)[0] + "…" for _, _, f in elegidas]
+
+
+def _encaje_call(item: dict) -> dict:
+    identificador = str(item.get("identifier") or "")
+    prefijo = identificador.split("-", 1)[0].upper()
+    tipo = str(item.get("typesOfAction") or "")
+    accion = next(((nombre, sigla) for clave, nombre, sigla in _ACCIONES_CALL if clave.lower() in tipo.lower()), (None, None))
+    texto = _RE_COMUNICACION_POLITICA.sub("", " ".join(str(item.get(c) or "") for c in ("titulo", "descripcion", "destino_descripcion")))
+    familias = [k for k, r in _RE_FAMILIAS.items() if r.search(texto)]
+    n = len(familias)
+
+    if prefijo == "CREA" and "-MEDIA-" in identificador.upper():
+        via = "proveedor"  # MEDIA: la piden productoras, distribuidoras, estudios...
+    elif prefijo == "CREA":
+        via = "solicitante"
+    elif prefijo == "AGRIP":
+        via = "proveedor"  # las organizaciones que la ganan contratan la ejecución
+    else:
+        via = "socio"
+
+    if via == "solicitante" and n >= 2:
+        nivel, motivo = "alto", "Línea de Europa Creativa: la agencia podría presentarse o ir de socia"
+    elif accion[1] == "CSA" and n >= 3:
+        nivel, motivo = "alto", "Acción de coordinación y apoyo: la difusión y la participación son buena parte del trabajo"
+    elif n >= 5:
+        nivel, motivo = "alto", "El texto insiste en la comunicación: " + ", ".join(familias[:4])
+    elif n >= 3 or (accion[1] == "CSA" and n >= 2):
+        nivel, motivo = "medio", "Pide comunicación, como un paquete de trabajo más: " + ", ".join(familias[:3])
+    else:
+        nivel, motivo = "bajo", ("Solo menciona de pasada: " + ", ".join(familias)) if familias else "El texto apenas habla de comunicación"
+    if accion[1] == "COFUND" and nivel != "bajo":
+        nivel, motivo = "bajo", "Cofinancia programas nacionales de investigación: la comunicación es mínima"
+
+    modelo = str(item.get("deadlineModel") or "").lower()
+    return {
+        "nivel": nivel,
+        "motivo": motivo,
+        "via": via,
+        "programa": _PROGRAMAS_CALL.get(prefijo),
+        "accion": accion[0],
+        "sigla": accion[1],
+        "dos_fases": "two-stage" in modelo or "two-stage" in identificador.lower(),
+        "frases": [_traducir_en_es(f) for f in _frases_comunicacion(item.get("descripcion") or "")],
+    }
+
+
 def _from_eu_grant(registro: dict) -> dict:
     item = registro["original"]
 
@@ -1553,6 +1663,7 @@ def _from_eu_grant(registro: dict) -> dict:
         "tipo_contrato": NO_PUBLICADO,
         "tipo_registro": "convocatoria_ue",
         "programa": item.get("typesOfAction") or item.get("frameworkProgramme") or NO_PUBLICADO,
+        "encaje_call": _encaje_call(item),
         "_clave_dedup": "",
     }
 

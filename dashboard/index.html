@@ -26,30 +26,13 @@
 
     <main id="contenido" tabindex="-1">
 
-      <!-- Inicio: resumen del día. Lo rellena app.js (pintarInicio). -->
-      <section id="vista-inicio" hidden>
-        <header class="pagina__cabecera">
-          <div class="pagina__titulo">
-            <h1>Inicio</h1>
-            <p class="pagina__descripcion">Qué hay nuevo y qué vence antes: licitaciones de organismos españoles aparecidas en los últimos tres días, plazos que cierran esta semana, contratos menores a punto de vencer y las últimas adjudicaciones.</p>
-          </div>
-        </header>
-        <div class="kpis" id="inicio-kpis"></div>
-        <div class="inicio__columnas">
-          <div class="inicio__columna" id="inicio-principal"></div>
-          <div class="inicio__columna" id="inicio-lateral"></div>
-        </div>
-      </section>
-
       <!-- Listado: licitaciones, calls for proposals, contratos menores y
            adjudicaciones recientes comparten esta vista. -->
       <section id="vista-listado" hidden>
         <header class="pagina__cabecera">
           <div class="pagina__titulo">
             <h1 id="titulo-pagina"></h1>
-            <p class="pagina__descripcion" id="explicacion-tipo"></p>
           </div>
-          <div class="resumen" id="resumen-cabecera"></div>
         </header>
 
         <div class="campo-busqueda">
@@ -117,9 +100,6 @@
                   <div class="columnas__lista" id="columnas-lista"></div>
                 </details>
                 <button type="button" class="boton boton--texto" id="boton-descartadas" hidden></button>
-                <button type="button" class="boton boton--texto" id="boton-enlace" title="Copia un enlace que abre esta misma búsqueda, con sus filtros">Copiar enlace</button>
-                <button type="button" class="boton boton--texto" id="boton-csv" title="Descarga lo que se ve, con estos filtros, para abrirlo en Excel">Descargar CSV</button>
-                <a class="boton boton--texto" id="enlace-mercado" href="historico.html#/mercado" title="Quién gana, cuánto rebaja y cuánta competencia hay en lo ya adjudicado, con la misma categoría, lugar y fuente" hidden>Informe de mercado</a>
                 <label class="orden" id="campo-orden">Ordenar por
                   <select id="filtro-orden"></select>
                 </label>

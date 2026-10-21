@@ -132,7 +132,15 @@ nuevos se comprueban antes en
   (`DIAS_AVISO_CONTRATO_MENOR`). Euskadi la publica; en PLACSP se calcula con
   la fecha de adjudicación y la duración.
 - **Calls for proposals UE**: abiertas o próximas, traducidas al español
-  (MyMemory, o `data/traducciones_manuales.json`).
+  (MyMemory, o `data/traducciones_manuales.json`). Una call no se licita: la
+  agencia entraría como socio de comunicación del consorcio, como solicitante
+  (Europa Creativa, salvo MEDIA) o como proveedor de quien la gane (MEDIA,
+  AGRIP). `normalizar._encaje_call` da esa vía, un encaje alto/medio/bajo
+  según el tipo de acción y cuántas familias de términos de comunicación
+  distintas usa el texto, y las frases de la convocatoria que hablan de
+  comunicación, traducidas. La tarjeta añade la partida orientativa de
+  comunicación (5-10 % de la subvención máxima, marcada como estimación) y,
+  en Horizon Europe, los tres criterios comunes de evaluación.
 - **Cómo se puntúa**: los criterios de adjudicación con su peso, con lo que
   publique cada fuente (`normalizar._criterios`):
   - PLACSP (perfiles propios): precio, otros criterios con fórmula y juicio
@@ -146,9 +154,10 @@ nuevos se comprueban antes en
     también está en PLACSP se queda con los criterios de PLACSP.
   - Plataformas agregadas y buscador web: no los publican.
   - Calls for proposals: la API no los da como dato; se enlaza el documento
-    donde están (ver "Pliegos y documentos").
+    donde están (ver "Pliegos y documentos"). En Horizon Europe (salvo EIC y
+    Cofund) la tarjeta resume los criterios comunes del «Annex D».
 
-  El filtro "Puntúa la propuesta, precio hasta el 50 %" deja las que se
+  El filtro "El precio puntúa el 50 % o menos" deja las que se
   pueden ganar con la propuesta: en PLACSP, con juicio de valor; en Euskadi y
   TED, con algún criterio que no sea el precio.
 - **Pliegos y documentos** (`normalizar._hora_y_pliegos`): PLACSP, los pliegos
@@ -354,8 +363,7 @@ para que cada una tenga su dirección y funcione el botón "atrás":
 
 | Sección | Vista | Dirección |
 |---|---|---|
-| — | Inicio (resumen del día) | `index.html#/inicio` |
-| Oportunidades | Licitaciones: pestañas "Publicadas recientemente", "Licitaciones abiertas" y "Sistemas dinámicos y plazo largo" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas`, `#/licitaciones/plazo-largo` |
+| Oportunidades | Licitaciones (la portada: sin ruta, o con una que no existe, se abre aquí): pestañas "Publicadas recientemente", "Licitaciones abiertas" y "Sistemas dinámicos y plazo largo" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas`, `#/licitaciones/plazo-largo` |
 | Oportunidades | Calls for proposals UE | `index.html#/calls` |
 | Prospección comercial | Contratos menores por vencer | `index.html#/menores` |
 | Competencia | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
@@ -372,10 +380,6 @@ el fragmento de `historico-detalle/` que le toca.
 
 Cómo funciona cada pieza:
 
-- **Inicio** (`pintarInicio()` en `app.js`): cinco cifras enlazadas a su vista,
-  las últimas publicadas recientemente, lo que cierra en 7 días, los contratos
-  menores que vencen antes, las últimas adjudicaciones y el reparto de las
-  licitaciones en plazo por categoría. Todo sale de `tenders-data.js`.
 - **Listados** (una sola vista en `index.html` para los cinco tipos; `VISTAS`
   en `app.js` asocia cada ruta a su `tipo_registro`). Cada vista reconstruye sus
   controles: `FUENTES_POR_TIPO`, `PAISES_POR_TIPO` (el país solo existe en
@@ -403,10 +407,6 @@ Cómo funciona cada pieza:
   (`_buscar_plazo_largo`): el 2026-10-02 devolvían 186 expedientes de
   servicios, 7 de ellos de agencia. El listado no da la fecha de publicación,
   así que la tarjeta la omite y no cuentan como "publicadas recientemente".
-- **Texto explicativo de cada vista** (`EXPLICACION_TIPO` en `app.js`, bajo el
-  título): qué aparece y con qué criterio, para que alguien de la agencia
-  entienda la vista sin leer este README. Solo criterio, nunca el razonamiento
-  interno.
 - **Tarjeta** (`plantillaTarjeta()`): código de expediente, fuente, chip "Nuevo
   hoy/ayer" y urgencia; título, organismo y territorio; pie con las fechas o la
   adjudicataria; columna de importe. Se despliega (`<details>/<summary>` nativo,

@@ -11,7 +11,6 @@
 
   var ICONOS = {
     radar: '<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/>',
-    inicio: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
     documento: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
     globo: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
     reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -36,7 +35,6 @@
 
   // [clave, etiqueta, página, ruta, icono]
   var GRUPOS = [
-    { items: [["inicio", "Inicio", "index.html", "#/inicio", "inicio"]] },
     {
       titulo: "Oportunidades",
       items: [
@@ -107,7 +105,7 @@
       ? '<img class="marca__logo" src="' + MARCA.logo + '" alt="">'
       : '<span class="marca__simbolo">' + icono("radar", "") + "</span>";
     var html =
-      '<a class="marca" href="' + enlace("index.html", "#/inicio") + '">' + simbolo +
+      '<a class="marca" href="' + enlace("index.html", "#/licitaciones/recientes") + '">' + simbolo +
         '<span class="marca__texto"><span class="marca__nombre">' + MARCA.nombre + "</span>" +
         '<span class="marca__lema">' + MARCA.lema + "</span></span>" +
       "</a>" +

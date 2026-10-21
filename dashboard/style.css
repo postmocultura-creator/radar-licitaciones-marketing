@@ -592,32 +592,6 @@ select:hover { border-color: var(--color-border-strong); }
 .migas a { color: var(--color-primary); text-decoration: none; font-weight: 500; }
 .migas a:hover { text-decoration: underline; }
 
-/* Cifras de la vista (total, en plazo, a revisar...) */
-.resumen {
-  display: flex;
-  flex: 0 0 auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-.resumen div {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 18px;
-  font-size: 12px;
-  color: var(--color-muted);
-  white-space: nowrap;
-}
-.resumen div + div { border-left: 1px solid var(--color-border); }
-.resumen strong {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--color-ink);
-  font-variant-numeric: tabular-nums;
-}
-
 /* ---------- Tarjeta base, KPIs y paneles ---------- */
 
 .kpis {
@@ -1011,11 +985,15 @@ a.kpi:active { transform: scale(.99); }
 }
 .datos__par dt { flex: 0 0 auto; color: var(--color-muted); }
 .datos__par dd { margin: 0; min-width: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+/* Un botón dentro del valor (p. ej. «Comparar con tu facturación») parte en
+   dos líneas si la columna es estrecha, en vez de quedar cortado. */
+.datos__par dd .boton { height: auto; min-height: 32px; padding-block: 6px; margin-right: -6px; white-space: normal; text-align: right; line-height: 1.3; }
 .datos__par dd.dato-numerico { font-variant-numeric: tabular-nums; }
 
 .tarjeta__bloque { margin-top: 20px; }
 .tarjeta__bloque h4 { margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--color-ink); }
 .tarjeta__resumen-texto { font-size: 13.5px; line-height: 1.6; color: var(--color-foreground); }
+.tarjeta__resumen-texto + .tarjeta__resumen-texto { margin-top: 8px; }
 
 /* Empresas que más han ganado en el organismo (resumen del histórico). */
 .tarjeta__principales {
@@ -1083,6 +1061,18 @@ a.kpi:active { transform: scale(.99); }
 .tarjeta__encaje-lista li::before { position: absolute; left: 0; font-weight: 700; }
 .tarjeta__encaje-lista--a-favor li::before { content: "✓"; color: var(--color-success); }
 .tarjeta__encaje-lista--riesgo li::before { content: "!"; left: 5px; color: var(--color-warning); }
+.tarjeta__encaje-lista--pasos li::before { content: "→"; color: var(--color-primary); }
+.tarjeta__encaje-lista--pasos + .enlace { display: inline-flex; margin-top: 8px; }
+
+/* Frases de una call for proposals que hablan de comunicación. */
+.tarjeta__citas { display: grid; gap: 8px; margin: 6px 0 0; padding: 0; list-style: none; }
+.tarjeta__citas li {
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--color-border-strong);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-foreground);
+}
 
 /* Contratos anteriores parecidos y otras abiertas: título y, debajo, los datos. */
 .tarjeta__antecedentes {
@@ -1227,44 +1217,6 @@ a.kpi:active { transform: scale(.99); }
   margin-top: 20px;
 }
 
-/* ---------- Filas compactas (Inicio) ---------- */
-
-.filas { list-style: none; margin: 0; padding: 0; }
-
-.fila {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 -8px;
-  padding: 10px 8px;
-  border-radius: var(--radius-md);
-  color: inherit;
-  text-decoration: none;
-  transition: background var(--motion-fast) var(--ease-premium);
-}
-.filas li + li .fila { box-shadow: 0 -1px 0 var(--color-border); }
-.fila:hover { background: var(--color-surface-soft); }
-
-.fila__texto { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; gap: 1px; }
-.fila__titulo {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--color-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.fila__sub { font-size: 12px; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fila__dato { flex: 0 0 auto; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-ink); }
-
-.inicio__columnas {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-.inicio__columna { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-
 .seccion__cabecera {
   display: flex;
   justify-content: space-between;
@@ -1358,7 +1310,6 @@ a.kpi:active { transform: scale(.99); }
 @media (max-width: 900px) {
   .listado { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .filtros { position: static; }
-  .inicio__columnas { grid-template-columns: minmax(0, 1fr); }
   /* Tres pestañas no caben en una línea a este ancho: reparten el espacio
      y el texto parte en dos líneas si hace falta. */
   .pestana {
@@ -1381,8 +1332,6 @@ a.kpi:active { transform: scale(.99); }
   .tarjeta__lotes li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; padding-bottom: 6px; border-bottom: 1px solid var(--color-border); }
   .tarjeta__lote-id { grid-column: 1 / -1; }
   .tarjeta__lote-nombre { grid-column: 1 / -1; }
-  .resumen { width: 100%; }
-  .resumen div { flex: 1 1 0; padding: 10px 12px; white-space: normal; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* Con un número impar de cifras, la primera ocupa la fila entera. */
   .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }

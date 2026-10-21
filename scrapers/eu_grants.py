@@ -272,6 +272,8 @@ def extraer() -> list[dict]:
             "identifier": identifier,
             "titulo": _primero("title"),
             "deadlineDate": _primero("deadlineDate"),
+            # "single-stage" o "two-stage" (primero una propuesta corta).
+            "deadlineModel": _primero("deadlineModel"),
             "startDate": _primero("startDate"),
             "frameworkProgramme": _primero("frameworkProgramme"),
             "status": _primero("status"),

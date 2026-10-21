@@ -64,13 +64,13 @@
   // petición del usuario. Fijas POR VISTA, no globales: "Euskadi (0)" en
   // las calls for proposals de la UE sería ruido, ahí nunca puede haber nada.
   var FUENTES_POR_TIPO = {
-    recientes: ["Estado", "Euskadi"],
-    licitacion: ["Estado", "Euskadi", "UE"],
-    plazo_largo: ["Estado", "Euskadi", "UE"],
-    adjudicacion: ["Estado", "Euskadi", "UE"],
-    contrato_menor_venciendo: ["Estado", "Euskadi"],
+    recientes: ["Euskadi", "Estado"],
+    licitacion: ["Euskadi", "Estado", "UE"],
+    plazo_largo: ["Euskadi", "Estado", "UE"],
+    adjudicacion: ["Euskadi", "Estado", "UE"],
+    contrato_menor_venciendo: ["Euskadi", "Estado"],
     convocatoria_ue: ["UE-subvenciones"],
-    guardadas: ["Estado", "Euskadi", "UE"],
+    guardadas: ["Euskadi", "Estado", "UE"],
   };
   // Países que publican en TED: UE-27 + EEE + Suiza y Reino Unido. Debe
   // coincidir con los nombres de PAISES_ISO3 en normalizar.py. Si aparece
@@ -137,6 +137,7 @@
     ],
     convocatoria_ue: [
       ["plazo", "Fecha límite de solicitud (más próxima)"],
+      ["encaje-desc", "Encaje con la agencia (mejor primero)"],
       ["fecha-desc", "Apertura (más reciente)"],
     ],
     guardadas: [
@@ -169,23 +170,6 @@
   // trae de PLACSP las convocatorias que cumplen esto.
   var DIAS_PLAZO_LARGO = 60;
 
-  var EXPLICACION_TIPO = {
-    recientes:
-      "Licitaciones de organismos públicos españoles (Estado y Euskadi) que han aparecido por primera vez en el radar en los últimos tres días, ordenadas por fecha de publicación de la más reciente a la más antigua. Incluye las publicadas en PLACSP, en el portal de contratación de Euskadi y las de organismos españoles publicadas en TED.",
-    licitacion:
-      "Concursos públicos con plazo de presentación todavía abierto, de TED (UE), PLACSP (Estado) y el portal de contratación de Euskadi. Se recogen los publicados en los últimos 30 días o con plazo aún vigente, filtrados por categoría de servicio de agencia (marketing, publicidad, diseño, redes sociales...).",
-    plazo_largo:
-      "Licitaciones abiertas a las que les quedan más de 60 días de plazo: sistemas dinámicos de adquisición, homologaciones de proveedores y acuerdos marco que admiten solicitudes durante meses o años. Son parte de \"Licitaciones abiertas\". Las de PLACSP se leen de su buscador una vez a la semana, sin límite de antigüedad, y por eso no tienen fecha de publicación.",
-    adjudicacion:
-      "Qué empresa se ha llevado cada contrato en los últimos 30 días, en las mismas tres fuentes, solo cuando la adjudicataria es una empresa española (incluidas las vascas), según su NIF o el país que publica TED. Sin corte por importe: entra tanto un contrato menor como una licitación grande si se adjudicó recientemente y encaja con la categoría de servicio de agencia. Cuando la fuente los publica, el detalle enlaza el informe de valoración, las actas de la mesa de contratación y la resolución de adjudicación: PLACSP (perfiles propios del organismo, no plataformas autonómicas) y el portal de Euskadi, que además dice qué empresas se presentaron. En las de TED, que no publica esos documentos, enlaza la documentación del expediente en la plataforma del organismo.",
-    contrato_menor_venciendo:
-      "Contratos menores (adjudicados directamente, sin concurso, según la definición legal) del Estado y Euskadi cuya duración estimada vence en los próximos 90 días.",
-    convocatoria_ue:
-      "Convocatorias de subvención de la Comisión Europea (Horizon Europe, Digital Europe...) abiertas o próximas a abrir, filtradas por las que incluyen un componente de comunicación o difusión en su descripción. Título y resumen traducidos automáticamente del inglés (la fuente no los publica en español).",
-    guardadas:
-      "Las licitaciones y calls for proposals que has guardado con el botón «Guardar» de cada una, de la que cierra antes a la que cierra después. Se guardan en este navegador: no se comparten con otros dispositivos ni con otras personas. Cada una desaparece sola cuando pasa su fecha límite.",
-  };
-
   var ETIQUETAS_CONTEO = {
     recientes: "publicadas recientemente",
     licitacion: "licitaciones",
@@ -215,14 +199,10 @@
   var NO_PUBLICADO = "no publicado";
   var MS_DIA = 24 * 60 * 60 * 1000;
   var MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-  var MAX_FILAS_INICIO = 6;
-  var MAX_TARJETAS_INICIO = 5;
 
-  var elVistaInicio = document.getElementById("vista-inicio");
   var elVistaListado = document.getElementById("vista-listado");
   var elContenido = document.getElementById("contenido");
   var elTitulo = document.getElementById("titulo-pagina");
-  var elExplicacionTipo = document.getElementById("explicacion-tipo");
   var elPestanas = document.getElementById("pestanas-vista");
   var elTexto = document.getElementById("filtro-texto");
   var elFiltros = document.getElementById("filtros");
@@ -245,12 +225,10 @@
   var elContenedor = document.getElementById("contenedor-tarjetas");
   var elConteo = document.getElementById("conteo-resultados");
   var elFranja = document.getElementById("franja-cifras");
-  var ultimosFiltrados = [];
   var elBotonRevisar = document.getElementById("boton-revisar");
   var elBotonPropuesta = document.getElementById("boton-propuesta");
   var elSinResultados = document.getElementById("sin-resultados");
   var TEXTO_SIN_RESULTADOS = elSinResultados.textContent;
-  var elResumenCabecera = document.getElementById("resumen-cabecera");
   var elFechaGeneracion = document.getElementById("fecha-generacion");
 
   function hoy() {
@@ -400,6 +378,8 @@
   function miles(valor) {
     return String(valor).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
+
+  function redondeoMil(valor) { return Math.round(valor / 1000) * 1000; }
 
   function euros(valor) {
     return miles(valor) + " €";
@@ -615,56 +595,6 @@
     if (cambio) escribirDescartadas();
   }
 
-  // ---------- Añadir al calendario (.ics) ----------
-  function textoIcs(s) {
-    return String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
-  }
-  function fechaIcs(d) {
-    return d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2);
-  }
-  // Tantos días laborables antes (sin sábados ni domingos; los festivos no
-  // los sabe el radar).
-  function laborablesAntes(fecha, dias) {
-    var d = new Date(fecha.getTime());
-    while (dias > 0) {
-      d.setDate(d.getDate() - 1);
-      if (d.getDay() !== 0 && d.getDay() !== 6) dias--;
-    }
-    return d;
-  }
-  var DIAS_AVISO_CALENDARIO = 3;
-  function ics(t) {
-    var limite = parsearFecha(t.fecha_limite);
-    var hora = /^(\d{1,2}):(\d{2})/.exec(t.hora_limite || "");
-    var aviso = laborablesAntes(limite, DIAS_AVISO_CALENDARIO);
-    aviso.setHours(9, 0, 0, 0);
-    var utc = aviso.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-    var fin = new Date(limite.getTime());
-    fin.setDate(fin.getDate() + 1);
-    var enlaceRadar = location.origin + location.pathname + "#/" + RUTA_POR_TIPO[t.tipo_registro] + "?id=" + encodeURIComponent(t.id);
-    return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Radar de licitaciones//ES", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
-      "UID:" + t.id + "@radar-licitaciones",
-      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""),
-      hora ? "DTSTART:" + fechaIcs(limite) + "T" + ("0" + hora[1]).slice(-2) + hora[2] + "00" : "DTSTART;VALUE=DATE:" + fechaIcs(limite),
-      hora ? "DURATION:PT30M" : "DTEND;VALUE=DATE:" + fechaIcs(fin),
-      "SUMMARY:" + textoIcs("Cierre: " + t.titulo),
-      "DESCRIPTION:" + textoIcs([t.organismo, t.codigo_expediente ? "Expediente " + t.codigo_expediente : "",
-        importeTexto(t.presupuesto_display) ? "Presupuesto " + importeTexto(t.presupuesto_display) : "", "Radar: " + enlaceRadar,
-        t.enlace && t.enlace !== NO_PUBLICADO ? "Anuncio: " + t.enlace : ""].filter(Boolean).join("\n")),
-      "URL:" + enlaceRadar,
-      "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + textoIcs("Quedan " + DIAS_AVISO_CALENDARIO + " días laborables: " + t.titulo),
-      "TRIGGER;VALUE=DATE-TIME:" + utc, "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n") + "\r\n";
-  }
-
-  function descargar(nombre, contenido, tipoMime) {
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([contenido], { type: tipoMime }));
-    a.download = nombre;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
-  }
-
   function deTipo(tipo) {
     if (tipo === "guardadas") {
       return DATOS.filter(function (t) { return estaGuardada(t.id) && !caducada(t.fecha_limite); });
@@ -765,8 +695,9 @@
     // fallo, no información.
     var opcionesFuente = [["", "Todas"]];
     var fuentesVista = conOpcionesFijas(FUENTES_POR_TIPO[estado.tipoRegistro], fuentes);
+    // Orden fijo: Euskadi, Estado y Europa (TED se llama «UE» en los datos).
     fuentesVista.forEach(function (f) {
-      opcionesFuente.push([f, f]);
+      opcionesFuente.push([f, f === "UE" ? "Europa" : f]);
     });
     // Con una sola fuente posible (calls for proposals: solo la UE) no hay
     // nada que filtrar.
@@ -882,7 +813,7 @@
       });
     });
     elBotonRevisar.textContent = "Solo pendientes de revisar (" + conteos.revisar + ")";
-    elBotonPropuesta.textContent = "Puntúa la propuesta, precio hasta el 50 % (" + conteos.propuesta + ")";
+    elBotonPropuesta.textContent = "El precio puntúa el 50 % o menos (" + conteos.propuesta + ")";
   }
 
   // Licitaciones donde la mesa valora la propuesta (hay juicio de valor) y
@@ -1030,8 +961,8 @@
       resultado = ib === ia ? 0 : (ib > ia ? 1 : -1);
     } else if (estado.orden === "encaje-desc") {
       // Mejor nota primero; a igual nota, la que cierra antes.
-      var na = a.encaje ? a.encaje.nota : -1;
-      var nb = b.encaje ? b.encaje.nota : -1;
+      var na = notaEncaje(a);
+      var nb = notaEncaje(b);
       resultado = nb - na || porFechaProxima("fecha_limite", a, b);
     }
     return resultado || porFechaDesc(a, b);
@@ -1048,6 +979,34 @@
   }
 
   // Nota de encaje (normalizar -> encaje.py): alta 7-10, media 4-6, baja 0-3.
+  // Las calls no tienen nota de 0 a 10, solo nivel (normalizar._encaje_call):
+  // para ordenar, cada nivel cuenta como una nota de su tramo.
+  var NOTA_NIVEL_CALL = { alto: 8, medio: 5, bajo: 2 };
+
+  // Cómo entraría la agencia en una call for proposals: la Comisión no la
+  // contrata, subvenciona un proyecto (normalizar._encaje_call).
+  var VIAS_CALL = {
+    socio: {
+      corto: "Socio de comunicación",
+      largo: "Como socio de comunicación del consorcio",
+      explicacion: "La Comisión no contrata a la agencia: subvenciona a un grupo de entidades (universidades, centros, empresas) que presenta el proyecto, y alguien del grupo lleva su comunicación y difusión. Ahí entraríamos, dentro de la propuesta.",
+    },
+    solicitante: {
+      corto: "Solicitante posible",
+      largo: "Como solicitante o socio",
+      explicacion: "Esta línea de Europa Creativa la pueden pedir organizaciones del sector cultural y creativo: hay que mirar en el documento de la convocatoria si la agencia cumple el perfil.",
+    },
+    proveedor: {
+      corto: "Proveedor del ganador",
+      largo: "Como proveedor de quien la gane",
+      explicacion: "La subvención va a entidades del sector (productoras, organizaciones profesionales...), que luego contratan servicios. Interesa apuntarse quién la gana para ofrecerse.",
+    },
+  };
+  function notaEncaje(t) {
+    if (t.encaje) return t.encaje.nota;
+    return t.encaje_call ? NOTA_NIVEL_CALL[t.encaje_call.nivel] : -1;
+  }
+
   function nivelEncaje(nota) {
     return nota >= 7 ? "alto" : nota >= 4 ? "medio" : "bajo";
   }
@@ -1094,6 +1053,8 @@
       (esGuardable(t) ? '<span class="chip chip--guardada"' + (estaGuardada(t.id) ? "" : " hidden") + ">Guardada</span>" : "") +
       chipNovedad(t) +
       (t.encaje ? '<span class="chip chip--encaje chip--encaje-' + nivelEncaje(t.encaje.nota) + '" title="Encaje con la agencia (0-10)">Encaje ' + t.encaje.nota + "/10</span>" : "") +
+      (t.encaje_call ? '<span class="chip chip--encaje chip--encaje-' + t.encaje_call.nivel + '" title="Encaje con la agencia">Encaje ' + t.encaje_call.nivel + "</span>" +
+        '<span class="chip">' + VIAS_CALL[t.encaje_call.via].corto + "</span>" : "") +
       (t.revisar_manual ? '<span class="chip chip--aviso">Revisar</span>' : "") +
       (t.criterios
         ? '<span class="chip' + (pesaLaPropuesta(t) ? " chip--propuesta" : "") + '" title="Peso del precio en la puntuación">Precio ' + t.criterios.precio + " %</span>"
@@ -1130,10 +1091,13 @@
     if (t.comunidad) general.push(par(t.provincia ? "Provincia" : "Comunidad", escaparHtml(textoLugar(t))));
     general = general.concat([
       par("Fuente", escaparHtml(t.fuente)),
-      par("Tipo de contrato", escaparHtml(t.tipo_contrato === NO_PUBLICADO ? "No publicado" : t.tipo_contrato)),
     ]);
+    if (!esCall) general.push(par("Tipo de contrato", escaparHtml(t.tipo_contrato === NO_PUBLICADO ? "No publicado" : t.tipo_contrato)));
     if (t.codigo_expediente) general.push(par("Expediente", escaparHtml(t.codigo_expediente)));
-    if (t.programa) general.push(par("Programa", escaparHtml(t.programa)));
+    var ec = t.encaje_call;
+    if (ec && ec.programa) general.push(par("Programa", escaparHtml(ec.programa)));
+    else if (t.programa && !/^\d+$/.test(t.programa)) general.push(par("Programa", escaparHtml(t.programa)));
+    if (ec && ec.accion) general.push(par("Tipo de acción", escaparHtml(ec.accion)));
     if (cpv.length) general.push(par("CPV", escaparHtml(cpv.join(", ")), true));
 
     var fechas;
@@ -1165,6 +1129,11 @@
       // Calls for proposals: cuántos proyectos se van a financiar y con cuánto.
       if (t.proyectos_previstos) importes.push(par("Proyectos que se prevé financiar", String(t.proyectos_previstos), true));
       if (t.subvencion_maxima) importes.push(par("Subvención máxima por proyecto", euros(Math.round(t.subvencion_maxima)), true));
+      if (ec && ec.via === "socio" && t.subvencion_maxima) {
+        importes.push(par("Partida de comunicación por proyecto (orientativa)",
+          euros(redondeoMil(t.subvencion_maxima * 0.05)) + " – " + euros(redondeoMil(t.subvencion_maxima * 0.10)) +
+          ' <span class="barras__sec">(5-10 % del proyecto, estimación del radar)</span>'));
+      }
     }
 
     var categoriasHtml = (t.categorias || [])
@@ -1213,6 +1182,7 @@
 
     // Encaje con la agencia: nota, por qué y riesgos (encaje.py).
     var encajeHtml = "";
+    var siguienteHtml = "";
     if (t.encaje) {
       var lista = function (items, clase) {
         return items.length ? '<ul class="tarjeta__encaje-lista tarjeta__encaje-lista--' + clase + '">' +
@@ -1221,6 +1191,37 @@
       encajeHtml = '<div class="tarjeta__bloque"><h4>Encaje con la agencia: ' + t.encaje.nota + "/10</h4>" +
         lista(t.encaje.motivos, "a-favor") + lista(t.encaje.riesgos, "riesgo") +
         '<p class="tarjeta__nota">Nota orientativa con los datos de la ficha (servicio, provincia, cómo se puntúa, competencia, plazo). No lee el pliego: la solvencia y los requisitos hay que mirarlos en él.</p></div>';
+    }
+
+    // Calls for proposals: cómo entraría la agencia, qué pide de
+    // comunicación, cómo se puntúa y qué hacer (normalizar._encaje_call).
+    if (ec) {
+      var via = VIAS_CALL[ec.via];
+      encajeHtml = '<div class="tarjeta__bloque"><h4>Encaje con la agencia: ' + ec.nivel + "</h4>" +
+        '<p class="tarjeta__resumen-texto"><strong>' + via.largo + ".</strong> " + via.explicacion + "</p>" +
+        '<p class="tarjeta__resumen-texto">' + escaparHtml(ec.motivo) + ".</p>" +
+        (t.proyectos_previstos ? '<p class="tarjeta__resumen-texto">Competencia: se ' + (t.proyectos_previstos === 1 ? "financia un solo proyecto" : "financian " + t.proyectos_previstos + " proyectos") +
+          ". El portal no publica cuántas propuestas se presentan.</p>" : "") +
+        "</div>";
+      if (ec.frases && ec.frases.length) {
+        encajeHtml += '<div class="tarjeta__bloque"><h4>Qué dice de comunicación</h4><ul class="tarjeta__citas">' +
+          ec.frases.map(function (f) { return "<li>«" + escaparHtml(f) + "»</li>"; }).join("") + "</ul>" +
+          '<p class="tarjeta__nota">Frases de la convocatoria (traducidas) que hablan de difusión, campañas, eventos o participación: de ahí sale el servicio que venderíamos.</p></div>';
+      }
+      var pasos = [];
+      if (ec.dos_fases) pasos.push("Se presenta en dos fases: primero una propuesta corta, con la fecha límite de arriba, y solo si pasa, la completa.");
+      if (ec.via === "socio") {
+        pasos.push("Los consorcios se forman con meses de antelación: si interesa, hay que buscar uno ya.");
+        pasos.push('En la ficha del portal europeo, pestaña «Partner search», están las entidades que buscan socios para este tema.');
+      } else if (ec.via === "proveedor") {
+        pasos.push("Apuntarla y, cuando se publiquen los proyectos financiados, contactar con los ganadores.");
+      } else {
+        pasos.push("Leer en el documento de la convocatoria quién puede presentarse y con cuántos socios.");
+      }
+      siguienteHtml = '<div class="tarjeta__bloque"><h4>Siguiente paso</h4><ul class="tarjeta__encaje-lista tarjeta__encaje-lista--pasos">' +
+        pasos.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" +
+        (t.enlace && t.enlace !== NO_PUBLICADO ? '<a class="enlace" href="' + escaparHtml(t.enlace) + '" target="_blank" rel="noopener noreferrer">Abrir la ficha en el portal europeo' + Nav.icono("externo") + "</a>" : "") +
+        "</div>";
     }
 
     // Previsión de competencia y rebaja (normalizar._prevision).
@@ -1288,6 +1289,22 @@
     // fórmula y juicio de valor, y cada criterio con su peso.
     var NOMBRES_CRITERIO = { precio: "Precio", formula: "Fórmula", juicio: "Juicio de valor", otro: "Otro criterio" };
     var criteriosHtml = "";
+    // Criterios comunes de Horizon Europe (RIA, IA y CSA). Sin tipo de acción
+    // en el portal también se muestran, salvo en el EIC, que puntúa distinto.
+    var conCriteriosHorizon = ec && ec.programa === "Horizon Europe" &&
+      (["RIA", "IA", "CSA"].indexOf(ec.sigla) !== -1 || (!ec.sigla && !/-EIC-/.test(t.codigo_expediente || "")));
+    if (conCriteriosHorizon) {
+      criteriosHtml = '<div class="tarjeta__bloque"><h4>Cómo se puntúa</h4>' +
+        '<ul class="tarjeta__criterios">' +
+          "<li><span class=\"tarjeta__criterio-nombre\">Excelencia: objetivos, ambición y método</span><span class=\"dato-numerico\">0-5</span></li>" +
+          "<li><span class=\"tarjeta__criterio-nombre\">Impacto: resultados esperados y <strong>plan de comunicación, difusión y explotación</strong></span><span class=\"dato-numerico\">0-5" + (ec.sigla === "IA" ? " (× 1,5)" : "") + "</span></li>" +
+          "<li><span class=\"tarjeta__criterio-nombre\">Ejecución: plan de trabajo, recursos y consorcio</span><span class=\"dato-numerico\">0-5</span></li>" +
+        "</ul>" +
+        '<p class="tarjeta__nota">Criterios comunes de Horizon Europe: hace falta un 3 en cada uno y 10 de 15 en total.' +
+        (ec.sigla === "IA" ? " En los proyectos de innovación, Impacto pesa 1,5 al ordenar las propuestas." : "") +
+        (ec.dos_fases ? " En la primera fase solo se evalúan Excelencia e Impacto." : "") +
+        " La comunicación cuenta dentro de Impacto: ahí es donde la agencia suma puntos al consorcio. El detalle, en el «Annex D» de los documentos.</p></div>";
+    }
     var cr = t.criterios;
     if (cr) {
       // Euskadi: solo se sabe cuánto pesa el precio y cuánto el resto.
@@ -1355,7 +1372,7 @@
             etiqueta + Nav.icono("externo") + "</a>" +
             (p.nombre && !deConvocatoria ? "<span>" + escaparHtml(p.nombre) + "</span>" : "") + "</li>";
         }).join("") + "</ul>" +
-        (esCall ? '<p class="tarjeta__nota">Los criterios de evaluación y su puntuación están en estos documentos (apartado «Award criteria»): el portal europeo no los publica como dato.</p>' : "") +
+        (esCall && !criteriosHtml ? '<p class="tarjeta__nota">Los criterios de evaluación y su puntuación están en estos documentos (apartado «Award criteria»): el portal europeo no los publica como dato.</p>' : "") +
         "</div>";
     }
 
@@ -1419,10 +1436,6 @@
         (esDirecto ? "Ver anuncio original" : "Buscar en el portal de Euskadi") + Nav.icono("externo") + "</a>";
     } else {
       acciones += '<span class="chip">Enlace no publicado</span>';
-    }
-    if (tipo === "licitacion" && parsearFecha(t.fecha_limite)) {
-      acciones += '<button type="button" class="boton boton--contorno" data-calendario="' + escaparHtml(t.id) + '">' +
-        Nav.icono("calendario") + "<span>Añadir al calendario</span></button>";
     }
     if (tipo === "licitacion") {
       acciones += estaDescartada(t.id)
@@ -1496,6 +1509,7 @@
           previsionHtml +
           lotesHtml +
           criteriosHtml +
+          siguienteHtml +
           pliegosHtml +
           documentosHtml +
           licitadoresHtml +
@@ -1661,9 +1675,7 @@
     var abiertas = estado.tipoRegistro === "recientes";
 
     elConteo.textContent = filtrados.length + " de " + subconjunto.length + " " + ETIQUETAS_CONTEO[estado.tipoRegistro];
-    ultimosFiltrados = filtrados;
     pintarFranja(filtrados);
-    pintarEnlaceMercado();
     pintarBotonDescartadas();
     var esGuardadas = estado.tipoRegistro === "guardadas";
     var enTabla = modoTabla && estado.tipoRegistro !== "convocatoria_ue" && filtrados.length > 0;
@@ -1681,7 +1693,7 @@
     elFiltrosActivos.textContent = activos;
   }
 
-  // ---------- Cifras de la búsqueda, enlace y CSV ----------
+  // ---------- Cifras de la búsqueda y tabla ----------
 
   function enEuros(t, campo) {
     var display = campo === "presupuesto_valor" ? t.presupuesto_display : t.importe_adjudicado_display;
@@ -1733,36 +1745,8 @@
     elFranja.hidden = false;
   }
 
-  // «Informe de mercado»: el análisis del histórico con la misma categoría,
-  // lugar y fuente (solo Estado o Euskadi: el histórico no tiene TED de fuera).
-  function pintarEnlaceMercado() {
-    var el = document.getElementById("enlace-mercado");
-    var partes = [];
-    if (estado.categoria) partes.push("cat=" + encodeURIComponent(estado.categoria));
-    if (estado.lugar && estado.lugar !== "sin") partes.push("lugar=" + encodeURIComponent(estado.lugar));
-    if (estado.fuente === "Estado" || estado.fuente === "Euskadi") partes.push("ambito=" + estado.fuente);
-    el.hidden = !IMPORTE_POR_TIPO[estado.tipoRegistro] || estado.tipoRegistro === "contrato_menor_venciendo";
-    el.href = "historico.html#/mercado" + (partes.length ? "?" + partes.join("&") : "");
-  }
-
-  function enlaceBusqueda() {
-    var partes = [];
-    var poner = function (clave, valor) { if (valor) partes.push(clave + "=" + encodeURIComponent(valor)); };
-    poner("q", elTexto.value.trim());
-    poner("fuente", estado.fuente);
-    poner("cat", estado.categoria);
-    poner("pais", estado.pais);
-    poner("lugar", estado.lugar);
-    poner("min", estado.presupuestoMin ? String(estado.presupuestoMin) : "");
-    poner("max", estado.presupuestoMax || "");
-    if (estado.orden && estado.orden !== ordenPorDefecto(estado.tipoRegistro)) poner("orden", estado.orden);
-    if (estado.soloPropuesta) poner("propuesta", "1");
-    return location.origin + location.pathname + "#/" + RUTA_POR_TIPO[estado.tipoRegistro] + (partes.length ? "?" + partes.join("&") : "");
-  }
-
-  // CSV para Excel en español: punto y coma, coma decimal y BOM para que
-  // respete las tildes.
-  var COLUMNAS_CSV = {
+  // Columnas de la vista de tabla.
+  var COLUMNAS_TABLA = {
     general: [
       ["Título", function (t) { return t.titulo; }], ["Organismo", function (t) { return t.organismo; }],
       ["Fuente", function (t) { return t.fuente; }], ["Expediente", function (t) { return t.codigo_expediente; }],
@@ -1790,14 +1774,14 @@
   };
 
   // ---------- Vista de tabla (opcional) ----------
-  // Las mismas columnas que el CSV; cuáles se ven se recuerda en el navegador.
+  // Cuáles se ven se recuerda en el navegador.
   var CLAVE_MODO = "radar-modo-listado";
   var modoTabla = (function () { try { return localStorage.getItem(CLAVE_MODO) === "tabla"; } catch (e) { return false; } })();
   var COLUMNAS_POR_DEFECTO = {
     general: ["Organismo", "Provincia", "Fecha límite", "Presupuesto", "Encaje", "Precio (%)"],
     adjudicacion: ["Organismo", "Empresa", "Fecha de adjudicación", "Importe adjudicado", "Ofertas", "Rebaja (%)"],
   };
-  function grupoColumnas() { return COLUMNAS_CSV[estado.tipoRegistro] ? estado.tipoRegistro : "general"; }
+  function grupoColumnas() { return COLUMNAS_TABLA[estado.tipoRegistro] ? estado.tipoRegistro : "general"; }
   function columnasVisibles() {
     try {
       var v = JSON.parse(localStorage.getItem("radar-columnas-" + grupoColumnas()));
@@ -1815,7 +1799,7 @@
   }
   function plantillaTabla(filas) {
     var visibles = columnasVisibles();
-    var cols = (COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general).filter(function (c) {
+    var cols = (COLUMNAS_TABLA[estado.tipoRegistro] || COLUMNAS_TABLA.general).filter(function (c) {
       return c[0] !== "Título" && visibles.indexOf(c[0]) !== -1;
     });
     var numerica = function (c) { return /^(Presupuesto|Importe|Fecha|Encaje|Ofertas|Duración)|%/.test(c[0]); };
@@ -1834,60 +1818,10 @@
     boton.hidden = estado.tipoRegistro === "convocatoria_ue";
     selector.hidden = !modoTabla || boton.hidden;
     var visibles = columnasVisibles();
-    document.getElementById("columnas-lista").innerHTML = (COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general)
+    document.getElementById("columnas-lista").innerHTML = (COLUMNAS_TABLA[estado.tipoRegistro] || COLUMNAS_TABLA.general)
       .filter(function (c) { return c[0] !== "Título"; }).map(function (c) {
         return '<label><input type="checkbox" value="' + escaparHtml(c[0]) + '"' + (visibles.indexOf(c[0]) !== -1 ? " checked" : "") + ">" + c[0] + "</label>";
       }).join("");
-  }
-
-  function csv(filas) {
-    var columnas = COLUMNAS_CSV[estado.tipoRegistro] || COLUMNAS_CSV.general;
-    var celda = function (v) {
-      if (v == null || v === NO_PUBLICADO) return "";
-      if (typeof v === "number") return String(v).replace(".", ",");
-      v = String(v);
-      return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
-    };
-    return "\ufeff" + [columnas.map(function (c) { return c[0]; }).join(";")].concat(filas.map(function (t) {
-      return columnas.map(function (c) { return celda(c[1](t)); }).join(";");
-    })).join("\r\n");
-  }
-
-  function pintarResumenCabecera() {
-    var subconjunto = subconjuntoActivo();
-    var totalRevisar = subconjunto.filter(function (t) { return t.revisar_manual; }).length;
-
-    if (estado.tipoRegistro === "adjudicacion") {
-      var empresas = {};
-      subconjunto.forEach(function (t) { if (t.empresa_adjudicataria !== NO_PUBLICADO) empresas[t.empresa_adjudicataria] = true; });
-      elResumenCabecera.innerHTML =
-        '<div><strong>' + subconjunto.length + '</strong>adjudicaciones</div>' +
-        '<div><strong>' + Object.keys(empresas).length + '</strong>empresas distintas</div>' +
-        '<div><strong>' + totalRevisar + '</strong>a revisar</div>';
-      return;
-    }
-
-    if (estado.tipoRegistro === "contrato_menor_venciendo") {
-      var venceEn30 = subconjunto.filter(function (t) {
-        var d = diasRestantes(t.fecha_fin_estimada);
-        return d !== null && d >= 0 && d <= 30;
-      }).length;
-      elResumenCabecera.innerHTML =
-        '<div><strong>' + subconjunto.length + '</strong>por vencer</div>' +
-        '<div><strong>' + venceEn30 + '</strong>en 30 días</div>' +
-        '<div><strong>' + totalRevisar + '</strong>a revisar</div>';
-      return;
-    }
-
-    var totalAbiertas = subconjunto.filter(function (t) {
-      var d = diasRestantes(t.fecha_limite);
-      return d === null || d >= 0;
-    }).length;
-
-    elResumenCabecera.innerHTML =
-      '<div><strong>' + subconjunto.length + '</strong>' + ETIQUETAS_CONTEO[estado.tipoRegistro] + '</div>' +
-      '<div><strong>' + totalAbiertas + '</strong>en plazo</div>' +
-      '<div><strong>' + totalRevisar + '</strong>a revisar</div>';
   }
 
   function pintarPestanas(rutaActiva) {
@@ -1898,107 +1832,6 @@
       return '<a class="pestana" href="#/' + p[0] + '"' + (p[0] === rutaActiva ? ' aria-current="page"' : "") + ">" +
         p[1] + ' <span class="pestana__conteo">' + deTipo(p[2]).length + "</span></a>";
     }).join("");
-  }
-
-  // ---------- Inicio ----------
-
-  function filaCompacta(t, sub, datoHtml) {
-    return '<li><a class="fila" href="#/' + RUTA_POR_TIPO[t.tipo_registro] + "?id=" + encodeURIComponent(t.id) + '">' +
-      '<span class="fila__texto"><span class="fila__titulo">' + escaparHtml(t.titulo) + "</span>" +
-      '<span class="fila__sub">' + escaparHtml(sub) + "</span></span>" + datoHtml + "</a></li>";
-  }
-
-  function panelFilas(titulo, enlace, textoEnlace, filas, vacio) {
-    return '<section class="panel"><div class="seccion__cabecera"><h2>' + titulo + "</h2>" +
-      '<a class="enlace" href="' + enlace + '">' + textoEnlace + Nav.icono("flecha") + "</a></div>" +
-      (filas.length ? '<ul class="filas">' + filas.join("") + "</ul>" : '<p class="barras__vacio">' + vacio + "</p>") +
-      "</section>";
-  }
-
-  function pintarInicio() {
-    var recientes = deTipo("recientes").sort(porFechaDesc);
-    var abiertas = deTipo("licitacion");
-    var calls = deTipo("convocatoria_ue");
-    var menores = deTipo("contrato_menor_venciendo");
-    var adjudicaciones = deTipo("adjudicacion").sort(porFechaDesc);
-
-    function entre(lista, campo, min, max) {
-      return lista.filter(function (t) {
-        var d = diasRestantes(t[campo]);
-        return d !== null && d >= min && d <= max;
-      });
-    }
-    function proximas(lista, campo) {
-      return lista.slice().sort(function (a, b) { return porFechaProxima(campo, a, b) || porFechaDesc(a, b); });
-    }
-
-    var nuevasHoy = recientes.filter(function (t) { return diasRestantes(t.fecha_primera_aparicion) === 0; }).length;
-    var cierranSemana = proximas(entre(abiertas, "fecha_limite", 0, 7), "fecha_limite");
-    var callsMes = entre(calls, "fecha_limite", 0, 30).length;
-    var menoresVigentes = proximas(entre(menores, "fecha_fin_estimada", 0, 9999), "fecha_fin_estimada");
-    var menoresMes = entre(menores, "fecha_fin_estimada", 0, 30).length;
-    var empresas = {};
-    adjudicaciones.forEach(function (t) { if (t.empresa_adjudicataria !== NO_PUBLICADO) empresas[t.empresa_adjudicataria] = true; });
-
-    var kpis = [
-      ["#/licitaciones/recientes", "Publicadas recientemente", recientes.length, nuevasHoy + " han entrado hoy"],
-      ["#/licitaciones/abiertas", "Licitaciones abiertas", abiertas.length, cierranSemana.length + " cierran en 7 días"],
-      ["#/calls", "Calls for proposals UE", calls.length, callsMes + " cierran en 30 días"],
-      ["#/menores", "Contratos menores por vencer", menores.length, menoresMes + " vencen en 30 días"],
-      ["#/adjudicaciones", "Adjudicaciones recientes", adjudicaciones.length, Object.keys(empresas).length + " empresas distintas"],
-    ];
-    document.getElementById("inicio-kpis").innerHTML = kpis.map(function (k) {
-      return '<a class="kpi" href="' + k[0] + '"><span class="kpi__etiqueta">' + k[1] + '</span><span class="kpi__valor">' + miles(k[2]) +
-        '</span><span class="kpi__nota">' + k[3] + "</span></a>";
-    }).join("");
-
-    // Columna principal: lo último publicado y el reparto por categoría.
-    var porCategoria = {};
-    abiertas.forEach(function (t) {
-      var d = diasRestantes(t.fecha_limite);
-      if (d !== null && d < 0) return;
-      (t.categorias || []).forEach(function (c) { porCategoria[c] = (porCategoria[c] || 0) + 1; });
-    });
-    var categorias = Object.keys(porCategoria).sort(function (a, b) { return porCategoria[b] - porCategoria[a] || a.localeCompare(b, "es"); });
-    var maxCategoria = categorias.length ? porCategoria[categorias[0]] : 1;
-
-    document.getElementById("inicio-principal").innerHTML =
-      '<section><div class="seccion__cabecera"><h2>Publicadas recientemente</h2>' +
-        '<a class="enlace" href="#/licitaciones/recientes">Ver las ' + recientes.length + Nav.icono("flecha") + "</a></div>" +
-        (recientes.length
-          ? '<div class="lista-tarjetas">' + recientes.slice(0, MAX_TARJETAS_INICIO).map(function (t) { return plantillaTarjeta(t, false); }).join("") + "</div>"
-          : '<p class="sin-resultados">No ha aparecido ninguna licitación de organismos españoles en los últimos tres días.</p>') +
-      "</section>" +
-      '<section class="panel"><div class="seccion__cabecera"><h2>Licitaciones en plazo por categoría</h2>' +
-        '<a class="enlace" href="#/licitaciones/abiertas">Ver todas' + Nav.icono("flecha") + "</a></div>" +
-        '<ol class="barras">' + categorias.map(function (c) {
-          return '<li class="barras__fila"><a class="barras__boton" href="#/licitaciones/abiertas?cat=' + encodeURIComponent(c) + '">' +
-            '<span class="barras__nombre">' + escaparHtml(c) + "</span>" +
-            '<span class="barras__pista"><span class="barras__relleno" style="width:' + (100 * porCategoria[c] / maxCategoria).toFixed(1) + '%"></span></span>' +
-            '<span class="barras__valor">' + porCategoria[c] + "</span></a></li>";
-        }).join("") + "</ol>" +
-        '<p class="panel__nota">Una licitación puede contar en varias categorías. Pulsa una categoría para ver sus licitaciones.</p>' +
-      "</section>";
-
-    // Columna lateral: lo que vence antes.
-    document.getElementById("inicio-lateral").innerHTML =
-      panelFilas("Cierran en los próximos 7 días", "#/licitaciones/abiertas", "Ver todas",
-        cierranSemana.slice(0, MAX_FILAS_INICIO).map(function (t) {
-          var u = infoUrgencia(t.fecha_limite, t);
-          return filaCompacta(t, t.organismo, '<span class="insignia ' + u.clase + '">' + u.texto + "</span>");
-        }), "Ninguna licitación cierra esta semana.") +
-      panelFilas("Contratos menores que vencen antes", "#/menores", "Ver todos",
-        menoresVigentes.slice(0, MAX_FILAS_INICIO).map(function (t) {
-          var v = infoVencimiento(t.fecha_fin_estimada);
-          var empresa = t.empresa_adjudicataria === NO_PUBLICADO ? "Empresa no publicada" : t.empresa_adjudicataria;
-          return filaCompacta(t, empresa + " · " + t.organismo, '<span class="insignia ' + v.clase + '">' + v.texto + "</span>");
-        }), "No hay contratos menores por vencer.") +
-      panelFilas("Últimas adjudicaciones", "#/adjudicaciones", "Ver todas",
-        adjudicaciones.slice(0, MAX_FILAS_INICIO).map(function (t) {
-          var empresa = t.empresa_adjudicataria === NO_PUBLICADO ? "Empresa no publicada" : t.empresa_adjudicataria;
-          var importe = importeTexto(t.importe_adjudicado_display);
-          return filaCompacta(t, empresa + " · " + t.organismo, importe ? '<span class="fila__dato">' + importe + "</span>" : "");
-        }), "No hay adjudicaciones en los últimos 30 días.");
   }
 
   // ---------- Rutas ----------
@@ -2018,70 +1851,62 @@
 
   function navegar(esCargaInicial) {
     var leida = Nav.leerRuta();
-    var ruta = leida.ruta || "inicio";
-    if (ruta === "licitaciones") ruta = "licitaciones/recientes";
+    // Sin ruta, o una que ya no existe (p. ej. la antigua #/inicio): se
+    // entra en las licitaciones publicadas recientemente.
+    var ruta = leida.ruta;
+    if (!VISTAS[ruta]) ruta = "licitaciones/recientes";
     var vista = VISTAS[ruta];
-    var esInicio = !vista;
 
-    elVistaInicio.hidden = !esInicio;
-    elVistaListado.hidden = esInicio;
+    elVistaListado.hidden = false;
 
-    if (esInicio) {
-      Nav.activar("inicio");
-      document.title = "Radar de licitaciones — Marketing digital";
-      pintarInicio();
-    } else {
-      var p = leida.params;
-      estado.tipoRegistro = vista.tipo;
-      estado.texto = sinTildes((p.q || "").trim());
-      estado.fuente = p.fuente || "";
-      estado.categoria = CATEGORIAS_CONOCIDAS.indexOf(p.cat) !== -1 ? p.cat : "";
-      estado.pais = "";
-      // La provincia elegida se conserva al cambiar de vista: quien mira
-      // Bizkaia en licitaciones quiere seguir en Bizkaia en adjudicaciones.
-      // construirControles la descarta si en la vista nueva no existe.
-      estado.soloRevisarManual = false;
-      estado.soloPropuesta = false;
-      estado.verDescartadas = false;
-      elTexto.value = p.q || "";
+    var p = leida.params;
+    estado.tipoRegistro = vista.tipo;
+    estado.texto = sinTildes((p.q || "").trim());
+    estado.fuente = p.fuente || "";
+    estado.categoria = CATEGORIAS_CONOCIDAS.indexOf(p.cat) !== -1 ? p.cat : "";
+    estado.pais = "";
+    // La provincia elegida se conserva al cambiar de vista: quien mira
+    // Bizkaia en licitaciones quiere seguir en Bizkaia en adjudicaciones.
+    // construirControles la descarta si en la vista nueva no existe.
+    estado.soloRevisarManual = false;
+    estado.soloPropuesta = false;
+    estado.verDescartadas = false;
+    elTexto.value = p.q || "";
 
-      Nav.activar(vista.nav);
-      document.title = vista.titulo + " — Radar de licitaciones";
-      elTitulo.textContent = vista.titulo;
-      elExplicacionTipo.textContent = EXPLICACION_TIPO[vista.tipo];
-      pintarPestanas(ruta);
-      construirControlesDeVista();
-      construirControles();
-      // Filtros de un enlace compartido (enlaceBusqueda): solo si la
-      // opción existe en esta vista.
-      var desdeEnlace = function (el, valor, poner) {
-        if (!valor) return;
-        var antes = el.value;
-        el.value = valor;
-        if (el.value === valor) poner(valor);
-        else el.value = antes;  // opción que no existe en esta vista: se queda lo que había
-      };
-      desdeEnlace(elPais, p.pais, function (v) { estado.pais = v; });
-      desdeEnlace(elLugar, p.lugar, function (v) { estado.lugar = v; });
-      desdeEnlace(elPresupuestoMin, p.min, function (v) { estado.presupuestoMin = Number(v) || 0; });
-      desdeEnlace(elPresupuestoMax, p.max, function (v) { estado.presupuestoMax = v; });
-      desdeEnlace(elOrden, p.orden, function (v) { estado.orden = v; });
-      if (p.propuesta === "1" && !elBotonPropuesta.hidden) {
-        estado.soloPropuesta = true;
-        elBotonPropuesta.setAttribute("aria-pressed", "true");
-      }
-      // Un enlace a una licitación concreta (correo, «Copiar ficha»,
-      // enlace compartido) la abre siempre: en tarjetas y aunque esté
-      // descartada en este navegador.
-      if (p.id) {
-        modoTabla = false;
-        if (estaDescartada(p.id)) estado.verDescartadas = true;
-      }
-      pintarResumenCabecera();
-      aplicarFiltros();
-
-      if (p.id && mostrarTarjeta(p.id)) return;
+    Nav.activar(vista.nav);
+    document.title = vista.titulo + " — Radar de licitaciones";
+    elTitulo.textContent = vista.titulo;
+    pintarPestanas(ruta);
+    construirControlesDeVista();
+    construirControles();
+    // Filtros de un enlace compartido: solo si la
+    // opción existe en esta vista.
+    var desdeEnlace = function (el, valor, poner) {
+      if (!valor) return;
+      var antes = el.value;
+      el.value = valor;
+      if (el.value === valor) poner(valor);
+      else el.value = antes;  // opción que no existe en esta vista: se queda lo que había
+    };
+    desdeEnlace(elPais, p.pais, function (v) { estado.pais = v; });
+    desdeEnlace(elLugar, p.lugar, function (v) { estado.lugar = v; });
+    desdeEnlace(elPresupuestoMin, p.min, function (v) { estado.presupuestoMin = Number(v) || 0; });
+    desdeEnlace(elPresupuestoMax, p.max, function (v) { estado.presupuestoMax = v; });
+    desdeEnlace(elOrden, p.orden, function (v) { estado.orden = v; });
+    if (p.propuesta === "1" && !elBotonPropuesta.hidden) {
+      estado.soloPropuesta = true;
+      elBotonPropuesta.setAttribute("aria-pressed", "true");
     }
+    // Un enlace a una licitación concreta (correo, «Copiar ficha»,
+    // enlace compartido) la abre siempre: en tarjetas y aunque esté
+    // descartada en este navegador.
+    if (p.id) {
+      modoTabla = false;
+      if (estaDescartada(p.id)) estado.verDescartadas = true;
+    }
+    aplicarFiltros();
+
+    if (p.id && mostrarTarjeta(p.id)) return;
 
     window.scrollTo(0, 0);
     if (!esCargaInicial) elContenido.focus({ preventScroll: true });
@@ -2112,7 +1937,7 @@
     };
     actualizarConteoGuardadas();
 
-    // Guardar / quitar, en cualquier tarjeta (listado o inicio). En la vista
+    // Guardar / quitar, en cualquier tarjeta. En la vista
     // de guardadas se repinta para que la que se quita desaparezca; en las
     // demás solo cambian el botón y la etiqueta, sin cerrar la tarjeta.
     elContenido.addEventListener("click", function (ev) {
@@ -2141,12 +1966,6 @@
         aplicarFiltros();
         return;
       }
-      var cal = ev.target.closest && ev.target.closest("[data-calendario]");
-      if (cal) {
-        var lic = porId[cal.getAttribute("data-calendario")];
-        if (lic) descargar("licitacion-" + (lic.codigo_expediente || lic.id).replace(/[^\w.-]+/g, "_") + ".ics", ics(lic), "text/calendar;charset=utf-8");
-        return;
-      }
       var descarte = ev.target.closest && ev.target.closest("[data-descartar], [data-recuperar]");
       if (descarte) {
         var idD = descarte.getAttribute("data-descartar") || descarte.getAttribute("data-recuperar");
@@ -2156,7 +1975,7 @@
           fecha: new Date().toISOString().slice(0, 10) };
         escribirDescartadas();
         if (estado.verDescartadas && !deTipo(estado.tipoRegistro).some(function (t) { return estaDescartada(t.id); })) estado.verDescartadas = false;
-        if (!elVistaListado.hidden) { construirControles(); aplicarFiltros(); } else { pintarInicio(); }
+        construirControles(); aplicarFiltros();
         return;
       }
       var boton = ev.target.closest && ev.target.closest("[data-guardar]");
@@ -2239,15 +2058,6 @@
       aplicarFiltros();
     });
 
-    document.getElementById("boton-enlace").addEventListener("click", function (ev) {
-      var b = ev.currentTarget;
-      copiarTexto(enlaceBusqueda()).then(function () { b.textContent = "Enlace copiado"; }, function () { b.textContent = "No se pudo copiar"; });
-      setTimeout(function () { b.textContent = "Copiar enlace"; }, 2500);
-    });
-    document.getElementById("boton-csv").addEventListener("click", function () {
-      descargar("radar-" + RUTA_POR_TIPO[estado.tipoRegistro].replace("/", "-") + "-" + new Date().toISOString().slice(0, 10) + ".csv",
-        csv(ultimosFiltrados), "text/csv;charset=utf-8");
-    });
     document.getElementById("boton-modo").addEventListener("click", function () {
       modoTabla = !modoTabla;
       try { localStorage.setItem(CLAVE_MODO, modoTabla ? "tabla" : "tarjetas"); } catch (e) { /* sin almacenamiento */ }

@@ -555,3 +555,50 @@ def test_documentos_de_adjudicacion_al_fusionar_ted_con_placsp_y_euskadi():
     otro = {"documentos_adjudicacion": [{"tipo": "acta", "url": "https://propia"}]}
     normalizar._heredar_hora_y_pliegos(otro, {"documentos_adjudicacion": [{"tipo": "expediente", "url": "https://exp"}]})
     assert [d["url"] for d in otro["documentos_adjudicacion"]] == ["https://propia"]
+
+
+def _call(identifier, tipo, descripcion, **extra):
+    return {"identifier": identifier, "typesOfAction": tipo, "titulo": "Topic", "descripcion": descripcion, **extra}
+
+
+def test_encaje_de_una_call_por_tipo_de_accion_y_texto(monkeypatch):
+    monkeypatch.setattr(normalizar, "_traducir_en_es", lambda texto: "ES: " + texto)
+    insiste = ("Projects should set up a communication strategy and dissemination plan. They will run awareness-raising campaigns "
+               "on social media, organise workshops and engage with citizens through storytelling.")
+    alto = normalizar._encaje_call(_call("HORIZON-CL2-2027-01-TRANSFO-05", "HORIZON Research and Innovation Actions", insiste))
+    assert (alto["nivel"], alto["via"], alto["programa"], alto["sigla"]) == ("alto", "socio", "Horizon Europe", "RIA")
+    assert alto["frases"] and all(f.startswith("ES: ") for f in alto["frases"])
+
+    # Una sola mención de pasada: bajo.
+    bajo = normalizar._encaje_call(_call("HORIZON-CL4-2025-03-DATA-11", "HORIZON Innovation Actions",
+                                         "Develop an open internet stack, mentioned once on social media by its developers."))
+    assert bajo["nivel"] == "bajo" and "social media" not in bajo["motivo"] and "redes sociales" in bajo["motivo"]
+
+    # Coordinación y apoyo con algo de difusión: medio; con más, alto.
+    csa = "HORIZON Coordination and Support Actions"
+    assert normalizar._encaje_call(_call("HORIZON-CL5-2027-02-D3-33", csa, "Support dissemination through webinars for stakeholders."))["nivel"] == "medio"
+    assert normalizar._encaje_call(_call("HORIZON-CL5-2027-02-D3-34", csa, "Support dissemination, outreach and communication via webinars."))["nivel"] == "alto"
+
+    # Cofund: siempre bajo, aunque el texto hable de comunicación.
+    assert normalizar._encaje_call(_call("HORIZON-CL5-2027-02-D3-08", "HORIZON Programme Cofund Actions", insiste))["nivel"] == "bajo"
+
+
+def test_via_de_entrada_y_dos_fases_de_una_call(monkeypatch):
+    monkeypatch.setattr(normalizar, "_traducir_en_es", lambda texto: texto)
+    assert normalizar._encaje_call(_call("CREA-MEDIA-2027-DEVSLATE", "CREA Lump Sum Grants", ""))["via"] == "proveedor"
+    assert normalizar._encaje_call(_call("CREA-CROSS-2027-INNOVLAB", "CREA Lump Sum Grants", ""))["via"] == "solicitante"
+    assert normalizar._encaje_call(_call("AGRIP-SIMPLE-2027-IM", "AGRIP Simple Grants", ""))["via"] == "proveedor"
+    assert normalizar._encaje_call(_call("HORIZON-CL6-2027-01-CIRCBIO-01-two-stage", "", ""))["dos_fases"]
+    assert normalizar._encaje_call(_call("HORIZON-X", "", "", deadlineModel="two-stage"))["dos_fases"]
+    assert not normalizar._encaje_call(_call("HORIZON-X", "", "", deadlineModel="single-stage"))["dos_fases"]
+    # "Communication networks" es tecnología, no comunicación.
+    assert normalizar._encaje_call(_call("HORIZON-X", "", "6G communication networks and communication systems."))["motivo"] == \
+        "El texto apenas habla de comunicación"
+
+
+def test_comunicacion_politica_y_canales_tecnicos_no_cuentan():
+    texto = ("With the 2023 Communication on the revision of the SET Plan, objectives changed. "
+             "Establish secure communication channels for information sharing between partners. "
+             "Projects will organise dissemination workshops for regional stakeholders and the wider public.")
+    frases = normalizar._frases_comunicacion(texto)
+    assert frases == ["Projects will organise dissemination workshops for regional stakeholders and the wider public."]
