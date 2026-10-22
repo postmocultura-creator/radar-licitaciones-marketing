@@ -1,2144 +1,5 @@
 window.TENDERS_DATA = [
   {
-    "id": "2a3e735da9a08e62",
-    "titulo": "Francia – Servicios de diseño gráfico – CONCEPTION ETADAPTATION SUPPORTS DE COMMUNICATION EXTERNE DE PLAINE COMMUNE- lot 6",
-    "organismo": "Etablissement Public Territorial Plaine Commune",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "region_nuts": "FR106",
-    "fecha_publicacion": "2026-10-09",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79822500",
-      "79822500"
-    ],
-    "categorias": [
-      "Diseño gráfico / branding"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/697445-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de diseño gráfico – CONCEPTION ETADAPTATION SUPPORTS DE COMMUNICATION EXTERNE DE PLAINE COMMUNE- lot 6",
-    "tipo_contrato": "Servicios de diseño gráfico",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "diseño gráfico"
-      ],
-      "tipo_ted": "Servicios de diseño gráfico"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": "12:00",
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://marches.maximilien.fr/entreprise/consultation/945601?orgAcronyme=p2q"
-      }
-    ],
-    "duracion_meses": 48.0,
-    "fecha_primera_aparicion": "2026-10-09",
-    "encaje": {
-      "nota": 3,
-      "motivos": [
-        "Servicio principal de la agencia: Diseño gráfico / branding"
-      ],
-      "riesgos": [
-        "Fuera de España (Francia): idioma y presencia local",
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "a4949fdc1c737991",
-    "titulo": "Servicio de publicidad para la producción, realización, edición y publicación de anuario especializado en energía y desarrollo sostenible en prensa generalista regional",
-    "organismo": "Vicepresidencia y Consejería de Presidencia, Coordinación de la Acción de Gobierno, Interior y Emergencias",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-09",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 72306.8,
-    "presupuesto_display": "72,307 EUR",
-    "cpv": [
-      "79341400"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=oXJ40PCN5bKTylGzYmBF9Q%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "PSS/2026/0000102933",
-    "resumen": "Id licitación: PSS/2026/0000102933; Órgano de Contratación: Vicepresidencia y Consejería de Presidencia, Coordinación de la Acción de Gobierno, Interior y Emergencias; Importe: 72306.8 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de campañas de publicidad",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "publicidad"
-      ]
-    },
-    "provincia": "Badajoz",
-    "comunidad": "Extremadura",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "PCAP  CR Subsanado y Anexos.PDF",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=Do/wPESu7wVQYZ1uJ1dE50HTIj66t4AulNZ4dJwYuqnb3sJ556aCM9jjP5lQENlvZzqaNRV8Hcmp%2Bv5bki/vyHQLMkqbMqwvb%2BkW4NCHaRvVTD3T98KC0nSgQFM0q%2B5s"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "Pliego de prescripciones tecnicas subsanado.PDF",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=I07oy2N%2BJ6lZA6zPNGLXd3K8g/S7e/aYA6o3UCbOdgOqHohK7KYmC3Icx2PkZVTMBU3WH03B4m4N8xMAdVHglYDe6l/ZefkiY6zjgTWnNR2B0nvVKRzfe4rpHcnlPhSZ"
-      }
-    ],
-    "criterios": {
-      "precio": 60,
-      "formulas": 40,
-      "juicio": 0,
-      "detalle": [
-        {
-          "descripcion": "PRECIO",
-          "peso": 60.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "MEJORAS DE VALORACIÓN AUTOMÁTICA",
-          "peso": 15.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "AMPLIACIÓN GARANTIA",
-          "peso": 15.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "TIEMPO MAXIMO DE RESPUESTA",
-          "peso": 10.0,
-          "tipo": "formula"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 0.2,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 33,
-      "adjudicaciones": 122,
-      "empresas": 46,
-      "importe": 975448,
-      "desde": "2025",
-      "principales": [
-        {
-          "id": 65,
-          "nombre": "RADIO POPULAR, S.A. - CADENA COPE",
-          "adjudicaciones": 6,
-          "importe": 145669
-        },
-        {
-          "id": 45,
-          "nombre": "CM EXTREMADURA PUBLICIDAD MULTIMEDI",
-          "adjudicaciones": 8,
-          "importe": 102784
-        },
-        {
-          "id": 177,
-          "nombre": "EDITORIAL EXTREMADURA SA",
-          "adjudicaciones": 9,
-          "importe": 95891
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 5,
-        "n": 115,
-        "base": "provincia",
-        "lugar": "Badajoz",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 28.0,
-        "n": 61,
-        "base": "provincia",
-        "lugar": "Badajoz",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 108460,
-      "seguro": 108460,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 7,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Badajoz)",
-        "El precio cuenta el 60 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "b3de4887af4087c1",
-    "titulo": "El objeto del contrato es la prestación del servicio de planificación, gestión, intermediación y contratación de medios y soportes publicitarios tradicionales y digitales, así como el seguimiento, optimización y evaluación de las campañas y acciones de comunicación institucional y corporativa de GESTUR CANARIAS, S.A.",
-    "organismo": "Consejería Delegada de GESTUR Canarias, S.A.",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-09",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 215000.0,
-    "presupuesto_display": "215,000 EUR",
-    "cpv": [
-      "79341200",
-      "79340000",
-      "79341000",
-      "79341400"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=teAX5wyxiym7JOCXkOhcDg%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "Gestur 010/2026",
-    "resumen": "Id licitación: Gestur 010/2026; Órgano de Contratación: Consejería Delegada de GESTUR Canarias, S.A.; Importe: 215000 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de gestión publicitaria",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "publicitarios"
-      ]
-    },
-    "provincia": "Santa Cruz de Tenerife",
-    "comunidad": "Canarias",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "G 010 2026 PCAP GESTION DE MEDIOS GESTUR SA.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=3z482w3dYSokOvesGfLP/P6E37iGC6UZZUjqVfFf5eccVcVlQfrio1zB38Q5WNEgr63IyxI3cA0rWkwJ5xIjN/YDeryomFGl/MC1Nh6eees//q7NB2iMZvNyf0xrJmjt"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "G 010 2026 PPT Gestion de medios y publicidad para GESTUR SA.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=I13aph92AaekniOl1UUuSFaf%2Bm6%2BsM58fwuHlz1TQZrmtlMeRneqRVVVISCj0rI9TS5HXgSXlQB4XAm/CbIGK6VV6O/kPofoK5Jtw6gtpElJOVDbGCDM%2BMigrvuVS7Rv"
-      }
-    ],
-    "criterios": {
-      "precio": 0,
-      "formulas": 75,
-      "juicio": 25,
-      "detalle": [
-        {
-          "descripcion": "Criterio 3:Comisión de agencia ofertada  (Oferta)",
-          "peso": 32.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 8: Experiencia adicional del personal adscrito",
-          "peso": 15.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 1: Metodología de gestión y control de las campañas",
-          "peso": 15.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "Criterio 2:Sistema de información y gestión de incidencias",
-          "peso": 10.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "Criteiro 9: Adscripción de personal adicional",
-          "peso": 8.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 7: Plazo de asistencia a reuniones presenciales urgentes",
-          "peso": 5.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 6:Plazo de entrega del informe final",
-          "peso": 5.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 5:Plazo de activación de las campañas",
-          "peso": 5.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Criterio 4:Plazo de presentación del plan de medios",
-          "peso": 5.0,
-          "tipo": "formula"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 24.0,
-    "fecha_primera_aparicion": "2026-10-01",
-    "historial_organismo": {
-      "id": 1809,
-      "adjudicaciones": 1,
-      "empresas": 1,
-      "importe": 24995,
-      "desde": "2026",
-      "principales": [
-        {
-          "id": 4537,
-          "nombre": "GAIA Consultores Insulares S.L.U.",
-          "adjudicaciones": 1,
-          "importe": 24995
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 3,
-        "n": 285,
-        "base": "provincia",
-        "lugar": "Santa Cruz de Tenerife",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 10.1,
-        "n": 120,
-        "base": "provincia",
-        "lugar": "Santa Cruz de Tenerife",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 161250,
-      "seguro": 161250,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 8,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Santa Cruz de Tenerife)",
-        "El precio no puntúa: la propuesta técnica vale el 25 % y el resto va por fórmulas"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "269571d0843c1f48",
-    "titulo": "Contratación del servicio de promoción y comercialización de productos de la marca Sabores Almería en local comercial, así como el servicio de gestión de la plataforma digital de ventas Marketplace",
-    "organismo": "Junta de Gobierno de la Diputación Provincial de Almería",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-08",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 114000.0,
-    "presupuesto_display": "114,000 EUR",
-    "cpv": [
-      "79342200"
-    ],
-    "categorias": [
-      "E-commerce"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=xHiiXUxB39EadbH3CysQuQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2026/D29902/006-313/00001",
-    "resumen": "Id licitación: 2026/D29902/006-313/00001; Órgano de Contratación: Junta de Gobierno de la Diputación Provincial de Almería; Importe: 114000 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de promoción",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "Marketplace"
-      ]
-    },
-    "provincia": "Almería",
-    "comunidad": "Andalucía",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "Pliego_CAP.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=CHO%2B4jWm1IIPhcyBfBvldk2RT7VdH46rlVVGzuxegrVrSZ%2BrgEuqiQffiJzMmyaxNDcef%2BLqJxeEC6fztfOwcTWinu19Xz6ZTNosE7LHg6O1aXEvq3KHa/AEHgtDrQw0"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "Pliego_PPT.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=XiPJcRTTTfjfzemrW9qZk/8mFgQnrVgOBtwd8ZAbRGZL4%2B/orRJpJFaNReFnw%2BiQH%2BHe7np9XptDinVAcl0/cPDMz/t1WWnK7ScClVn9ZJd7QB3HKyQaFUExmUVQCerk"
-      }
-    ],
-    "criterios": {
-      "precio": 35,
-      "formulas": 40,
-      "juicio": 25,
-      "detalle": [
-        {
-          "descripcion": "Precio",
-          "peso": 35.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "Adscripción de trabajadores",
-          "peso": 20.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Propuesta de prestación del servicio de promoción",
-          "peso": 13.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "Propuesta de prestación del servicio de comercialización (tienda física y marketplace)",
-          "peso": 12.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "Mejora 1",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Mejora 2",
-          "peso": 5.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Mejora 3",
-          "peso": 5.0,
-          "tipo": "formula"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 14.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 503,
-      "adjudicaciones": 87,
-      "empresas": 38,
-      "importe": 6925575,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 268,
-          "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU",
-          "adjudicaciones": 17,
-          "importe": 1748745
-        },
-        {
-          "id": 2594,
-          "nombre": "MARÍN Y ASOCIADOS, S.A.",
-          "adjudicaciones": 11,
-          "importe": 1223615
-        },
-        {
-          "id": 7928,
-          "nombre": "EA BRAND NEW MARKETING SOCIEDAD LIMITADA",
-          "adjudicaciones": 6,
-          "importe": 405600
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 2,
-        "n": 25,
-        "base": "comunidad",
-        "lugar": "Andalucía",
-        "categoria": "E-commerce"
-      },
-      "rebaja": {
-        "valor": 16.8,
-        "n": 13,
-        "base": "comunidad",
-        "lugar": "Andalucía",
-        "categoria": "E-commerce"
-      }
-    },
-    "solvencia": {
-      "hasta": 146571,
-      "seguro": 146571,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 6,
-      "motivos": [
-        "Servicio que la agencia también hace: E-commerce",
-        "En España (Almería)",
-        "El precio cuenta el 35 % y la propuesta técnica el 25 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "81644ec78d551149",
-    "titulo": "Subministrament de material de marxandatge promocional personalitzat amb la imatge corporativa de la Marca Turística Blanes, d’acord amb les característiques establertes en el plec de prescripcions\ntècniques, amb la finalitat de promocionar la destinació turística de Blanes en fires, esdeveniments, campanyes de comunicació i altres accions de promoció turística.",
-    "organismo": "Ajuntament de Blanes",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-07",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 26650.0,
-    "presupuesto_display": "26,650 EUR",
-    "cpv": [
-      "39295100",
-      "30192121",
-      "39221140",
-      "18931100",
-      "18939000",
-      "18000000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)",
-      "Diseño gráfico / branding"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/aa601ec3-bde6-4ada-b2e3-767af73bf6ac/300902619",
-    "enlace_directo": true,
-    "codigo_expediente": "2026/13755Q",
-    "resumen": "Id licitación: 2026/13755Q; Órgano de Contratación: Ajuntament de Blanes; Importe: 26650.00 EUR; Estado: EN PLAZO",
-    "tipo_contrato": "Sombrillas",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "comunicació",
-        "imatge corporativa"
-      ]
-    },
-    "provincia": null,
-    "comunidad": "Cataluña",
-    "hora_limite": "14:00",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "PCAP marxandatge JGL.pdf",
-        "url": "https://contractaciopublica.cat/portal-api/descarrega-document/302658396/9C4BC3606C6CBCD5E79A051BBACBBC20"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "Plec_PT_Censurado.pdf",
-        "url": "https://contractaciopublica.cat/portal-api/descarrega-document/302658397/F79CEE7625BB145C6469AC523673A267"
-      }
-    ],
-    "lotes": [
-      {
-        "id": "1",
-        "nombre": "Quantitat: 14.000 unitats. Característiques tècniques: motxilla de cordes fabricada en polièster RPET; cantonades\nreforçades amb argolles metàl·liques resistents; mides aproximades de 34 × 42 cm; pes aproximat\nde 34 g.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "2",
-        "nombre": "Quantitat: 5.000 unitats. Característiques tècniques: fabricats en plàstic reciclat i/o compostable; cos d’una sola peça; polsador fabricat en plàstic reciclat; tinta blava.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "3",
-        "nombre": "Quantitat: 2.000 unitats. Característiques tècniques: varetes de fusta amb acabat natural; tela de polièster 190T.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "4",
-        "nombre": "Quantitat: 500 uitats. Característiques tènciques:Para-sol de platja de niló resistent; diàmetre aproximat de 150 cm; interior amb protecció UV; tub ajustable en alçada; funda de transport del mateix color amb cinta per portar a l’espatlla.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "5",
-        "nombre": "Quantitat: 2.000 unitats.\nCaracterístiques tècniques: bossa confeccionada en cotó de 140 g/m²; mides aproximades de 37 ×\n41 cm; nanses llargues d’aproximadament 70 cm reforçades en creu.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "6",
-        "nombre": "Quantitat: 2.000 unitats.\nCaracterístiques tècniques: cos de vidre reciclat; tap de rosca fabricat en bambú o material\nequivalent d’origen sostenible; capacitat aproximada de 500 ml; mides aproximades de 22,5 cm\nd’alçada i 6,2 cm de diàmetre.",
-        "importe": null,
-        "precio": null
-      }
-    ],
-    "duracion_meses": 2.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 1258,
-      "adjudicaciones": 10,
-      "empresas": 7,
-      "importe": 259840,
-      "desde": "2023",
-      "principales": [
-        {
-          "id": 332,
-          "nombre": "CBT, COMUNICACIÓN MULTIMEDIA, S.L.",
-          "adjudicaciones": 1,
-          "importe": 106062
-        },
-        {
-          "id": 28071,
-          "nombre": "Catalonia Audiovisual Media S.L.",
-          "adjudicaciones": 2,
-          "importe": 99990
-        },
-        {
-          "id": 28134,
-          "nombre": "Eva Fernández Pérez",
-          "adjudicaciones": 2,
-          "importe": 33800
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 3,
-        "n": 3333,
-        "base": "comunidad",
-        "lugar": "Cataluña",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 15.0,
-        "n": 932,
-        "base": "comunidad",
-        "lugar": "Cataluña",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 39975,
-      "seguro": 39975,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 6,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general), Diseño gráfico / branding",
-        "En España"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "75196c6e272a1a0f",
-    "titulo": "Servicio de mantenimiento de los sistemas de protección contra incendios del Conjunto Polo Nacional de Contenidos Digitales, 42 Málaga, y la Incubadora de Alta Tecnología.",
-    "organismo": "Dirección General del Palacio de Ferias y Congresos de Málaga",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 42300.0,
-    "presupuesto_display": "42,300 EUR",
-    "cpv": [
-      "50413200",
-      "35111000",
-      "24951230",
-      "44480000",
-      "35111200",
-      "44482000",
-      "31625000",
-      "45312100",
-      "45343200",
-      "35110000",
-      "31625100"
-    ],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=D25eDdkSe1B9Zh%2FyRJgM8w%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "P04/2026",
-    "resumen": "Id licitación: P04/2026; Órgano de Contratación: Dirección General del Palacio de Ferias y Congresos de Málaga; Importe: 14100 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de reparación y mantenimiento de instalaciones contra incendios",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "Contenidos Digitales"
-      ]
-    },
-    "provincia": "Málaga",
-    "comunidad": "Andalucía",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "P04 2026 PCAP.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=kX5zsXbE3h3fO4ENTJIj383GEuBv6m0Muht6zd1tj8%2BvGpMxipkdn%2BilV9Lm3iaeSuxReeBoU%2BGfI3dWV9jb05c2mWTl1AktWPg2efSwHKSB0nvVKRzfe4rpHcnlPhSZ"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "P04 2026 PPT.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=eYm1EhNIKaLFmRnpQ2UVKs1eeNMayjZ6q6syNg1/mGvaxfnSixnQRIrHtTqxWVYQ/0voNqRkBHIMJUjccdVq/o44SZND/pHM23NE%2B5gGp5/fdyQgZAdTm3EfcUAC7CJ6"
-      }
-    ],
-    "criterios": {
-      "precio": 55,
-      "formulas": 0,
-      "juicio": 45,
-      "detalle": [
-        {
-          "descripcion": "CRITERIO Nº 1: Mejor oferta económica",
-          "peso": 55.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "CRITERIO Nº 1. Propuesta técnica y de servicio",
-          "peso": 33.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "CRITERIO Nº 2. Cualificación del ofertante",
-          "peso": 10.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "CRITERIO Nº 3. Otras mejoras",
-          "peso": 2.0,
-          "tipo": "juicio"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 20,
-      "adjudicaciones": 30,
-      "empresas": 21,
-      "importe": 1835059,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 268,
-          "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU",
-          "adjudicaciones": 2,
-          "importe": 427154
-        },
-        {
-          "id": 33294,
-          "nombre": "UNEI INICIATIVA SOCIAL, S.L.U.",
-          "adjudicaciones": 2,
-          "importe": 216977
-        },
-        {
-          "id": 9146,
-          "nombre": "KREA GESTIÓN DE LA CULTURA Y EL OCIO",
-          "adjudicaciones": 2,
-          "importe": 147288
-        }
-      ]
-    },
-    "antecedentes": [
-      {
-        "titulo": "Contratación del servicio de mantenimiento para el Polo de Contenidos Digitales",
-        "anio": "2021",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=HLxgbd25XMrnSoTX3z%2F7wA%3D%3D",
-        "importe": 71613,
-        "ofertas": 2,
-        "rebaja": 2.3,
-        "empresas": [
-          {
-            "id": 11222,
-            "nombre": "CLECE S.A."
-          }
-        ]
-      }
-    ],
-    "antecedentes_total": 1,
-    "prevision": {
-      "ofertas": {
-        "valor": 3.5,
-        "n": 14,
-        "base": "provincia",
-        "lugar": "Málaga",
-        "categoria": "Creación de contenidos"
-      },
-      "rebaja": {
-        "valor": 18.1,
-        "n": 11,
-        "base": "provincia",
-        "lugar": "Málaga",
-        "categoria": "Creación de contenidos"
-      }
-    },
-    "solvencia": {
-      "hasta": 63450,
-      "seguro": 63450,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 6,
-      "motivos": [
-        "Servicio que la agencia también hace: Creación de contenidos",
-        "En España (Málaga)",
-        "El precio cuenta el 55 % y la propuesta técnica el 45 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "1a7f3d5c2cdc6ca2",
-    "titulo": "Servicio de difusión de contenidos audiovisuales y de publicidad en un canal de televisión con cobertura en el término municipal de Manzanares (TDT - Multiplex TL04CR).",
-    "organismo": "Junta de Gobierno del Ayuntamiento de Manzanares",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 57000.0,
-    "presupuesto_display": "57,000 EUR",
-    "cpv": [
-      "64228100"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)",
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=Zvv9lf07JuYadbH3CysQuQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "21/2026",
-    "resumen": "Id licitación: 21/2026; Órgano de Contratación: Junta de Gobierno del Ayuntamiento de Manzanares; Importe: 19000 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de transmisión de programas de televisión",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "publicidad",
-        "difusión de contenidos"
-      ]
-    },
-    "provincia": "Ciudad Real",
-    "comunidad": "Castilla-La Mancha",
-    "hora_limite": "14:00",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "PCAP difusion TV.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=XacZPtfYwu43vV3ab7yzXiNLbxD9dG69TyMB5B30%2BNcmH2JvA2Wy4oTpRHspwnfZ1QXtP/dsIAZl55xeSIwFaxPdiyfc2Lb%2Br9h7JPDrh5SCx2e6p7hqtlp2aFupgHMr"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "PPT difusion TV.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=DzYWkEIvAsT9Wa6nl08WOxTbCUWGDIaQtbMbHJbdYVnFST0nJ5mXW0q5XVnXaQMUcyneP9Js%2B1NJHiiKIjQpnNxvN9usaqK8W8EbOm7HtX5t/o8fNevwsujgRzaBbugn"
-      }
-    ],
-    "criterios": {
-      "precio": 100,
-      "formulas": 0,
-      "juicio": 0,
-      "detalle": [
-        {
-          "descripcion": "Oferta económica - Hasta un máximo de 100 puntos.",
-          "peso": 100.0,
-          "tipo": "precio"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-10-10",
-    "historial_organismo": {
-      "id": 2314,
-      "adjudicaciones": 2,
-      "empresas": 2,
-      "importe": 22800,
-      "desde": "2023",
-      "principales": [
-        {
-          "id": 775,
-          "nombre": "TELEVALDEPEÑAS, S.L.",
-          "adjudicaciones": 1,
-          "importe": 19000
-        },
-        {
-          "id": 6260,
-          "nombre": "Mario Cervantes Buenasmañanas",
-          "adjudicaciones": 1,
-          "importe": 3800
-        }
-      ]
-    },
-    "antecedentes": [
-      {
-        "titulo": "Difusión de contenidos audiovisuales y de publicidad en un canal de televisión con cobertura en el término municipal de Manzanares.",
-        "anio": "2023",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=W0AuZ61QXb5t5r0ngvMetA%3D%3D",
-        "importe": 19000,
-        "ofertas": 1,
-        "rebaja": null,
-        "empresas": [
-          {
-            "id": 775,
-            "nombre": "TELEVALDEPEÑAS, S.L."
-          }
-        ]
-      }
-    ],
-    "antecedentes_total": 1,
-    "prevision": {
-      "ofertas": {
-        "valor": 1.5,
-        "n": 20,
-        "base": "provincia",
-        "lugar": "Ciudad Real",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 12.0,
-        "n": 11,
-        "base": "provincia",
-        "lugar": "Ciudad Real",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 85500,
-      "seguro": 85500,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 7,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Ciudad Real)",
-        "Poca competencia en Ciudad Real: 3,0 ofertas de media por concurso (España: 4,2)"
-      ],
-      "riesgos": [
-        "Solo cuenta el precio: gana la oferta más barata",
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "00eccd277d4bd498",
-    "titulo": "Asistencia técnica especializada en la ejecución, gestión, seguimiento, control, modificación selección de operaciones, certificación, verificación, antifraude, DNSH y protección frente al cambio climático, comunicación y visibilidad y justificación de la senda financiera FEDER",
-    "organismo": "Alcaldía del Ayuntamiento de Las Torres de Cotillas",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 165316.35,
-    "presupuesto_display": "165,316 EUR",
-    "cpv": [
-      "79411000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=12gKBB7QZlmdkQsA7ROvsg%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "9057/2025",
-    "resumen": "Id licitación: 9057/2025; Órgano de Contratación: Alcaldía del Ayuntamiento de Las Torres de Cotillas; Importe: 82503.77 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios generales de consultoría en gestión",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Murcia",
-    "comunidad": "Murcia",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "PCAP CON DILI.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=cDc1LRD4N0EDFIFlscSz3rNVkmj1sfMzdX8lRDIM42TlsqYSLEewZMqPElDdhMMy4lFsfjlgP1efdVTRPCMIIEMPM6Dg/MBIQdLS3HYNI/Vt/o8fNevwsujgRzaBbugn"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "con logos_PLIEGO PRESCRIPCIONES TECNICAS rev.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=YQwgNX40eNUl%2BYdswB%2B0vKSOyxt9gA0XDVo9ieTsmYza9rSgTbqNI7xS1F0o8S2lYW%2B87EXQzgNJhinlBUu0brQ3KW8omd9C2Al2h/DzRC7VTD3T98KC0nSgQFM0q%2B5s"
-      }
-    ],
-    "criterios": {
-      "precio": 35,
-      "formulas": 30,
-      "juicio": 35,
-      "detalle": [
-        {
-          "descripcion": "PLAN DE TRABAJO",
-          "peso": 35.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "PRECIO",
-          "peso": 35.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "PERSONAL ADICIONAL",
-          "peso": 30.0,
-          "tipo": "formula"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 24.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "prevision": {
-      "ofertas": {
-        "valor": 3,
-        "n": 97,
-        "base": "provincia",
-        "lugar": "Murcia",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 13.8,
-        "n": 41,
-        "base": "provincia",
-        "lugar": "Murcia",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 123987,
-      "seguro": 123987,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 8,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Murcia)",
-        "Pesa la propuesta: el juicio de valor cuenta el 35 % y el precio el 35 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "5661aebd4df98521",
-    "titulo": "Contratación mediante procedimiento abierto simplificado y tramitación ordinaria de la campaña de promoción de los recursos turísticos de \"Costa de Almeria\" en ferias profesionales nacionales e internacionales.",
-    "organismo": "Junta de Gobierno de la Diputación Provincial de Almería",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 95000.0,
-    "presupuesto_display": "95,000 EUR",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=QqKw87pvS%2FiGCFcHcNGIlQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2026/D1B000/006-313/00002",
-    "resumen": "Id licitación: 2026/D1B000/006-313/00002; Órgano de Contratación: Junta de Gobierno de la Diputación Provincial de Almería; Importe: 95000 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "campaña de promoción"
-      ]
-    },
-    "provincia": "Almería",
-    "comunidad": "Andalucía",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "Pliego_CAP.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=nUbD8gX2mKNx2H64/3Pqbh/YxSM60mr5szA7EWX0F6QyXKvKJU4LDTPodQZkNxfjB4HLUTK3NS0ptdK1asJvC0BsHf3wFgs%2BK0le1k3pWY5JOVDbGCDM%2BMigrvuVS7Rv"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "Pliego_PPT.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=hHIOEhLwHj0PpHRKDZEoaLmwtLVm3%2B0zRZPCUs6KVo1i6TJGbm4Z3juxmRy81zVbhWbLi4t6jVVwptTD/ZZbyKoe4hPP3847KYoVIw1aQvMZyAJWGsSt0OzTSTyw9JAs"
-      }
-    ],
-    "criterios": {
-      "precio": 20,
-      "formulas": 55,
-      "juicio": 25,
-      "detalle": [
-        {
-          "descripcion": "1. Precio: hasta 20 puntos",
-          "peso": 20.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "2. Inclusión de imágenes de la campaña en los perfiles de, al menos, Facebook e Instagram, tanto en formato temporal (storie) como en publicación (post), de los medios online, prensa escrita, radio y televisión ofertados en el plan de medios, durante, al menos, cuatro semanas: hasta 15 puntos",
-          "peso": 15.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "4. Inclusión de spots en las plataformas móviles de los medios de prensa escrita ofertados en el plan de medios, con una duración mínima de 12 segundos, al conectar con su versión on line, durante, al menos, dos semanas: hasta 10 puntos.",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "3. Inclusión de cuñas publicitarias en las plataformas móviles de las emisoras de radio ofertadas en el plan de medios, con una duración mínima de 12 segundos, al conectar con su versión on line, durante, al menos dos semanas: hasta 10 puntos",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "6. Publicación de tres artículos, uno sobre cada una de las acciones incluidas en el objeto del contrato (promoción de los recursos turísticos de la provincia de Almería en la WTM, FITUR e ITB), de al menos 2.000 caracteres y con al menos dos fotografías en cada uno de ellos, en la versión online de los medios de prensa escrita, online y radio ofertados en el plan de medios, con una duración mínima de una semana de publicación por cada una de las ferias. El citado material contará con el visto b",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "5. Implementación de un banner en la home principal de la versión online de los medios de prensa, radio y televisión ofertados en el plan de medios, y que redirigirá a la página determinada por la Diputación durante, al menos, un mes: hasta 10 puntos.",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "2. Los medios de comunicación elegidos para lograr un mayor alcance: hasta 8 puntos.",
-          "peso": 8.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "5. Medición de resultados: claridad, precisión y nivel de detalle de la metodología elegida en la propuesta de seguimiento, control y evaluación de la ejecución de la campaña presentada: hasta 5 puntos",
-          "peso": 5.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "3. Los impactos potenciales que pueda alcanzar el plan de medios para promocionar el destino turístico \"Costa de Almería\" en las ferias WTM, FITUR e ITB: hasta 4 puntos.",
-          "peso": 4.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "4. La claridad, precisión y nivel de detalle en la redacción y estructuración del plan de medios: hasta 4 puntos.",
-          "peso": 4.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "1. La coherencia global del plan de medios ofertado: hasta 4 puntos.",
-          "peso": 4.0,
-          "tipo": "juicio"
-        }
-      ],
-      "por_lotes": false
-    },
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 503,
-      "adjudicaciones": 87,
-      "empresas": 38,
-      "importe": 6925575,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 268,
-          "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU",
-          "adjudicaciones": 17,
-          "importe": 1748745
-        },
-        {
-          "id": 2594,
-          "nombre": "MARÍN Y ASOCIADOS, S.A.",
-          "adjudicaciones": 11,
-          "importe": 1223615
-        },
-        {
-          "id": 7928,
-          "nombre": "EA BRAND NEW MARKETING SOCIEDAD LIMITADA",
-          "adjudicaciones": 6,
-          "importe": 405600
-        }
-      ]
-    },
-    "antecedentes": [
-      {
-        "titulo": "Expediente de contratación, mediante procedimiento abierto y tramitación ordinaria, de la campaña de promoción de \"Costa de Almería\" como destino turístico dura",
-        "anio": "2026",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=5cY7VFC4A%2BtPpzdqOdhuWg%3D%3D",
-        "importe": 142500,
-        "ofertas": 15,
-        "rebaja": null,
-        "empresas": [
-          {
-            "id": 6690,
-            "nombre": "Wit Creativo Agencia de Comunicacion S.L"
-          },
-          {
-            "id": 268,
-            "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU"
-          }
-        ]
-      },
-      {
-        "titulo": "Contratación de la campaña de promoción de la marca Sabores Almería, en ferias nacionales e internacionales y en las misiones comerciales en las que se particip",
-        "anio": "2025",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=UjON6CyIdbXXOjazN1Dw9Q%3D%3D",
-        "importe": 189700,
-        "ofertas": 2,
-        "rebaja": 5.1,
-        "empresas": [
-          {
-            "id": 2594,
-            "nombre": "MARÍN Y ASOCIADOS, S.A."
-          }
-        ]
-      },
-      {
-        "titulo": "Contratación, mediante procedimiento abierto y tramitación ordinaria, de la campaña de promoción del turismo de interior del destino \"Costa de Almería\"",
-        "anio": "2025",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=J6QeEbMvHEh%2FR5QFTlaM4A%3D%3D",
-        "importe": 171000,
-        "ofertas": 3,
-        "rebaja": 10.0,
-        "empresas": [
-          {
-            "id": 268,
-            "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU"
-          }
-        ]
-      }
-    ],
-    "antecedentes_total": 9,
-    "antecedentes_resumen": {
-      "ofertas": {
-        "media": 5.3,
-        "min": 1,
-        "max": 15,
-        "n": 9
-      },
-      "rebaja": {
-        "media": 7.1,
-        "min": 5.1,
-        "max": 10.0,
-        "n": 3
-      }
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 5.3,
-        "n": 9,
-        "base": "parecidos"
-      },
-      "rebaja": {
-        "valor": 7.1,
-        "n": 3,
-        "base": "parecidos"
-      }
-    },
-    "solvencia": {
-      "hasta": 142500,
-      "seguro": 28500,
-      "duracion": false,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 8,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Almería)",
-        "Pesa la propuesta: el juicio de valor cuenta el 25 % y el precio el 20 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "9983c0ef54a7d747",
-    "titulo": "Contratación campaña de promoción de los actos conmemorativos del día internacional de la eliminación de la violencia contras las mujeres y del día internacional de la mujer",
-    "organismo": "Junta de Gobierno de la Diputación Provincial de Almería",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 99000.0,
-    "presupuesto_display": "99,000 EUR",
-    "cpv": [
-      "79341400"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=Wj%2BOzOtYZImkU02jNGj1Fw%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2026/D81000/006-313/00002",
-    "resumen": "Id licitación: 2026/D81000/006-313/00002; Órgano de Contratación: Junta de Gobierno de la Diputación Provincial de Almería; Importe: 99000 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de campañas de publicidad",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "campaña de promoción"
-      ]
-    },
-    "provincia": "Almería",
-    "comunidad": "Andalucía",
-    "hora_limite": "23:59",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "Pliego_CAP.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=sSTl%2Byb0s%2B6wlSXRqnR7ZLikoiZ8%2BslTK31liLwhoJGTlw5JooEqXNwvzoc8KMKqjxfGz7qTd2p6vDXGbgrsARCKaaP5XQ9OmcoE9mUl9MYC1/zDIE0Kw/PWNnLS0Z0z"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "Pliego_PPT.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=2YwsBpb6yZ%2BQSI07vbtp7VvVgt4Tv1fk3rqktSnGBGK9acVVQApaoNJ9UIVdhRlTEUkxoeP5GPB4dHeUoBQbLHx%2BrWiGOLAplVnfHQ4XhjJ45ClyWkoJ44mKM70IFcOu"
-      }
-    ],
-    "criterios": {
-      "precio": 20,
-      "formulas": 55,
-      "juicio": 25,
-      "detalle": [
-        {
-          "descripcion": "Mejora 2: hasta 20 puntos",
-          "peso": 20.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Plan de medios: hasta 20 puntos",
-          "peso": 20.0,
-          "tipo": "juicio"
-        },
-        {
-          "descripcion": "Precio hasta 20 puntos",
-          "peso": 20.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "Mejora 1: hasta 15 puntos",
-          "peso": 15.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Mejora 3: hasta 10 puntos",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Mejora 4: hasta 10 puntos",
-          "peso": 10.0,
-          "tipo": "formula"
-        },
-        {
-          "descripcion": "Propuesta de seguimiento, medición y evaluación resultados: hasta 5 puntos",
-          "peso": 5.0,
-          "tipo": "juicio"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 5.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 503,
-      "adjudicaciones": 87,
-      "empresas": 38,
-      "importe": 6925575,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 268,
-          "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU",
-          "adjudicaciones": 17,
-          "importe": 1748745
-        },
-        {
-          "id": 2594,
-          "nombre": "MARÍN Y ASOCIADOS, S.A.",
-          "adjudicaciones": 11,
-          "importe": 1223615
-        },
-        {
-          "id": 7928,
-          "nombre": "EA BRAND NEW MARKETING SOCIEDAD LIMITADA",
-          "adjudicaciones": 6,
-          "importe": 405600
-        }
-      ]
-    },
-    "antecedentes": [
-      {
-        "titulo": "Contratación de la campaña de promoción de los actos conmemorativos con motivo del Día Internacional para la Eliminación de la Violencia contra las Mujeres y po",
-        "anio": "2024",
-        "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=UK4k9dOqNgWopEMYCmrbmw%3D%3D",
-        "importe": 14900,
-        "ofertas": 3,
-        "rebaja": 0.7,
-        "empresas": [
-          {
-            "id": 2594,
-            "nombre": "MARÍN Y ASOCIADOS, S.A."
-          }
-        ]
-      }
-    ],
-    "antecedentes_total": 1,
-    "prevision": {
-      "ofertas": {
-        "valor": 3.0,
-        "n": 104,
-        "base": "provincia",
-        "lugar": "Almería",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 9.4,
-        "n": 66,
-        "base": "provincia",
-        "lugar": "Almería",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 148500,
-      "seguro": 148500,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 8,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Almería)",
-        "Pesa la propuesta: el juicio de valor cuenta el 25 % y el precio el 20 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "47f8dbfe9cf9ff90",
-    "titulo": "Plan de comunicacion y Sistema de Portavocias de la Agencia Vasca del Agua",
-    "organismo": "Gobierno Vasco",
-    "fuente": "Euskadi",
-    "pais_territorio": "País Vasco",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 52500.0,
-    "presupuesto_display": "52,500 EUR",
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es",
-    "enlace_directo": false,
-    "codigo_expediente": "URA/022A/2026",
-    "resumen": "Expediente URA/022A/2026 · Abierto · Estado: Abierto / Plazo de presentación",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "Plan de comunicacion"
-      ]
-    },
-    "provincia": null,
-    "comunidad": "País Vasco",
-    "hora_limite": null,
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "URA-022A-2026 PCAP.docx",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6330295&R01HNoPortal=true"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "URA-022A-2026-PPT.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6330296&R01HNoPortal=true"
-      }
-    ],
-    "criterios": {
-      "precio": 35,
-      "resto": 65,
-      "detalle": [
-        {
-          "descripcion": "Oferta económica",
-          "peso": 35.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "Estrategia de comunicación institucional.",
-          "peso": 10.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Arcos de comunicación y matriz de mensajes",
-          "peso": 10.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Metodología de ejecución y despliegue operativo",
-          "peso": 8.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Diseño del sistema de portavocías: organización, roles y protocolos",
-          "peso": 8.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Programa formativo",
-          "peso": 6.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Dirección de estrategia corporativa y sistema de portavocías",
-          "peso": 5.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Consultoría sénior de estrategia y relación con medios",
-          "peso": 5.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Consultoría de soporte y comunicación institucional",
-          "peso": 5.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Acompañamiento operativo y preparación de intervenciones",
-          "peso": 3.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Sistema de evaluación individualizada",
-          "peso": 3.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Coherencia interna, integración y trazabilidad de la propuesta",
-          "peso": 2.0,
-          "tipo": "otro"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 45,
-      "adjudicaciones": 1163,
-      "empresas": 471,
-      "importe": 10541800,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1907,
-          "nombre": "CM Norte, S.L.",
-          "adjudicaciones": 28,
-          "importe": 270931
-        },
-        {
-          "id": 1137,
-          "nombre": "EDITORIAL IPARRAGUIRRE, S.A.",
-          "adjudicaciones": 24,
-          "importe": 258210
-        },
-        {
-          "id": 1909,
-          "nombre": "EUSKALPRENSA, S.L.",
-          "adjudicaciones": 27,
-          "importe": 242915
-        }
-      ]
-    },
-    "antecedentes": [
-      {
-        "titulo": "Consultoría social media para la Agencia Vasca del Agua",
-        "anio": "2021",
-        "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso37529/es_doc/es_arch_expjaso37529.html",
-        "importe": 7500,
-        "ofertas": null,
-        "rebaja": null,
-        "empresas": [
-          {
-            "id": 1748,
-            "nombre": "GUK KOMUNIKAZIO AHOLKULARITZA, S.L."
-          }
-        ]
-      }
-    ],
-    "antecedentes_total": 1,
-    "prevision": {
-      "ofertas": {
-        "valor": 3,
-        "n": 433,
-        "base": "comunidad",
-        "lugar": "País Vasco",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 17.3,
-        "n": 178,
-        "base": "comunidad",
-        "lugar": "País Vasco",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 78750,
-      "seguro": 78750,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 9,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "Comunidad prioritaria: País Vasco",
-        "El precio cuenta el 35 %"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "7c9ae5c6da3ac795",
-    "titulo": "Servicio de migración de la información histórica de lotus notes/domino y desarrollo e implantación de una plataforma web para su consulta",
-    "organismo": "Ayuntamiento de Azpeitia",
-    "fuente": "Euskadi",
-    "pais_territorio": "País Vasco",
-    "fecha_publicacion": "2026-10-06",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 33000.0,
-    "presupuesto_display": "33,000 EUR",
-    "cpv": [],
-    "categorias": [
-      "Diseño y desarrollo web"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/ac70cPublicidadWar/busquedaAnuncios?locale=es",
-    "enlace_directo": false,
-    "codigo_expediente": "595K",
-    "resumen": "Expediente 595K · Abierto · Estado: Abierto / Plazo de presentación",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "plataforma web"
-      ]
-    },
-    "provincia": "Gipuzkoa",
-    "comunidad": "País Vasco",
-    "hora_limite": null,
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "595K PCAP-GAZ.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6333101&R01HNoPortal=true"
-      },
-      {
-        "tipo": "administrativo",
-        "nombre": "595K ABBA-EUS.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6333104&R01HNoPortal=true"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "595K PT EUS.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6333003&R01HNoPortal=true"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "595K PT GAZ_signed.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6333004&R01HNoPortal=true"
-      },
-      {
-        "tipo": "caratula",
-        "nombre": "595K_Carat_GAZ_sinatuta.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6332995&R01HNoPortal=true"
-      },
-      {
-        "tipo": "caratula",
-        "nombre": "595K_Karat_EUS__sinatuta.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6332997&R01HNoPortal=true"
-      }
-    ],
-    "duracion_meses": 48.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 3723,
-      "adjudicaciones": 42,
-      "empresas": 25,
-      "importe": 71226,
-      "desde": "2022",
-      "principales": [
-        {
-          "id": 6951,
-          "nombre": "DI-DA KOOPERATIBA ELKARTEA",
-          "adjudicaciones": 7,
-          "importe": 15400
-        },
-        {
-          "id": 17530,
-          "nombre": "CODESYNTAX, S.L.",
-          "adjudicaciones": 1,
-          "importe": 12791
-        },
-        {
-          "id": 21290,
-          "nombre": "LARRAÑAGA TELEKOM S.L.",
-          "adjudicaciones": 2,
-          "importe": 9705
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 3.0,
-        "n": 32,
-        "base": "provincia",
-        "lugar": "Gipuzkoa",
-        "categoria": "Diseño y desarrollo web"
-      },
-      "rebaja": {
-        "valor": 18.1,
-        "n": 19,
-        "base": "provincia",
-        "lugar": "Gipuzkoa",
-        "categoria": "Diseño y desarrollo web"
-      }
-    },
-    "solvencia": {
-      "hasta": 12375,
-      "seguro": 12375,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 9,
-      "motivos": [
-        "Servicio principal de la agencia: Diseño y desarrollo web",
-        "Provincia prioritaria: Gipuzkoa",
-        "Poca competencia en Gipuzkoa: 2,8 ofertas de media por concurso (España: 4,2)"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "dcdb600884df82b6",
-    "titulo": "Servicios de compra de espacios en medios de comunicación para la inserción de las campañas de publicidad institucional de ámbito municipal del Ayuntamiento de Ribera de Arriba",
-    "organismo": "Alcaldía del Ayuntamiento de Ribera de Arriba",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-05",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 165289.26,
-    "presupuesto_display": "165,289 EUR",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)",
-      "Planificación de medios"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=03S%2BPbw%2FxT170UvEyYJSGw%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "35/2026",
-    "resumen": "Id licitación: 35/2026; Órgano de Contratación: Alcaldía del Ayuntamiento de Ribera de Arriba; Importe: 82644.63 EUR; Estado: PUB",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "comunicación",
-        "compra de espacios"
-      ]
-    },
-    "provincia": "Asturias",
-    "comunidad": "Asturias",
-    "hora_limite": "10:00",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "PLIEGO ADVAS CON ANEXOS.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=WjjAyJkMvHyKId6xHFAckVseOp6/qzVfVkg8V0CgzJbR0QxWdh6FObwDUwj30gsT4bzQUqk5cic/%2BeT0PisXbo8DoRtDCP39OOcnoFRabC%2BCx2e6p7hqtlp2aFupgHMr"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "04 3 PLIEGO TECNICAS DEFINITIVO.pdf",
-        "url": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D&DocumentIdParam=0HmXqVb8aJWKG%2BYX9VjsGiIv54X7EtaM/zKu4wxVKchihX5/6QSFT4sxrR63nY6TTCxpe/Fq1I9BW5NYCW1KEaLX9s493bGO2KZXpi5PdbuB0nvVKRzfe4rpHcnlPhSZ"
-      }
-    ],
-    "criterios": {
-      "precio": 100,
-      "formulas": 0,
-      "juicio": 0,
-      "detalle": [
-        {
-          "descripcion": "MENOR PRECIO",
-          "peso": 55.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "DESCUENTO MEDIO EN LA COMPRA DE ESPACIOS",
-          "peso": 45.0,
-          "tipo": "precio"
-        }
-      ],
-      "por_lotes": false
-    },
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-10-06",
-    "historial_organismo": {
-      "id": 1078,
-      "adjudicaciones": 19,
-      "empresas": 9,
-      "importe": 149855,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1382,
-          "nombre": "COMERCIALIZADORA DE MEDIOS DE ASTURIAS S.L.",
-          "adjudicaciones": 4,
-          "importe": 42040
-        },
-        {
-          "id": 5273,
-          "nombre": "EDITORIAL PRENSA ASTURIANA, S.A.U.",
-          "adjudicaciones": 3,
-          "importe": 34730
-        },
-        {
-          "id": 9627,
-          "nombre": "Ediciones Periódicas Del Noroeste, S.L.",
-          "adjudicaciones": 2,
-          "importe": 18800
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 5,
-        "n": 169,
-        "base": "provincia",
-        "lugar": "Asturias",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 20.4,
-        "n": 59,
-        "base": "provincia",
-        "lugar": "Asturias",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 247934,
-      "seguro": 247934,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 5,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España (Asturias)"
-      ],
-      "riesgos": [
-        "Solo cuenta el precio: gana la oferta más barata",
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "cca7e61c6c7ae2a9",
-    "titulo": "L'objecte del contracte és el subministrament de material de diferents publicacions promocionals amb informació diversa de la nostra destinació, d'acord amb les característiques establertes en aquest Plec de Prescripcions Tècniques, amb la finalitat de promocionar la destinació turística de Blanes en fires, esdeveniments, campanyes de comunicació i altres accions de promoció turística.",
-    "organismo": "Ajuntament de Blanes",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-05",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": 20126.0,
-    "presupuesto_display": "20,126 EUR",
-    "cpv": [
-      "22900000",
-      "79810000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/3b26254e-d49a-4c65-8928-09b0737f28dc/300894371",
-    "enlace_directo": true,
-    "codigo_expediente": "2026/13799Z",
-    "resumen": "Id licitación: 2026/13799Z; Órgano de Contratación: Ajuntament de Blanes; Importe: 10063.00 EUR; Estado: EN PLAZO",
-    "tipo_contrato": "Impresos varios",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "comunicació"
-      ]
-    },
-    "provincia": null,
-    "comunidad": "Cataluña",
-    "hora_limite": "14:00",
-    "pliegos": [
-      {
-        "tipo": "administrativo",
-        "nombre": "Plec publicacions TurismeJGL.pdf",
-        "url": "https://contractaciopublica.cat/portal-api/descarrega-document/302629186/9689ACCB3D1B7C637C0856637B766E41"
-      },
-      {
-        "tipo": "tecnico",
-        "nombre": "PT_publicacions_de_turisme prnt.pdf",
-        "url": "https://contractaciopublica.cat/portal-api/descarrega-document/302630392/3E16F57E922EF0DEB68C0356386237C0"
-      }
-    ],
-    "lotes": [
-      {
-        "id": "1",
-        "nombre": "L’empresa adjudicatària haurà d’imprimir i subministrar el llibret “Benvinguts”, d’acord amb el disseny definitiu facilitat per l’Ajuntament de Blanes.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "2",
-        "nombre": "L’empresa adjudicatària haurà d’imprimir i subministrar el plànol turístic de Blanes i el plànol de carrers de Blanes, d’acord amb el disseny definitiu facilitat per l’Ajuntament. Els plànols es lliuraran en paquets de fins a 500 unitats.",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "3",
-        "nombre": "L’empresa adjudicatària haurà d’imprimir i subministrar els llibrets de la “Ruta Bolaño”, el tríptic multi-idiomes, plànols de senderisme/ciclisme, la plantilla de l’agenda mensual i el juga i pinta. Cal presentar mostra física paper Polyart o equivalent.",
-        "importe": null,
-        "precio": null
-      }
-    ],
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-10-07",
-    "historial_organismo": {
-      "id": 1258,
-      "adjudicaciones": 10,
-      "empresas": 7,
-      "importe": 259840,
-      "desde": "2023",
-      "principales": [
-        {
-          "id": 332,
-          "nombre": "CBT, COMUNICACIÓN MULTIMEDIA, S.L.",
-          "adjudicaciones": 1,
-          "importe": 106062
-        },
-        {
-          "id": 28071,
-          "nombre": "Catalonia Audiovisual Media S.L.",
-          "adjudicaciones": 2,
-          "importe": 99990
-        },
-        {
-          "id": 28134,
-          "nombre": "Eva Fernández Pérez",
-          "adjudicaciones": 2,
-          "importe": 33800
-        }
-      ]
-    },
-    "prevision": {
-      "ofertas": {
-        "valor": 3,
-        "n": 3333,
-        "base": "comunidad",
-        "lugar": "Cataluña",
-        "categoria": "Publicidad y comunicación (general)"
-      },
-      "rebaja": {
-        "valor": 15.0,
-        "n": 932,
-        "base": "comunidad",
-        "lugar": "Cataluña",
-        "categoria": "Publicidad y comunicación (general)"
-      }
-    },
-    "solvencia": {
-      "hasta": 30189,
-      "seguro": 30189,
-      "duracion": true,
-      "lotes": false
-    },
-    "encaje": {
-      "nota": 6,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)",
-        "En España"
-      ],
-      "riesgos": [
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "c94c04c708f2c5fc",
-    "titulo": "Francia – Servicios de diseño gráfico – ACCORD CADRE RELATIF A LA CONCEPTION DE SUPPORTS DE COMMUNICATION – 3 LOTS",
-    "organismo": "LIMOGES METROPOLE - Communauté urbaine",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "region_nuts": "FRI23",
-    "fecha_publicacion": "2026-09-22",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79822500",
-      "79961000",
-      "92111200",
-      "79822500",
-      "79961000",
-      "92111200"
-    ],
-    "categorias": [
-      "Diseño gráfico / branding"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/650623-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de diseño gráfico – ACCORD CADRE RELATIF A LA CONCEPTION DE SUPPORTS DE COMMUNICATION – 3 LOTS",
-    "tipo_contrato": "Servicios de diseño gráfico",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "diseño gráfico"
-      ],
-      "tipo_ted": "Servicios de diseño gráfico"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": "12:00",
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://demat-ampa.fr/entreprise/consultation/610065?orgAcronyme=PP295"
-      }
-    ],
-    "criterios": {
-      "precio": 40,
-      "resto": 60,
-      "detalle": [
-        {
-          "descripcion": "Valeur technique",
-          "peso": 60.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Prix des prestations",
-          "peso": 40.0,
-          "tipo": "precio"
-        }
-      ],
-      "por_lotes": true
-    },
-    "lotes": [
-      {
-        "id": "1",
-        "nombre": "CONCEPTION GRAPHIQUE",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "2",
-        "nombre": "Photographies de promotion, d'information, d’événementiel et vidéos",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "3",
-        "nombre": "Création de films promotionnels et de vidéos",
-        "importe": null,
-        "precio": null
-      }
-    ],
-    "duracion_meses": 12.0,
-    "fecha_primera_aparicion": "2026-09-27",
-    "encaje": {
-      "nota": 5,
-      "motivos": [
-        "Servicio principal de la agencia: Diseño gráfico / branding",
-        "El precio cuenta el 40 %"
-      ],
-      "riesgos": [
-        "Fuera de España (Francia): idioma y presencia local",
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
-    "id": "a16c621680d798c5",
-    "titulo": "Francia – Centro de llamadas – DISPOSITIF D’URGENCE DU GROUPE 3F",
-    "organismo": "IMMOBILIERE 3F",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "region_nuts": "FR101",
-    "fecha_publicacion": "2026-09-22",
-    "fecha_limite": "2026-10-21",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79512000",
-      "79512000"
-    ],
-    "categorias": [
-      "Atención al cliente / soporte"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/651495-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Centro de llamadas – DISPOSITIF D’URGENCE DU GROUPE 3F",
-    "tipo_contrato": "Centro de llamadas",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "Centro de llamadas"
-      ],
-      "tipo_ted": "Centro de llamadas"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": "14:00",
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://www.achatpublic.com/sdm/ent2/gen/ficheCsl.action?PCSLID=CSL_2026_g3gznaDXLx"
-      }
-    ],
-    "duracion_meses": 48.0,
-    "fecha_primera_aparicion": "2026-09-27",
-    "encaje": {
-      "nota": 0,
-      "motivos": [],
-      "riesgos": [
-        "No es uno de los servicios de la agencia",
-        "Fuera de España (Francia): idioma y presencia local",
-        "Cierra hoy"
-      ]
-    }
-  },
-  {
     "id": "40a506ba99e29a06",
     "titulo": "Polonia – Servicios de campañas de publicidad – Realizacja organicznych i płatnych działań promujących Fundusze Europejskie (FE) i Krajowy Plan Odbudowy i Zwiększania Odporności (Krajowy Plan Odbudowy lub KPO) w mediach społecznościowych oraz współpracy z twórcami internetowymi",
     "organismo": "Ministerstwo Funduszy i Polityki Regionalnej",
@@ -2226,7 +87,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Polonia): idioma y presencia local",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2330,7 +191,7 @@ window.TENDERS_DATA = [
         "En España (Barcelona)"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2384,7 +245,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Polonia): idioma y presencia local",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2476,7 +337,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Polonia): idioma y presencia local",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2634,7 +495,7 @@ window.TENDERS_DATA = [
         "En España (Asturias)"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2793,7 +654,7 @@ window.TENDERS_DATA = [
         "Pesa la propuesta: el juicio de valor cuenta el 48 % y el precio el 44 %"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -2927,7 +788,7 @@ window.TENDERS_DATA = [
         "El precio cuenta el 65 % y la propuesta técnica el 20 %"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3033,7 +894,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "No es uno de los servicios de la agencia",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3105,7 +966,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Finlandia): idioma y presencia local",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3206,7 +1067,7 @@ window.TENDERS_DATA = [
         "No es uno de los servicios de la agencia",
         "Fuera de España (Polonia): idioma y presencia local",
         "Solo cuenta el precio: gana la oferta más barata",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3326,7 +1187,7 @@ window.TENDERS_DATA = [
         "El precio cuenta el 50 %"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3463,7 +1324,7 @@ window.TENDERS_DATA = [
         "El precio cuenta el 45 %"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3542,7 +1403,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Alemania): idioma y presencia local",
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3611,7 +1472,7 @@ window.TENDERS_DATA = [
         "En España (Valencia)"
       ],
       "riesgos": [
-        "Cierra en 1 día: poco tiempo para preparar la oferta"
+        "Cierra hoy"
       ]
     }
   },
@@ -3661,6 +1522,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43251814",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Línea de Europa Creativa: la agencia podría presentarse o ir de socia",
+      "via": "solicitante",
+      "programa": "Europa Creativa",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Los proyectos deben basarse en los principios de buenas condiciones de trabajo y remuneración justa de los artistas y profesionales de la cultura y respetar las normas nacionales y seguir las mejores prácticas, refiriéndose y utilizando el Informe del grupo del Método Abierto de Coordinación (Mac) de los Estados miembros de la UE...",
+        "Los artistas y los profesionales de la cultura deben recibir reconocimiento y visibilidad, en particular, al ser acreditados en todo el material de comunicación y difusión impreso y en línea.",
+        "El desarrollo y la implementación de una estrategia de comunicación, difusión y branding tanto para el proyecto como para los artistas y profesionales de la cultura;"
+      ]
+    },
     "por_que": {
       "terminos": [
         "branding"
@@ -3833,7 +1708,7 @@ window.TENDERS_DATA = [
         "El precio no puntúa: la propuesta técnica vale el 44 % y el resto va por fórmulas"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -3891,7 +1766,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Bélgica): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4004,7 +1879,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Solo cuenta el precio: gana la oferta más barata",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4061,7 +1936,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Francia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4193,7 +2068,7 @@ window.TENDERS_DATA = [
         "Pesa la propuesta: el juicio de valor cuenta el 45 % y el precio el 25 %"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4327,7 +2202,7 @@ window.TENDERS_DATA = [
         "Pesa la propuesta: el juicio de valor cuenta el 48 % y el precio el 20 %"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4504,7 +2379,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "La ha ganado SEIKAZ COMUNICACIÓN S.L. en las 2 últimas ediciones",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4576,7 +2451,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Croacia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4680,7 +2555,7 @@ window.TENDERS_DATA = [
         "En España"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4734,7 +2609,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Francia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4834,7 +2709,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "No es uno de los servicios de la agencia",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -4949,7 +2824,7 @@ window.TENDERS_DATA = [
         "En España (Barcelona)"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5020,7 +2895,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Francia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5185,7 +3060,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Importe alto (5.851.816 €): revisar la solvencia que piden",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5253,7 +3128,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Alemania): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5321,7 +3196,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Francia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5419,7 +3294,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Polonia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5491,7 +3366,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Rumanía): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5545,7 +3420,7 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Suecia): idioma y presencia local",
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5639,7 +3514,7 @@ window.TENDERS_DATA = [
         "En España (Barcelona)"
       ],
       "riesgos": [
-        "Cierra en 2 días: poco tiempo para preparar la oferta"
+        "Cierra en 1 día: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -5687,12 +3562,13 @@ window.TENDERS_DATA = [
     "duracion_meses": 36.0,
     "fecha_primera_aparicion": "2026-09-28",
     "encaje": {
-      "nota": 4,
+      "nota": 3,
       "motivos": [
         "Servicio principal de la agencia: Publicidad y comunicación (general)"
       ],
       "riesgos": [
-        "Fuera de España (Portugal): idioma y presencia local"
+        "Fuera de España (Portugal): idioma y presencia local",
+        "Cierra en 2 días: poco tiempo para preparar la oferta"
       ]
     }
   },
@@ -18925,6 +16801,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43108390",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Los solicitantes deben esforzarse por identificar herramientas comunes y estimular la máxima reutilización de componentes procedentes de otros proyectos financiados, por ejemplo, herramientas interoperables de gestión de identidades y credenciales, soluciones de embalaje comunes, herramientas para redes sociales descentralizadas."
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -21197,6 +19085,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: comunicación, redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Estos modelos deberían facilitar la mejora de la previsión de peligros al abordar los desafíos en la interoperabilidad de la plataforma y el intercambio de datos, asegurando que los diversos sistemas de monitoreo de peligros a nivel local, nacional y global puedan comunicarse y operar de manera efectiva en sinergia.",
+        "Se deben hacer esfuerzos para aprovechar el contenido generado por los ciudadanos en las redes sociales y las plataformas digitales descentralizadas para la alerta temprana impulsada por los ciudadanos y la conciencia situacional."
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -25077,72 +22978,6 @@ window.TENDERS_DATA = [
     }
   },
   {
-    "id": "85d2c86ba9ca2a34",
-    "titulo": "Países Bajos – Servicios de estudios de mercado – Aanbesteding Independent Market Research & IT Advice 2",
-    "organismo": "SURF B.V.",
-    "fuente": "UE",
-    "pais_territorio": "Países Bajos",
-    "region_nuts": "NL350",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "2026-11-09",
-    "presupuesto_valor": 6900000.0,
-    "presupuesto_display": "6,900,000 EUR",
-    "cpv": [
-      "79310000",
-      "72000000",
-      "72212190",
-      "72222000",
-      "72261000",
-      "72266000",
-      "73210000",
-      "79411000",
-      "79310000",
-      "72000000",
-      "72212190",
-      "72222000",
-      "72261000",
-      "72266000",
-      "73210000",
-      "79411000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/649535-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Países Bajos – Servicios de estudios de mercado – Aanbesteding Independent Market Research & IT Advice 2",
-    "tipo_contrato": "Servicios de estudios de mercado",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "estudios de mercado"
-      ],
-      "tipo_ted": "Servicios de estudios de mercado"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": "22:59",
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://s2c.mercell.com/today/232278"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-09-27",
-    "encaje": {
-      "nota": 4,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)"
-      ],
-      "riesgos": [
-        "Fuera de España (Países Bajos): idioma y presencia local"
-      ]
-    }
-  },
-  {
     "id": "c1db3b40ca523714",
     "titulo": "Alemania – Servicios de relaciones públicas – Kommunikations- und Veranstaltungsleistungen im Rahmen der Koordinierungs- und Transferstelle Smart Cities (KTS)",
     "organismo": "PD - Berater der öffentlichen Hand GmbH",
@@ -26993,6 +24828,87 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Austria): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "3d4a661b817e31d6",
+    "titulo": "Alemania – Servicios de consultoría en relaciones públicas – Rahmenvereinbarung Kommunikationsagentur",
+    "organismo": "Deutsche Energy Terminal GmbH (DET)",
+    "fuente": "UE",
+    "pais_territorio": "Alemania",
+    "region_nuts": "DEA11",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-13",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79416200",
+      "79000000",
+      "79416000",
+      "79342000",
+      "79413000",
+      "79340000",
+      "79416200",
+      "79000000",
+      "79416000",
+      "79342000",
+      "79413000",
+      "79340000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/733278-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Alemania – Servicios de consultoría en relaciones públicas – Rahmenvereinbarung Kommunikationsagentur",
+    "tipo_contrato": "Servicios de consultoría en relaciones públicas",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "relaciones públicas"
+      ],
+      "tipo_ted": "Servicios de consultoría en relaciones públicas"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": null,
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.dtvp.de/Satellite/notice/CXP4Y8LMWQ2/documents"
+      }
+    ],
+    "criterios": {
+      "precio": 30,
+      "resto": 70,
+      "detalle": [
+        {
+          "descripcion": "Die Kennzahl L wird anhand der in der Bewertungsmatrix aufgeführten qualitativen Zuschlagskriterien berechnet und geht im Ergebnis zu 70 % in die Berechnung des Wertes Z ein. Insgesamt kann der Bieter hier maximal 7.000 Wertungspunkte erreichen. Bei der Ermittlung der Kennzahl L wird die Erfüllung des jeweiligen Bewertungskriteriums im Angebot des Bieters gemäß des Wertungsmaßstabs in der Bewertungsmatrix bewertet. Hierbei reicht der Bieter mit seinem Angebot entsprechende Konzepte für die auftragsgegenständliche Leistung ein. Die Konzepte müssen dabei auf die in der Bewertungsmatrix genannten Kriterien eingehen",
+          "peso": 70.0,
+          "tipo": "otro"
+        },
+        {
+          "descripcion": "Das Angebot mit dem niedrigsten Gesamtpreis (Pmin) erhält die volle Punktzahl von 3.000 Wertungspunkten. Ein fiktives Angebot mit einem Angebotspreis, der dem Dreifachen des niedrigsten Angebotspreises entspricht, erhält 0 Wertungspunkte. Angebote, die teurer als das fiktive Angebot sind, erhalten ebenfalls 0 Wertungspunkte. Angebotspreise, die zwischen dem niedrigsten Gesamtpreis und dem fiktiven dreifachen Angebotspreis liegen, werden nach der folgenden Formel linear interpoliert. Dabei bezeichnet PA den Angebotspreis und Pmin den niedrigsten Angebotspreis",
+          "peso": 30.0,
+          "tipo": "precio"
+        }
+      ],
+      "por_lotes": false
+    },
+    "duracion_meses": 24.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 6,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)",
+        "El precio cuenta el 30 %"
+      ],
+      "riesgos": [
+        "Fuera de España (Alemania): idioma y presencia local"
       ]
     }
   },
@@ -29291,81 +27207,6 @@ window.TENDERS_DATA = [
     }
   },
   {
-    "id": "a7be2064c2d794ec",
-    "titulo": "Francia – Servicios de diseño gráfico – Conception, réalisation du magazine d'information du Département du Calvados (Relance du lot 01 à la suite d'une infructuosité - consultation n°2026COM030)",
-    "organismo": "CONSEIL DEPARTEMENTAL DU CALVADOS (CD 14)",
-    "fuente": "UE",
-    "pais_territorio": "Francia",
-    "region_nuts": "FRD11",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "2026-11-16",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79822500",
-      "79822500"
-    ],
-    "categorias": [
-      "Diseño gráfico / branding"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/648724-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Francia – Servicios de diseño gráfico – Conception, réalisation du magazine d'information du Département du Calvados (Relance du lot 01 à la suite d'une infructuosité - consultation n°2026COM030)",
-    "tipo_contrato": "Servicios de diseño gráfico",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "diseño gráfico"
-      ],
-      "tipo_ted": "Servicios de diseño gráfico"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": "12:00",
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://marchespublics-calvados.safetender.com"
-      }
-    ],
-    "criterios": {
-      "precio": 30,
-      "resto": 70,
-      "detalle": [
-        {
-          "descripcion": "Définition : Définition et appréciation du critère: 1 - Préconisations éditoriales 2 - Méthodologie de travail et équipe dédiée 3 - Qualité des maquettes graphiques Sous-critère : Préconisations éditoriales 30% Définition : (Proposition d'une ligne éditoriale, réponse aux questionnements, chemin de fer idéal et argumenté, préconisations d'évolutions etc.) Sous-critère : Méthodologie de travail 15% Définition : Préconisations pour l'articulation de la méthodologie de travail pour toute l'année et pour un numéro, préparation et déroulement d'un comité de rédaction, présentation d'un rétro-planning type, des outils de gestion de projet... Sous-critère : Qualité des maquettes graphiques 15% Définition : (Présentation d'une maquette de couverture, d'une double page de rubrique loisirs rédigée, 3 pages du dossier dont ouverture non-rédigées)",
-          "peso": 60.0,
-          "tipo": "otro"
-        },
-        {
-          "descripcion": "Définition et appréciation du critère : Ce critère est noté selon la formule de notation : Note du Prix = (Montant TTC de l'offre la plus basse / Montant TTC de l'offre examinée au BPU valant DQE) x 10 x Coefficient de la pondération. Attention seules lignes en jaune seront comptabilisées pour l’analyse du critère prix",
-          "peso": 30.0,
-          "tipo": "precio"
-        },
-        {
-          "descripcion": "Équipe dédiée, statut et conditions de rémunération Définition : Étude des éléments fournis par le candidat attestant de l’expertise et des compétences de l’équipe dédiée au magazine (CV, Book, statut et rémunération des journalistes, rédacteurs et photographes, usage de l'intelligence artificielle générative etc.)",
-          "peso": 10.0,
-          "tipo": "otro"
-        }
-      ],
-      "por_lotes": false
-    },
-    "fecha_primera_aparicion": "2026-09-27",
-    "encaje": {
-      "nota": 6,
-      "motivos": [
-        "Servicio principal de la agencia: Diseño gráfico / branding",
-        "El precio cuenta el 30 %"
-      ],
-      "riesgos": [
-        "Fuera de España (Francia): idioma y presencia local"
-      ]
-    }
-  },
-  {
     "id": "4e4cc9d4c8f944ba",
     "titulo": "Colaboración Europea para una Economía Azul climáticamente neutra, sostenible y productiva",
     "organismo": "Comisión Europea",
@@ -29406,6 +27247,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43108390",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, divulgación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Se mejoran la cooperación y la alineación multinivel de la UE y nacional a través y dentro de los mares regionales de los programas de investigación e innovación, las prioridades y las inversiones, sobre la base de las agendas estratégicas de investigación e innovación establecidas y las actividades de cooperación relacionadas, incluidas las internacionales...",
+        "La Asociación Europea para una economía azul climáticamente neutra, sostenible y productiva debe implementarse a través de un programa conjunto de actividades de alto impacto, relevancia y desarrollo de capacidades, que van desde la investigación hasta las actividades de coordinación y creación de redes, incluida la formación,...",
+        "Emprender medidas de comunicación y difusión para hacer que los resultados de la I + i sean accesibles para todos los grupos de partes interesadas y usuarios y preparar directrices, referencias, herramientas y capacitaciones para la replicación y la integración; comunicar a los ciudadanos y a la sociedad civil en general, e involucrarlos para lograr..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -30365,6 +28220,67 @@ window.TENDERS_DATA = [
     }
   },
   {
+    "id": "082449c2c923057b",
+    "titulo": "Irlanda – Servicios de diseño gráfico – Single Party Framework Agreement for the Provision of Multi-Media Design Services",
+    "organismo": "Horse Racing Ireland (HRI)",
+    "fuente": "UE",
+    "pais_territorio": "Irlanda",
+    "region_nuts": "IE062",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-19",
+    "presupuesto_valor": 200000.0,
+    "presupuesto_display": "200,000 EUR",
+    "cpv": [
+      "79822500",
+      "79340000",
+      "92621000",
+      "79341400",
+      "92100000",
+      "79822500",
+      "79340000",
+      "92621000",
+      "79341400",
+      "92100000"
+    ],
+    "categorias": [
+      "Diseño gráfico / branding"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/731037-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Irlanda – Servicios de diseño gráfico – Single Party Framework Agreement for the Provision of Multi-Media Design Services",
+    "tipo_contrato": "Servicios de diseño gráfico",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "diseño gráfico"
+      ],
+      "tipo_ted": "Servicios de diseño gráfico"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "12:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.etenders.gov.ie/epps/cft/listContractDocuments.do?resourceId=9334077"
+      }
+    ],
+    "duracion_meses": 48.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Diseño gráfico / branding"
+      ],
+      "riesgos": [
+        "Fuera de España (Irlanda): idioma y presencia local"
+      ]
+    }
+  },
+  {
     "id": "89e180bdbf801f4f",
     "titulo": "Chequia – Servicios de publicidad – Propagace statutárního města Zlína prostřednictvím sportu za období roku 2027",
     "organismo": "Statutární město Zlín",
@@ -30832,6 +28748,263 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Fuera de España (Alemania): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "71eb183f67cb5def",
+    "titulo": "Francia – Servicios de consultoría en relaciones públicas – Marché d'animation du réseau du service public de la rénovation de l'habitat en BFC",
+    "organismo": "DREAL Bourgogne-Franche-Comté",
+    "fuente": "UE",
+    "pais_territorio": "Francia",
+    "region_nuts": "FRC21",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-20",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79416200",
+      "79416200"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/730976-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Francia – Servicios de consultoría en relaciones públicas – Marché d'animation du réseau du service public de la rénovation de l'habitat en BFC",
+    "tipo_contrato": "Servicios de consultoría en relaciones públicas",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "relaciones públicas"
+      ],
+      "tipo_ted": "Servicios de consultoría en relaciones públicas"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "12:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.marches-publics.gouv.fr/entreprise/consultation/3089136?orgAcronyme=d4t"
+      }
+    ],
+    "duracion_meses": 12.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Francia): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "97455cfbf5536a7a",
+    "titulo": "España – Servicios de publicidad y de marketing – Servicio de comunicación institucional, mantenimiento de la página web y gestión de las redes sociales del Ayuntamiento de Lasarte-Oria.",
+    "organismo": "Ayuntamiento de Lasarte-Oria - Ayuntamiento de Lasarte-Oria",
+    "fuente": "UE",
+    "pais_territorio": "España",
+    "region_nuts": "ES212",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-20",
+    "presupuesto_valor": 374545.92,
+    "presupuesto_display": "374,546 EUR",
+    "cpv": [
+      "79340000",
+      "72514000",
+      "79341000",
+      "79341100",
+      "79416000",
+      "79416100",
+      "79416200",
+      "79340000",
+      "72514000",
+      "79341000",
+      "79341100",
+      "79416000",
+      "79416100",
+      "79416200"
+    ],
+    "categorias": [
+      "Redes sociales / community management",
+      "Diseño y desarrollo web",
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/731746-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "España – Servicios de publicidad y de marketing – Servicio de comunicación institucional, mantenimiento de la página web y gestión de las redes sociales del Ayuntamiento de Lasarte-Oria.",
+    "tipo_contrato": "Servicios de publicidad y de marketing",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "redes sociales",
+        "página web",
+        "comunicación"
+      ]
+    },
+    "provincia": "Gipuzkoa",
+    "comunidad": "País Vasco",
+    "hora_limite": "23:59",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.contratacion.euskadi.eus"
+      }
+    ],
+    "duracion_meses": 12.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "prevision": {
+      "ofertas": {
+        "valor": 2.0,
+        "n": 110,
+        "base": "provincia",
+        "lugar": "Gipuzkoa",
+        "categoria": "Publicidad y comunicación (general)"
+      },
+      "rebaja": {
+        "valor": 14.2,
+        "n": 53,
+        "base": "provincia",
+        "lugar": "Gipuzkoa",
+        "categoria": "Publicidad y comunicación (general)"
+      }
+    },
+    "solvencia": {
+      "hasta": 561819,
+      "seguro": 561819,
+      "duracion": true,
+      "lotes": false
+    },
+    "encaje": {
+      "nota": 10,
+      "motivos": [
+        "Servicio principal de la agencia: Redes sociales / community management, Diseño y desarrollo web, Publicidad y comunicación (general)",
+        "Provincia prioritaria: Gipuzkoa",
+        "Poca competencia en Gipuzkoa: 2,8 ofertas de media por concurso (España: 4,2)"
+      ],
+      "riesgos": []
+    }
+  },
+  {
+    "id": "a9e8db628faa7359",
+    "titulo": "Francia – Servicios de gestión en relaciones públicas – Veille média, réseaux sociaux et de crise pour la direction de la communication du groupe Caisse des Dépôts",
+    "organismo": "Caisse des dépôts et consignations",
+    "fuente": "UE",
+    "pais_territorio": "Francia",
+    "region_nuts": "FR101",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-20",
+    "presupuesto_valor": 665000.0,
+    "presupuesto_display": "665,000 EUR",
+    "cpv": [
+      "79416100",
+      "79416100"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/732870-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Francia – Servicios de gestión en relaciones públicas – Veille média, réseaux sociaux et de crise pour la direction de la communication du groupe Caisse des Dépôts",
+    "tipo_contrato": "Servicios de gestión en relaciones públicas",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "relaciones públicas"
+      ],
+      "tipo_ted": "Servicios de gestión en relaciones públicas"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "11:30",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.marches-publics.gouv.fr/entreprise"
+      }
+    ],
+    "duracion_meses": 48.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Francia): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "e658ddc8c37b31ca",
+    "titulo": "Irlanda – Servicios de publicidad – Request for Tender for a Media Agency to provide Strategic Media Planning and Buying Services to Shannon Group Plc",
+    "organismo": "Shannon Group plc",
+    "fuente": "UE",
+    "pais_territorio": "Irlanda",
+    "region_nuts": "IE051",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-20",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79341000",
+      "79341100",
+      "79341200",
+      "79341400",
+      "79340000",
+      "79341000",
+      "79341100",
+      "79341200",
+      "79341400",
+      "79340000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/733513-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Irlanda – Servicios de publicidad – Request for Tender for a Media Agency to provide Strategic Media Planning and Buying Services to Shannon Group Plc",
+    "tipo_contrato": "Servicios de publicidad",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "publicidad"
+      ],
+      "tipo_ted": "Servicios de publicidad"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "15:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.etenders.gov.ie/epps/cft/listContractDocuments.do?resourceId=9337559"
+      }
+    ],
+    "duracion_meses": 60.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Irlanda): idioma y presencia local"
       ]
     }
   },
@@ -31634,6 +29807,210 @@ window.TENDERS_DATA = [
       ],
       "riesgos": [
         "Solo cuenta el precio: gana la oferta más barata"
+      ]
+    }
+  },
+  {
+    "id": "9c627dddbbc2f828",
+    "titulo": "Polonia – Servicios de promoción – Informacja i promocja dla zadania pn. \"Poprawa bezpieczeństwa powodziowego przez modernizację obwałowań rzeki Wisły, Gostynki i Mlecznej na terenie powiatu bieruńsko-lędzińskiego oraz miasta Tychy\"",
+    "organismo": "Państwowe Gospodarstwo Wodne Wody Polskie",
+    "fuente": "UE",
+    "pais_territorio": "Polonia",
+    "region_nuts": "PL911",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-23",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79342200",
+      "79952000",
+      "55520000",
+      "39294100",
+      "55120000",
+      "79342200",
+      "79952000",
+      "55520000",
+      "39294100",
+      "55120000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/733309-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Polonia – Servicios de promoción – Informacja i promocja dla zadania pn. \"Poprawa bezpieczeństwa powodziowego przez modernizację obwałowań rzeki Wisły, Gostynki i Mlecznej na terenie powiatu bieruńsko-lędzińskiego oraz miasta Tychy\"",
+    "tipo_contrato": "Servicios de promoción",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "Servicios de promoción"
+      ],
+      "tipo_ted": "Servicios de promoción"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "10:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://wodypolskie.ezamawiajacy.pl"
+      }
+    ],
+    "duracion_meses": 37.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Polonia): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "250858a9650acbff",
+    "titulo": "Finlandia – Servicios de publicidad y de marketing – Markkinointi- ja viestintätoimistopalvelut",
+    "organismo": "Teknologian tutkimuskeskus VTT Oy",
+    "fuente": "UE",
+    "pais_territorio": "Finlandia",
+    "region_nuts": "FI1B1",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-23",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79340000",
+      "79342000",
+      "79413000",
+      "79340000",
+      "79340000",
+      "79413000",
+      "79342000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/733471-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Finlandia – Servicios de publicidad y de marketing – Markkinointi- ja viestintätoimistopalvelut",
+    "tipo_contrato": "Servicios de publicidad y de marketing",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "publicidad"
+      ],
+      "tipo_ted": "Servicios de publicidad y de marketing"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "10:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://tarjouspalvelu.fi/vtt?id=631183&tpk=1c3e7332-8290-4307-8971-47633c34225c"
+      }
+    ],
+    "criterios": {
+      "precio": 60,
+      "resto": 40,
+      "detalle": [
+        {
+          "descripcion": "Hinta",
+          "peso": 60.0,
+          "tipo": "precio"
+        },
+        {
+          "descripcion": "Laatu",
+          "peso": 40.0,
+          "tipo": "otro"
+        }
+      ],
+      "por_lotes": true
+    },
+    "lotes": [
+      {
+        "id": "1",
+        "nombre": "Osakokonaisuus 1: Viestinnän suunnittelu ja sisällöntuotanto",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "2",
+        "nombre": "Osakokonaisuus 2: Markkinoinnin suunnittelu ja sisällöntuotanto",
+        "importe": null,
+        "precio": null
+      }
+    ],
+    "duracion_meses": 48.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 5,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)",
+        "El precio cuenta el 60 %"
+      ],
+      "riesgos": [
+        "Fuera de España (Finlandia): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "295e6ae29b316b08",
+    "titulo": "Francia – Servicios de estudios de mercado – Etude sur le métier d'enquêteur dans les bureaux d'études",
+    "organismo": "OPCO ATLAS",
+    "fuente": "UE",
+    "pais_territorio": "Francia",
+    "region_nuts": "FR101",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-23",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79310000",
+      "79311000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/733551-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Francia – Servicios de estudios de mercado – Etude sur le métier d'enquêteur dans les bureaux d'études",
+    "tipo_contrato": "Servicios de estudios de mercado",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "estudios de mercado"
+      ],
+      "tipo_ted": "Servicios de estudios de mercado"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "12:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.achatpublic.com/sdm/ent2/gen/ficheCsl.action?PCSLID=CSL_2026_YifNJdePdD"
+      }
+    ],
+    "duracion_meses": 14.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Francia): idioma y presencia local"
       ]
     }
   },
@@ -32593,6 +30970,72 @@ window.TENDERS_DATA = [
     }
   },
   {
+    "id": "fddc9d9e5ff340d5",
+    "titulo": "Polonia – Servicios de diseño de sitios web www – Utrzymanie i rozwój dla obsługi strony www Państwowej Inspekcji Pracy.",
+    "organismo": "Państwowa Inspekcja Pracy Główny Inspektorat Pracy",
+    "fuente": "UE",
+    "pais_territorio": "Polonia",
+    "region_nuts": "PL911",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-26",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "72413000",
+      "72413000"
+    ],
+    "categorias": [
+      "Diseño y desarrollo web"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/732079-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Polonia – Servicios de diseño de sitios web www – Utrzymanie i rozwój dla obsługi strony www Państwowej Inspekcji Pracy.",
+    "tipo_contrato": "Servicios de diseño de sitios web WWW",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "diseño de sitios web"
+      ],
+      "tipo_ted": "Servicios de diseño de sitios web www"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "09:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://ezamowienia.gov.pl/mp-client/search/list/ocds-148610-269d5c80-e2e2-45d7-ab91-6fa9af4adbd7"
+      }
+    ],
+    "criterios": {
+      "precio": 100,
+      "resto": 0,
+      "detalle": [
+        {
+          "descripcion": "Cena",
+          "peso": 100.0,
+          "tipo": "precio"
+        }
+      ],
+      "por_lotes": false
+    },
+    "duracion_meses": 36.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 3,
+      "motivos": [
+        "Servicio principal de la agencia: Diseño y desarrollo web"
+      ],
+      "riesgos": [
+        "Fuera de España (Polonia): idioma y presencia local",
+        "Solo cuenta el precio: gana la oferta más barata"
+      ]
+    }
+  },
+  {
     "id": "3562402e37a31734",
     "titulo": "Irlanda – Servicios de publicidad y de marketing – Provision of Digital Marketing Strategy, Media Planning, Buying, Optimisation and Reporting Services",
     "organismo": "Sport Ireland Facilities DAC",
@@ -32691,6 +31134,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43108390",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, divulgación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Las estrategias de las universidades, otras instituciones de educación superior e institutos de investigación para contribuir a las misiones de la UE desarrolladas a lo largo de los ejes de \"investigación e innovación\", \"educación, formación y habilidades\" y \"compromiso público e impacto social\".",
+        "Ya brindan diversos servicios a las partes interesadas en su región local, que incluyen: cursos de aprendizaje permanente e investigación aplicada que tienen en cuenta las necesidades y oportunidades específicas de las empresas y las industrias; las actividades de investigación en ciencias sociales y humanidades investigan...",
+        "Esto debe reflejarse en las actividades de comunicación y difusión de los proyectos y se considera una parte integral del impacto esperado del proyecto."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -32701,44 +31158,68 @@ window.TENDERS_DATA = [
     "fecha_primera_aparicion": "2026-10-21"
   },
   {
-    "id": "bbfd383374ef0d37",
-    "titulo": "Apoyo a la implementación de Proyectos Multinacionales (PCM)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-28",
-    "fecha_limite": "2026-11-28",
-    "presupuesto_valor": 25000000.0,
-    "presupuesto_display": "25,000,000 EUR",
-    "proyectos_previstos": null,
-    "subvencion_maxima": null,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (call document)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/digital/wp-call/2024/call-fiche_digital-2024-bestuse-07_en.pdf"
-      }
+    "id": "b9997594032b8ce5",
+    "titulo": "Grecia – Servicios de consultoría en publicidad – Ηλεκτρονικό Ανοιχτό Διεθνή Διαγωνισμό για την ανάδειξη αναδόχου που θα αναλάβει το έργο με τίτλο «Υποέργο - 2 «Ανάπτυξη και εφαρμογή ενεργειών Δημοσιότητας για την προβολή και την διάχυση των δράσεων της Δ.ΥΠ.Α. στο ΠΑΔΚΣ 2021-2027» της πράξης «Τεχνική Υποστήριξη της Δημόσιας Υπηρεσία Απασχόλησης στο πλαίσιο του Προγράμματος «Ανθρώπινο Δυναμικό & Κοινωνική Συνοχή» (ΠΑΔΚΣ) 2021-2027», συνολικού",
+    "organismo": "ΔΗΜΟΣΙΑ ΥΠΗΡΕΣΙΑ ΑΠΑΣΧΟΛΗΣΗΣ",
+    "fuente": "UE",
+    "pais_territorio": "Grecia",
+    "region_nuts": "EL304",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2026-11-30",
+    "presupuesto_valor": 604838.71,
+    "presupuesto_display": "604,839 EUR",
+    "cpv": [
+      "79341100",
+      "79310000",
+      "79952000",
+      "72400000",
+      "79340000",
+      "79340000",
+      "92110000",
+      "79341100",
+      "79310000",
+      "79952000",
+      "72400000",
+      "79342000",
+      "92100000"
     ],
-    "cpv": [],
     "categorias": [
-      "Creación de contenidos"
+      "Publicidad y comunicación (general)"
     ],
     "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/DIGITAL-2024-BESTUSE-07-MULTICOUNTRY",
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/730090-2026",
     "enlace_directo": true,
-    "codigo_expediente": "DIGITAL-2024-BESTUSE-07-MULTICOUNTRY",
-    "resumen": "Resultado esperado: Despliegue de unos pocos MCP que ofrecen infraestructura(s) digital (es) completamente funcional (es) o servicio(s) operativo (s) con un plan de sostenibilidad claro y a largo plazo. Se espera que los proyectos demuestren un claro valor añadido de la UE a través de su impacto que ninguna entidad o Estado miembro podría lograr por sí solo. Objetivo: Los proyectos multinacionales (MCP) son proyectos a gran escala que facilitan el logro de los objetivos de transformación digital o",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "43152860",
+    "codigo_expediente": null,
+    "resumen": "Grecia – Servicios de consultoría en publicidad – Ηλεκτρονικό Ανοιχτό Διεθνή Διαγωνισμό για την ανάδειξη αναδόχου που θα αναλάβει το έργο με τίτλο «Υποέργο - 2 «Ανάπτυξη και εφαρμογή ενεργειών Δημοσιότητας για την προβολή και την διάχυση των δράσεων της Δ.ΥΠ.Α. στο ΠΑΔΚΣ 2021-2027» της πράξης «Τεχνική Υποστήριξη της Δημόσιας Υπηρεσία Απασχόλησης στο πλαίσιο του Προγράμματος «Ανθρώπινο Δυναμικό & Κοινωνική Συνοχή» (ΠΑΔΚΣ) 2021-2027», συνολικού",
+    "tipo_contrato": "Servicios de consultoría en publicidad",
+    "tipo_registro": "licitacion",
     "por_que": {
       "terminos": [
-        "Dissemination and exploitation"
-      ]
+        "publicidad"
+      ],
+      "tipo_ted": "Servicios de consultoría en publicidad"
     },
     "provincia": null,
     "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-10"
+    "hora_limite": "15:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://portal.eprocurement.gov.gr/webcenter/portal"
+      }
+    ],
+    "duracion_meses": 27.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Grecia): idioma y presencia local"
+      ]
+    }
   },
   {
     "id": "1b99c2b69d6114a2",
@@ -32792,6 +31273,69 @@ window.TENDERS_DATA = [
         "Fuera de España (Países Bajos): idioma y presencia local"
       ]
     }
+  },
+  {
+    "id": "38d45bed0cc069f0",
+    "titulo": "Colaboración Europea sobre Pymes Innovadoras",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2026-10-01",
+    "fecha_limite": "2026-12-01",
+    "presupuesto_valor": 72884312.0,
+    "presupuesto_display": "72,884,312 EUR",
+    "proyectos_previstos": 1,
+    "subvencion_maxima": 72880000.0,
+    "pliegos": [
+      {
+        "tipo": "convocatoria",
+        "nombre": "Award criteria, scoring and thresholds (Annex D)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2021-2022/wp-13-general-annexes_horizon-2021-2022_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "Standard application form (HE COFUND)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-cofund_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "Standard evaluation form (HE COFUND)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-cofund_en.pdf"
+      }
+    ],
+    "cpv": [],
+    "categorias": [
+      "Creación de contenidos"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-EIE-2021-INNOVSMES-01-01",
+    "enlace_directo": true,
+    "codigo_expediente": "HORIZON-EIE-2021-INNOVSMES-01-01",
+    "resumen": "Resultado esperado: se espera que los resultados de los proyectos contribuyan a todos los siguientes resultados esperados: mejora de la transferencia de conocimiento en el ecosistema de pymes innovadoras, mediante una colaboración mayor y sostenida entre pymes, socios públicos de investigación y universidades; mitigación de las dificultades de acceso a la financiación de las pymes innovadoras, contribuyendo así a su crecimiento y expansión; mejora del acceso de las pymes innovadoras a nuevos merca[dos internacionales]",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "43108390",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Además de proporcionar financiación a las PYME innovadoras para la colaboración transfronteriza en I + I, deben incluir una mayor promoción del programa en los Estados miembros subrepresentados, incluidos, entre otros, eventos de difusión, seminarios de aprendizaje mutuo o roadshows.",
+        "Una estructura de implementación dedicada puede apoyarlos en particular a través de diversas actividades y servicios, como organizar convocatorias, gestionar fondos, supervisar pagos y proyectos e implementar eventos de difusión, presentaciones itinerantes, eventos de emparejamiento, seminarios web, etc."
+      ]
+    },
+    "por_que": {
+      "terminos": [
+        "dissemination events"
+      ]
+    },
+    "provincia": null,
+    "comunidad": null,
+    "fecha_primera_aparicion": "2026-10-17"
   },
   {
     "id": "7e0e8e2552d65e5d",
@@ -32849,6 +31393,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "CREA Lump Sum Grants",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: audiovisual",
+      "via": "proveedor",
+      "programa": "Europa Creativa",
+      "accion": "Subvención a tanto alzado",
+      "sigla": "LS",
+      "dos_fases": false,
+      "frases": [
+        "El objetivo también es aumentar la capacidad de los productores audiovisuales para desarrollar proyectos con potencial para circular por toda Europa y más allá, y facilitar la coproducción europea e internacional.",
+        "El apoyo también proporcionará un punto de entrada para el talento emergente, dándoles la oportunidad de dirigir un cortometraje respaldado por la sólida base proporcionada por empresas experimentadas.",
+        "Descripción de las actividades a financiar Se apoyará a las productoras europeas independientes capaces de desarrollar una pizarra de 3 a 5 obras audiovisuales (ficción, animación, documental creativo)."
+      ]
+    },
     "por_que": {
       "terminos": [
         "audiovisual production"
@@ -32899,6 +31457,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "43108390",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "El texto insiste en la comunicación: comunicación, difusión, sensibilización, divulgación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": null,
+      "sigla": null,
+      "dos_fases": false,
+      "frases": [
+        "Mayor reconocimiento profesional y progresión y movilidad profesional para los gerentes de investigación al ofrecer programas especializados de capacitación y tutoría, junto con herramientas sólidas de desarrollo profesional y reforzadas por actividades de comunicación y divulgación;",
+        "Desarrollar y coordinar acciones para crear conciencia sobre las buenas prácticas y apoyar la implementación de reformas a través de talleres, capacitación y materiales asociados, y/o conferencias dedicadas dirigidas a los investigadores.",
+        "Ejecutar un plan de comunicación estratégica que incluya actividades de divulgación, campañas de promoción, apoyo a la formulación de políticas basadas en la evidencia y esfuerzos de promoción para elevar el perfil y el reconocimiento de la gestión de la investigación como una profesión vital y distinta dentro del ecosistema de I + I, incluyendo..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "communication plan"
@@ -33274,6 +31846,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Estas actividades pueden incluir: una estrategia común de difusión y comunicación; una estrategia común de gestión de datos y una estrategia común de políticas (incluidos informes conjuntos de políticas); talleres temáticos/capacitaciones/grupos de trabajo sobre temas de interés común (por ejemplo, gestión e intercambio de datos); cerrar..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "communication strategy"
@@ -33319,6 +31903,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Estas actividades pueden incluir: una estrategia común de difusión y comunicación; una estrategia común de gestión de datos y una estrategia común de políticas (incluidos informes conjuntos de políticas); talleres temáticos/capacitaciones/grupos de trabajo sobre temas de interés común (por ejemplo, gestión e intercambio de datos); cerrar..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "communication strategy"
@@ -33327,51 +31923,6 @@ window.TENDERS_DATA = [
     "provincia": null,
     "comunidad": null,
     "fecha_primera_aparicion": "2026-10-15"
-  },
-  {
-    "id": "01127af969298d6a",
-    "titulo": "Enfoques sistémicos para acelerar el cambio transformador para la biodiversidad",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-10-13",
-    "fecha_limite": "2027-01-14",
-    "presupuesto_valor": 12000000.0,
-    "presupuesto_display": "12,000,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 4000000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-NATURE-2027-01-03",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-NATURE-2027-01-03",
-    "resumen": "Resultado esperado: Se espera que las propuestas contribuyan a todos los siguientes resultados esperados: los responsables de la formulación de políticas y la toma de decisiones en los niveles pertinentes están mejor equipados para incorporar conocimientos educativos, culturales, sociales y de comportamiento relacionados con la biodiversidad, como las dependencias comerciales, las vulnerabilidades y los riesgos sistémicos, en el desarrollo futuro de políticas, incluso a través de enfoques participativos y codiseñados; institucional, empresarial, fin",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON  Research and Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "communication strategy"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-14"
   },
   {
     "id": "9920e4ae13853bd8",
@@ -33419,6 +31970,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "DIGITAL JU Simple Grants",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "El texto insiste en la comunicación: sensibilización, campañas, eventos, web",
+      "via": "socio",
+      "programa": "Europa Digital",
+      "accion": "Subvención simple",
+      "sigla": "SG",
+      "dos_fases": false,
+      "frases": [
+        "Desarrollar e implementar herramientas, crear conciencia y fomentar y facilitar la adopción por parte de la industria, con un enfoque en las PYME, de evaluaciones de conformidad de los requisitos esenciales de ciberseguridad para productos con elementos digitales (hardware y software) en el marco de la CRA.",
+        "Apoyar la organización de reuniones/talleres periódicos para identificar buenas prácticas dentro de sectores específicos o áreas emergentes y facilitar los esfuerzos de colaboración entre diferentes sectores.",
+        "Campaña de información a través de diversos canales como conferencias, reuniones, etc."
+      ]
+    },
     "por_que": {
       "terminos": [
         "press campaign"
@@ -33474,6 +32039,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "DIGITAL JU Simple Grants",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: difusión, sensibilización, campañas",
+      "via": "socio",
+      "programa": "Europa Digital",
+      "accion": "Subvención simple",
+      "sigla": "SG",
+      "dos_fases": false,
+      "frases": [
+        "Centralizó las muchas iniciativas centradas en crear conciencia y trabajar junto con otros NCC para apoyar un enfoque europeo que abarque la educación, los estudios, los cursos de formación y las campañas de sensibilización [1] Compartir y proporcionar las mejores prácticas relacionadas con el tema de la sensibilización.",
+        "En colaboración con otras entidades, según sea necesario, organizar periódicamente campamentos de entrenamiento en ciberseguridad, desafíos, campañas de sensibilización y cursos de formación en toda Europa, específicamente para pymes o estudiantes (por ejemplo, centrándose en equipar a los participantes con habilidades prácticas para gestionar las ciberamenazas prevalentes...",
+        "Organizar campañas periódicas de sensibilización, a nivel nacional y regional, para aumentar la concienciación y la higiene de la ciberseguridad dirigidas a diferentes grupos demográficos."
+      ]
+    },
     "por_que": {
       "terminos": [
         "community management"
@@ -33482,6 +32061,205 @@ window.TENDERS_DATA = [
     "provincia": null,
     "comunidad": null,
     "fecha_primera_aparicion": "2026-10-21"
+  },
+  {
+    "id": "89161232651ed439",
+    "titulo": "Países Bajos – Servicios de marketing directo – Marketingdiensten",
+    "organismo": "Provincie Zeeland",
+    "fuente": "UE",
+    "pais_territorio": "Países Bajos",
+    "region_nuts": "NL342",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2027-01-18",
+    "presupuesto_valor": 1290000.0,
+    "presupuesto_display": "1,290,000 EUR",
+    "cpv": [
+      "79342100",
+      "79340000",
+      "79340000",
+      "79340000",
+      "79340000",
+      "79822500",
+      "79822500"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/731474-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Países Bajos – Servicios de marketing directo – Marketingdiensten",
+    "tipo_contrato": "Servicios de marketing directo",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "marketing"
+      ],
+      "tipo_ted": "Servicios de marketing directo"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "10:00",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.tenderned.nl/aankondigingen/overzicht/445468"
+      }
+    ],
+    "lotes": [
+      {
+        "id": "1",
+        "nombre": "Concepting imago/merk",
+        "importe": 300000.0,
+        "precio": null
+      },
+      {
+        "id": "2",
+        "nombre": "Concepting recreatie/toerisme",
+        "importe": 150000.0,
+        "precio": null
+      },
+      {
+        "id": "3",
+        "nombre": "Marketingstrategie, mediaplannen en campagnemanagement Duitse markt",
+        "importe": 300000.0,
+        "precio": null
+      },
+      {
+        "id": "4",
+        "nombre": "Marketingstrategie, mediaplannen en campagnemanagement Nederlandse en Vlaamse markt",
+        "importe": 540000.0,
+        "precio": null
+      }
+    ],
+    "duracion_meses": 24.0,
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Países Bajos): idioma y presencia local"
+      ]
+    }
+  },
+  {
+    "id": "1c8a88be2adc4a6a",
+    "titulo": "NEWS - Media Literacy",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2027-01-20",
+    "presupuesto_valor": 3500000.0,
+    "presupuesto_display": "3,500,000 EUR",
+    "proyectos_previstos": null,
+    "subvencion_maxima": null,
+    "pliegos": [
+      {
+        "tipo": "convocatoria",
+        "nombre": "call document",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/wp-call/2027/call-fiche_crea-cross-2027-medialiteracy_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "Standard application form (CREA MEDIA)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/af_crea-media_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "CREA MGA",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/agr-contr/mga_crea_en.pdf"
+      }
+    ],
+    "cpv": [],
+    "categorias": [
+      "Redes sociales / community management"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/CREA-CROSS-2027-MEDIALITERACY",
+    "enlace_directo": true,
+    "codigo_expediente": "CREA-CROSS-2027-MEDIALITERACY",
+    "resumen": "Expected Outcome: The Call for Proposals will result in: creating or scaling up cross-border collaborations that support impactful and innovative approaches to media literacy based on the latest best practices across national, cultural and linguistic borders. Those collaborations shall focus on eligible countries that face particular challenges in terms of media literacy, exposure to disinformation and foreign information manipulation and interfe",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "CREA Project Grants",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Línea de Europa Creativa: la agencia podría presentarse o ir de socia",
+      "via": "solicitante",
+      "programa": "Europa Creativa",
+      "accion": "Subvención a proyecto",
+      "sigla": "PG",
+      "dos_fases": false,
+      "frases": [
+        "Those collaborations shall focus on eligible countries that face particular challenges in terms of media literacy, exposure to disinformation and foreign information manipulation and interference campaigns, and/or in terms of threats to media pluralism and independence. developing and deploying…",
+        "Priority should be given to initiatives with the potential to reach a broad audience, and/or targeted groups currently underserved by media literacy programmes; assisting media literacy professionals in adapting their practices to the rapidly evolving technological development, media formats and…"
+      ]
+    },
+    "por_que": {
+      "terminos": [
+        "social media"
+      ]
+    },
+    "provincia": null,
+    "comunidad": null,
+    "fecha_primera_aparicion": "2026-10-22"
+  },
+  {
+    "id": "2a05e2fbc378e08c",
+    "titulo": "Francia – Servicios de estudios de mercado – Analyse des impacts environnementaux et sociaux de la consommation françaises - approfondissements techniques",
+    "organismo": "Ademe",
+    "fuente": "UE",
+    "pais_territorio": "Francia",
+    "region_nuts": "FRG02",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "2027-02-01",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79310000",
+      "79310000"
+    ],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/731756-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Francia – Servicios de estudios de mercado – Analyse des impacts environnementaux et sociaux de la consommation françaises - approfondissements techniques",
+    "tipo_contrato": "Servicios de estudios de mercado",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "estudios de mercado"
+      ],
+      "tipo_ted": "Servicios de estudios de mercado"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": "15:30",
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.marches-publics.gouv.fr/?page=Entreprise.EntrepriseAdvancedSearch&AllCons&id=3049534&orgAcronyme=s2d"
+      }
+    ],
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 4,
+      "motivos": [
+        "Servicio principal de la agencia: Publicidad y comunicación (general)"
+      ],
+      "riesgos": [
+        "Fuera de España (Francia): idioma y presencia local"
+      ]
+    }
   },
   {
     "id": "e7c93e2543e5d0bb",
@@ -33524,6 +32302,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Coordination and Support Actions",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Acción de coordinación y apoyo: la difusión y la participación son buena parte del trabajo",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Acción de coordinación y apoyo (CSA)",
+      "sigla": "CSA",
+      "dos_fases": false,
+      "frases": [
+        "Con este fin, las propuestas deben incluir el desarrollo y la implementación de actividades para aumentar la visibilidad y promover y demostrar la adopción de los servicios de infraestructuras tecnológicas prestados a los usuarios en toda la UE.",
+        "Las propuestas también pueden beneficiarse, especialmente para las actividades de comunicación y difusión, de compartir las mejores prácticas y hacer un balance de lo que otros proyectos relevantes están desarrollando en el campo de las Infraestructuras Tecnológicas."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -33590,6 +32381,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "CREA Lump Sum Grants",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: relato, audiovisual",
+      "via": "proveedor",
+      "programa": "Europa Creativa",
+      "accion": "Subvención a tanto alzado",
+      "sigla": "LS",
+      "dos_fases": false,
+      "frases": [
+        "El objetivo del apoyo al desarrollo de videojuegos y contenidos inmersivos es aumentar la capacidad de los productores de videojuegos europeos, los estudios XR y las productoras audiovisuales para desarrollar videojuegos y experiencias inmersivas interactivas con el potencial de llegar a audiencias globales.",
+        "El apoyo también tiene como objetivo mejorar la competitividad de la industria europea de videojuegos y otras empresas que producen contenido inmersivo interactivo en los mercados europeos e internacionales al permitir la retención de la propiedad intelectual por parte de los desarrolladores europeos.",
+        "Una posición más fuerte en el mercado europeo e internacional para los desarrolladores de videojuegos y las empresas que producen experiencias interactivas de inmersión."
+      ]
+    },
     "por_que": {
       "terminos": [
         "storytelling",
@@ -33642,6 +32447,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, redes sociales, audiovisual",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Reliable, modular and interoperable infrastructure with validated service levels and sustainability pathways, integrating AI-based components that support multilingual and multimodal media workflows including audiovisual processing and adaptation workflows, relevant metadata interoperability for…",
+        "The project should present a mechanism to bring together public and private media outlets and publishers, broadcasters, AI and language-technology providers, platform developers, content creators and social media actors, fact-checking and integrity actors, and rights-management organisations.",
+        "Technology Readiness Level - Technology readiness level expected from completed projects Activities are expected to start at TRL 6 and achieve TRL 8 by the end of the project – see General Annex B. [1] COMMUNICATION FROM THE COMMISSION TO THE EUROPEAN PARLIAMENT AND THE COUNCIL Apply AI…"
+      ]
+    },
     "por_que": {
       "terminos": [
         "content creation",
@@ -33651,236 +32470,6 @@ window.TENDERS_DATA = [
     "provincia": null,
     "comunidad": null,
     "fecha_primera_aparicion": "2026-10-08"
-  },
-  {
-    "id": "50c3fe0a16590006",
-    "titulo": "Prevención y gestión de enfermedades crónicas no transmisibles en niños y jóvenes (GACD)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-10-29",
-    "fecha_limite": "2027-02-17",
-    "presupuesto_valor": 11800000.0,
-    "presupuesto_display": "11,800,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 4000000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-ria-ia_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Reputación online / gestión de crisis"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-HLTH-2027-01-DISEASE-10",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-HLTH-2027-01-DISEASE-10",
-    "resumen": "Resultado esperado: este topic pretende apoyar actividades que habiliten o contribuyan a uno o varios de los impactos esperados del destino «Abordar las enfermedades y reducir su carga». Con ese fin, las propuestas de este topic deben orientarse a ofrecer resultados dirigidos a, adaptados a y que contribuyan a algunos de los siguientes resultados esperados: investigadores, profesionales sanitarios y proveedores de países de renta baja y media [se benefician de...]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON  Research and Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "stakeholder engagement strategy"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-11"
-  },
-  {
-    "id": "3afd23d200489084",
-    "titulo": "Co-desarrollo europeo",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-30",
-    "fecha_limite": "2027-03-02",
-    "presupuesto_valor": 12500000.0,
-    "presupuesto_display": "12,500,000 EUR",
-    "proyectos_previstos": null,
-    "subvencion_maxima": null,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "call document",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/wp-call/2027/call-fiche_crea-media-2027-codev_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (CREA MEDIA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/af_crea-media_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Detailed budget table (CREA LSII)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/detailed-budget-table_crea-lsii_en.xlsm"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Creative dossier (CREA MEDIA CODEV, DEVSLATE and DEVMINISLATE)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/creative-dossier_crea-media-codev-devslate-devminislate_en.docx"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Information on independence and ownership control (CREA MEDIA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/information-on-independence-and-ownership-control_crea-media_en.xlsx"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Information on language of submission documents (CREA MEDIA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/crea/temp-form/af/information-on-language-of-submission-documents_crea-media_en.xlsx"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Producción de vídeo / contenido audiovisual"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/CREA-MEDIA-2027-CODEV",
-    "enlace_directo": true,
-    "codigo_expediente": "CREA-MEDIA-2027-CODEV",
-    "resumen": "Alcance: El objetivo del apoyo al codesarrollo europeo es apoyar la cooperación entre productoras europeas que están desarrollando trabajos con un fuerte potencial de audiencia internacional. Resultados esperados Aumento de la colaboración en la etapa de desarrollo entre productoras europeas de diferentes países y de diferentes mercados y, en consecuencia, un mayor número de coproducciones. Mayor calidad, viabilidad, cross-b",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "CREA Lump Sum Grants",
-    "por_que": {
-      "terminos": [
-        "audiovisual production"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-13"
-  },
-  {
-    "id": "38d45bed0cc069f0",
-    "titulo": "Colaboración Europea sobre Pymes Innovadoras",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-12-17",
-    "fecha_limite": "2027-03-04",
-    "presupuesto_valor": 72884312.0,
-    "presupuesto_display": "72,884,312 EUR",
-    "proyectos_previstos": 1,
-    "subvencion_maxima": 72880000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2021-2022/wp-13-general-annexes_horizon-2021-2022_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (HE COFUND)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-cofund_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE COFUND)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-cofund_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-EIE-2021-INNOVSMES-01-01",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-EIE-2021-INNOVSMES-01-01",
-    "resumen": "Resultado esperado: se espera que los resultados de los proyectos contribuyan a todos los siguientes resultados esperados: mejora de la transferencia de conocimiento en el ecosistema de pymes innovadoras, mediante una colaboración mayor y sostenida entre pymes, socios públicos de investigación y universidades; mitigación de las dificultades de acceso a la financiación de las pymes innovadoras, contribuyendo así a su crecimiento y expansión; mejora del acceso de las pymes innovadoras a nuevos merca[dos internacionales]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "43108390",
-    "por_que": {
-      "terminos": [
-        "dissemination events"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-17"
-  },
-  {
-    "id": "d23f1b2b2ce85218",
-    "titulo": "Tecnologías facilitadoras clave para centrales de fusión (Colaboración Europea sobre Energía de Fusión)",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2026-09-15",
-    "fecha_limite": "2027-03-04",
-    "presupuesto_valor": 32000000.0,
-    "presupuesto_display": "32,000,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 10000000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (HE RIA IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-ria-ia_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Detailed budget table (HE LS)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Information on financial support to third parties (HE)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/calculator_he-un-ri-ta_en.xlsx"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Horizon Europe MGA",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/agr-contr/general-mga_horizon-euratom_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Lump Sum MGA",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/agr-contr/ls-mga_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-EURATOM-2027-01-01",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-EURATOM-2027-01-01",
-    "resumen": "Resultado esperado: se espera que la acción madure y demuestre (TRL 6-8) tecnologías innovadoras en una de las áreas clave definidas en el ámbito del topic: desarrollar y avanzar la madurez tecnológica de componentes individuales y/o sistemas integrados innovadores que desempeñen las funciones clave de las centrales de fusión (FPP), conforme al área clave seleccionada; probar los componentes y/o sistemas innovadores desarrollados en condiciones próximas a las rea[les]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "EURATOM Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "dissemination activities"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-07"
   },
   {
     "id": "4bc88efa3c541773",
@@ -33923,6 +32512,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Programme Cofund Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Cofinancia programas nacionales de investigación: la comunicación es mínima",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Cofinanciación de programas (Cofund)",
+      "sigla": "COFUND",
+      "dos_fases": false,
+      "frases": [
+        "La acción puede apoyar la creación de redes y la coordinación, la investigación y la innovación, las acciones piloto, las medidas de captación del mercado, la formación y la movilidad, la sensibilización y la comunicación, y la difusión y explotación en toda una cadena de valor de las tecnologías de combustibles renovables, proporcionando así el...",
+        "Estas actividades también deben incluir sinergias, comunicación (reuniones conjuntas), difusión y explotación y contribuir a la Comunidad de Conocimiento de la CETPartnership."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -33988,6 +32590,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Coordination and Support Actions",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Acción de coordinación y apoyo: la difusión y la participación son buena parte del trabajo",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Acción de coordinación y apoyo (CSA)",
+      "sigla": "CSA",
+      "dos_fases": false,
+      "frases": [
+        "Para maximizar el impacto, se alienta a los proyectos a desarrollar e implementar enfoques de divulgación sólidos para ampliar la participación de toda la UE y los países asociados.",
+        "Se alienta al proyecto a implementar actividades de difusión y creación de redes con otros proyectos relevantes (por ejemplo, talleres conjuntos, conferencias temáticas, series de seminarios web, intercambios regulares, etc.)."
+      ]
+    },
     "por_que": {
       "terminos": [
         "webinar"
@@ -34048,6 +32663,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: difusión, divulgación, visibilidad",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": true,
+      "frases": [
+        "Esto también incluye una valorización eficiente de los recursos locales, con efectos positivos en la calidad del aire y del agua, así como en la biodiversidad; un despliegue generalizado y una replicación, escalabilidad y visibilidad más fáciles de las soluciones sistémicas circulares para una multiplicación de sus efectos económicos, sociales y...",
+        "Las propuestas deben facilitar la transferencia de conocimientos y experiencias para una mayor divulgación y replicación a gran escala en toda Europa.",
+        "Las actividades de agrupación y difusión serán facilitadas y apoyadas por la Oficina de Coordinación y Apoyo de CCRI para facilitar el intercambio de conocimientos, fomentar la replicación y adopción de soluciones y maximizar el impacto."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -34098,6 +32727,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, participación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": true,
+      "frases": [
+        "Las vías deben garantizar el cumplimiento normativo, incluidas las consideraciones de evaluación de riesgos, las estrategias de participación de las partes interesadas, el análisis de aceptación del mercado y la previsión de políticas.",
+        "Deben participar en actividades conjuntas, talleres, grupos focales o laboratorios sociales, así como organizar actividades comunes de comunicación y difusión y mostrar potencial para la ampliación y la fertilización cruzada."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -34154,6 +32796,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "CREA Project Grants",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Línea de Europa Creativa: la agencia podría presentarse o ir de socia",
+      "via": "solicitante",
+      "programa": "Europa Creativa",
+      "accion": "Subvención a proyecto",
+      "sigla": "PG",
+      "dos_fases": false,
+      "frases": [
+        "The objectives of the scheme is to encourage cooperation between the audiovisual sector and the music, book or museum sectors to accompany their environmental transition and/or to improve their competitiveness and/or the circulation, visibility, discoverability, availability, diversity and the…",
+        "Increase the visibility, discoverability, availability and diversity of European audiovisual and cultural content in the digital age;",
+        "The following activities are ineligible : multimedia art projects and installations; immersive tours, events, music videos and immersive experiences used in retail; works of a promotional nature being part of a promotional campaign or advertising for a specific, destination (tourism), product…"
+      ]
+    },
     "por_que": {
       "terminos": [
         "promotional campaign",
@@ -34205,6 +32861,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Se espera que los resultados del proyecto contribuyan a todos los siguientes resultados esperados: la capacidad de los agricultores y otros operadores de la cadena de suministro agroalimentaria para prevenir, prepararse, hacer frente y gestionar diversos riesgos y crisis, considerando los posibles efectos compuestos y amplificadores bajo el clima...",
+        "Las propuestas deben incluir una tarea dedicada, recursos apropiados y un plan sobre cómo colaborarán con otros proyectos seleccionados bajo este tema (por ejemplo, participando en actividades conjuntas, talleres, así como actividades comunes de comunicación y difusión)."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -34255,6 +32924,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Coordination and Support Actions",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Acción de coordinación y apoyo: la difusión y la participación son buena parte del trabajo",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Acción de coordinación y apoyo (CSA)",
+      "sigla": "CSA",
+      "dos_fases": false,
+      "frases": [
+        "Project results are expected to contribute to all of the following expected outcomes: improved multi-level governance capable of anticipating a changing world and enabling a just sustainable transition for all, as related to the potential of bio-based innovation and industry in the global…",
+        "This topic is in line with the Commission communication on:",
+        "G20 work on bioeconomy), in view of effective international cooperation and dialogue on circular and fair bio-economy/bio-based economy; develop an inclusive and transparent networking approach to support stakeholder engagement and international dialogue (via existing structures, platforms,…"
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -34446,6 +33129,68 @@ window.TENDERS_DATA = [
     }
   },
   {
+    "id": "fe09a01ad47087c8",
+    "titulo": "I+I en apoyo del Pacto Industrial Limpio: tecnologías limpias para la acción climática",
+    "organismo": "Comisión Europea",
+    "fuente": "UE-subvenciones",
+    "pais_territorio": "UE",
+    "fecha_publicacion": "2027-01-12",
+    "fecha_limite": "2027-09-15",
+    "presupuesto_valor": 140000000.0,
+    "presupuesto_display": "140,000,000 EUR",
+    "proyectos_previstos": 8,
+    "subvencion_maxima": 25000000.0,
+    "pliegos": [
+      {
+        "tipo": "convocatoria",
+        "nombre": "Award criteria, scoring and thresholds (Annex D)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "Standard application form (HE RIA, IA)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-ria-ia_en.pdf"
+      },
+      {
+        "tipo": "convocatoria",
+        "nombre": "Standard evaluation form (HE RIA, IA)",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
+      }
+    ],
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CID-2027-01-02",
+    "enlace_directo": true,
+    "codigo_expediente": "HORIZON-CID-2027-01-02",
+    "resumen": "Resultado esperado: se espera que las propuestas contribuyan a todos los siguientes resultados esperados: reforzar la competitividad, sostenibilidad (incluida la biodiversidad) y resiliencia de una solución de tecnología limpia innovadora, demostrando claramente su capacidad para, de forma significativa: aumentar su tasa de uso circular de materiales, sobre una base sólida y realista; reducir el coste nivelado de la energía (LCOE) entregada a los usuarios finales -incluido, cuando proceda, [el almacenamiento]",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "convocatoria_ue",
+    "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: comunicación, difusión",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Se espera que el borrador del plan de difusión, explotación y comunicación incluya un plan de negocios sólido y convincente y una estrategia de preparación para el mercado (cf. introducción)."
+      ]
+    },
+    "por_que": {
+      "terminos": [
+        "communication plan"
+      ]
+    },
+    "provincia": null,
+    "comunidad": null,
+    "fecha_primera_aparicion": "2026-10-22"
+  },
+  {
     "id": "cff9fd1b4548a508",
     "titulo": "Avanzar en la investigación interdisciplinaria basada en datos en la interfaz biodiversidad-salud bajo un enfoque de Una sola salud",
     "organismo": "Comisión Europea",
@@ -34481,6 +33226,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Estas actividades pueden incluir: una estrategia común de difusión y comunicación; una estrategia común de gestión de datos y una estrategia común de políticas (incluidos informes conjuntos de políticas); talleres temáticos/capacitaciones/grupos de trabajo sobre temas de interés común (por ejemplo, gestión e intercambio de datos); cerrar...",
+        "Para más detalles, consulte el sitio web de FAIR Principles ( https://www.go-fair.org/fair-principles ), el libro de cocina de FAIR (https://faircookbook.elixir-europe.org/content/home.html) y las guías para investigadores sobre cómo hacer que sus datos sean JUSTOS ( https://www.openaire.eu/how-to-make-your-data-fair )....",
+        "Better Health for All in a Changing World - Comisión Europea: https://health.ec.europa.eu/publications/eu-global-health-strategy-better-health-all-changing-world_en [7] https://www.cbd.int/gbf [8]..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "communication strategy"
@@ -34489,51 +33248,6 @@ window.TENDERS_DATA = [
     "provincia": null,
     "comunidad": null,
     "fecha_primera_aparicion": "2026-10-07"
-  },
-  {
-    "id": "2ee0532c5b049270",
-    "titulo": "Despliegue de soluciones innovadoras de gestión, tratamiento y valorización de aguas residuales en ciudades y regiones europeas en el contexto del cambio climático",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2027-02-09",
-    "fecha_limite": "2027-09-22",
-    "presupuesto_valor": 28500000.0,
-    "presupuesto_display": "28,500,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 9500000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-MISS-2027-07-CLIMA-CIT-CCRI-02",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-MISS-2027-07-CLIMA-CIT-CCRI-02",
-    "resumen": "Resultado esperado: se espera que los proyectos contribuyan a todos los siguientes resultados: las ciudades y regiones cuentan con prácticas innovadoras de gestión de aguas residuales urbanas, adaptadas al cambio climático, teniendo en cuenta: la eficiencia energética, la recuperación de energía y materias primas secundarias y la reutilización del agua, incluidas oportunidades de generación de energía renovable y producción de recursos secundarios, implementadas a nivel de ciudad y región. Las infraestructuras de tratamiento [se moderni­zan]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "dissemination and exploitation"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-15"
   },
   {
     "id": "55465d43387275ba",
@@ -34576,6 +33290,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: participación, relato",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "A través de la narración de historias y la participación de la comunidad, pueden remodelar los marcos cognitivos, influir en las actitudes de los consumidores y promover cambios sociales hacia principios circulares."
+      ]
+    },
     "por_que": {
       "terminos": [
         "storytelling"
@@ -34626,6 +33352,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: comunicación, redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Las redes sociales les obligan a competir por la atención de los ciudadanos con otras formas de infoentretenimiento, que a veces conllevan opiniones no verificadas y fuentes de baja calidad o maliciosas.",
+        "Esto debe incluir áreas y aspectos tales como: a) proporcionar datos comparables de consumidores europeos, datos de mercado y modelos para analizar el comportamiento de la audiencia (incluidas las herramientas de medición de audiencia) en todos los grupos sociales y en toda Europa, a fin de ayudar a los medios de comunicación a mejorar su relevancia, editorial..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "Social media"
@@ -34676,6 +33415,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34726,6 +33475,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34776,6 +33535,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: participación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Las actividades pueden incluir investigación interdisciplinaria, participación de las partes interesadas y análisis de políticas."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34826,6 +33597,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34876,6 +33657,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34926,6 +33717,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: participación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Los formuladores de políticas y las organizaciones de la sociedad civil tendrán evidencia sólida sobre si la gestión inclusiva de los bienes comunes ambientales (peri)urbanos fomenta la resiliencia climática y social, la inclusión social, el bienestar y la participación comunitaria, y si la falta de acceso a la biodiversidad verde y/o..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -34976,6 +33779,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -35026,6 +33839,16 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "El texto apenas habla de comunicación",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": []
+    },
     "por_que": {
       "terminos": [
         "dissemination and exploitation"
@@ -35076,6 +33899,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Esto podría incluir, por ejemplo, diversas fuentes de datos (por ejemplo, ciencia ciudadana, redes sociales) y soluciones avanzadas de procesamiento, validación e interoperabilidad de datos que utilicen, por ejemplo, IA, aprendizaje automático y análisis de big data para proporcionar información procesable."
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -35126,6 +33961,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: difusión, relato",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Crear diversos materiales de difusión orientados a la práctica, como audiovisuales, folletos, presentaciones, que muestren las innovaciones de una manera creativa, incorporando elementos artísticos para una narración atractiva."
+      ]
+    },
     "por_que": {
       "terminos": [
         "storytelling"
@@ -35176,6 +34023,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: comunicación, difusión, eventos",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Las propuestas deben incluir una tarea dedicada, recursos apropiados y un plan sobre cómo colaborarán con otros proyectos seleccionados bajo este tema (por ejemplo, participando en actividades conjuntas, talleres, así como actividades comunes de comunicación y difusión).",
+        "El papel del JRC sería contribuir con conocimientos y experiencia sobre los peligros climáticos concurrentes y recurrentes (especialmente la sequía y las olas de calor) y sus efectos amplificadores en términos de impactos en los sectores agrícola y forestal, y apoyar la exploración de..."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -35226,6 +34086,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Coordination and Support Actions",
+    "encaje_call": {
+      "nivel": "alto",
+      "motivo": "Acción de coordinación y apoyo: la difusión y la participación son buena parte del trabajo",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Acción de coordinación y apoyo (CSA)",
+      "sigla": "CSA",
+      "dos_fases": false,
+      "frases": [
+        "Mejora de la difusión, comunicación y valorización de los objetivos, perspectivas, estrategias y resultados de I + I en el transporte;",
+        "Proporcionar apoyo operativo a la conferencia tra, por ejemplo, en relación con el sitio web y las herramientas de TI de gestión de conferencias (por ejemplo, para el registro de participantes, el manejo de las contribuciones de los oradores, la presentación y selección de documentos científicos, la solicitud de la conferencia);",
+        "Prever una muy buena cobertura mediática y actividades de difusión antes, durante y después del evento tanto para la conferencia de tra como para las VISIONES de tra."
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -35234,106 +34108,6 @@ window.TENDERS_DATA = [
     "provincia": null,
     "comunidad": null,
     "fecha_primera_aparicion": "2026-10-15"
-  },
-  {
-    "id": "00db0ec821f04f88",
-    "titulo": "Microrredes innovadoras para mejorar la integración y eficiencia del sistema energético en contextos urbanos",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2027-02-09",
-    "fecha_limite": "2027-10-07",
-    "presupuesto_valor": 20000000.0,
-    "presupuesto_display": "20,000,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 7000000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-ria-ia_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-MISS-2027-04-CIT-01",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-MISS-2027-04-CIT-01",
-    "resumen": "Resultado esperado: se espera que los proyectos contribuyan a todos los siguientes resultados: mayor conocimiento del potencial de las microrredes de corriente continua de baja tensión (LVDC) para apoyar los objetivos del Pacto Verde Europeo y el Pacto Industrial Limpio, incluidos los definidos en el Plan SET [1] y la Estrategia Solar [2]. Mayor aceptación de las microrredes LVDC en Europa, con contribuciones significativas y medibles a la seguridad de las personas y los edificios (n[o solo eso]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "dissemination events"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-13"
-  },
-  {
-    "id": "65b7622585fd0239",
-    "titulo": "Avances en soluciones de logística circular en ciudades",
-    "organismo": "Comisión Europea",
-    "fuente": "UE-subvenciones",
-    "pais_territorio": "UE",
-    "fecha_publicacion": "2027-02-09",
-    "fecha_limite": "2027-10-07",
-    "presupuesto_valor": 22500000.0,
-    "presupuesto_display": "22,500,000 EUR",
-    "proyectos_previstos": 3,
-    "subvencion_maxima": 7500000.0,
-    "pliegos": [
-      {
-        "tipo": "convocatoria",
-        "nombre": "Award criteria, scoring and thresholds (Annex D)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard application form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-ria-ia_en.pdf"
-      },
-      {
-        "tipo": "convocatoria",
-        "nombre": "Standard evaluation form (HE RIA, IA)",
-        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/ef/ef_he-ria-ia_en.pdf"
-      }
-    ],
-    "cpv": [],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-MISS-2027-04-CIT-CCRI-04",
-    "enlace_directo": true,
-    "codigo_expediente": "HORIZON-MISS-2027-04-CIT-CCRI-04",
-    "resumen": "Resultado esperado: se espera que los proyectos contribuyan a todos los siguientes resultados: transición acelerada hacia la economía circular en el sector del transporte de mercancías y en toda la cadena de valor de la logística urbana, contribuyendo a los objetivos de la Misión de Ciudades Inteligentes y Climáticamente Neutras y de la Iniciativa de Ciudades y Regiones Circulares de la UE (CCRI); mayor adopción por parte de los operadores logísticos de soluciones sistémicas circulares nuevas y probadas, [entre otros]",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "convocatoria_ue",
-    "programa": "HORIZON Innovation Actions",
-    "por_que": {
-      "terminos": [
-        "dissemination and exploitation"
-      ]
-    },
-    "provincia": null,
-    "comunidad": null,
-    "fecha_primera_aparicion": "2026-10-07"
   },
   {
     "id": "07f52268ae826f01",
@@ -35391,6 +34165,19 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON  Research and Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: comunicación, redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de investigación e innovación (RIA)",
+      "sigla": "RIA",
+      "dos_fases": false,
+      "frases": [
+        "Las propuestas también deben centrarse en aprovechar las tecnologías emergentes, como la inteligencia artificial, la realidad virtual y aumentada, el análisis de redes sociales y los juegos serios, para involucrar a los jóvenes en la preparación para desastres y la respuesta a las crisis.",
+        "Además, se deben explorar estrategias de comunicación innovadoras para mejorar la participación de los jóvenes, particularmente a través de las tecnologías digitales y las redes sociales."
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -35456,6 +34243,20 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "HORIZON Innovation Actions",
+    "encaje_call": {
+      "nivel": "medio",
+      "motivo": "Pide comunicación, como un paquete de trabajo más: sensibilización, campañas, redes sociales",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Se desarrollan campañas de sensibilización y currículos de formación para empleados de entidades críticas.",
+        "Se debe cubrir cualquier fuente potencial de OSINT, incluidas, entre otras, las redes sociales, los foros en línea, los recursos en la nube, los registros y bases de datos públicos, los datos de la web profunda y la web oscura legalmente accesibles, la información geoespacial, así como los archivos en papel de dominio público con planos, emergencia...",
+        "Las propuestas deben considerar especialmente escenarios que incluyan amenazas híbridas y lobos solitarios y desarrollar herramientas y campañas de sensibilización para mitigar dichas amenazas."
+      ]
+    },
     "por_que": {
       "terminos": [
         "social media"
@@ -35521,6 +34322,18 @@ window.TENDERS_DATA = [
     "tipo_contrato": "no publicado",
     "tipo_registro": "convocatoria_ue",
     "programa": "EURATOM Innovation Actions",
+    "encaje_call": {
+      "nivel": "bajo",
+      "motivo": "Solo menciona de pasada: comunicación, difusión",
+      "via": "socio",
+      "programa": "Horizon Europe",
+      "accion": "Proyecto de innovación (IA)",
+      "sigla": "IA",
+      "dos_fases": false,
+      "frases": [
+        "Proposals should therefore explain how the proposed action aligns with the SRIA’s technology priorities and proposed projects should include activities designed to contributing to the European Partnership on Fusion Energy (e.g. contributing to the monitoring of the Partnership, supporting the…"
+      ]
+    },
     "por_que": {
       "terminos": [
         "dissemination activities"
@@ -36086,6 +34899,122 @@ window.TENDERS_DATA = [
         "En España"
       ],
       "riesgos": []
+    }
+  },
+  {
+    "id": "94b2a957ac9b12ef",
+    "titulo": "Alemania – Centro de llamadas – Dienstleistungen im Bereich Netz und Vertrieb",
+    "organismo": "N-ERGIE Aktiengesellschaft",
+    "fuente": "UE",
+    "pais_territorio": "Alemania",
+    "region_nuts": "DE254",
+    "fecha_publicacion": "2026-10-22",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [
+      "79512000",
+      "79992000",
+      "79410000",
+      "79940000",
+      "72300000",
+      "79940000",
+      "71314000",
+      "65000000",
+      "65000000",
+      "65000000",
+      "65000000",
+      "79999200",
+      "72313000",
+      "79999200",
+      "72313000",
+      "71314000",
+      "72000000"
+    ],
+    "categorias": [
+      "Atención al cliente / soporte"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://ted.europa.eu/es/notice/-/detail/730700-2026",
+    "enlace_directo": true,
+    "codigo_expediente": null,
+    "resumen": "Alemania – Centro de llamadas – Dienstleistungen im Bereich Netz und Vertrieb",
+    "tipo_contrato": "Centro de llamadas",
+    "tipo_registro": "licitacion",
+    "por_que": {
+      "terminos": [
+        "Centro de llamadas"
+      ],
+      "tipo_ted": "Centro de llamadas"
+    },
+    "provincia": null,
+    "comunidad": null,
+    "hora_limite": null,
+    "pliegos": [
+      {
+        "tipo": "documentacion",
+        "nombre": null,
+        "url": "https://www.dtvp.de/Satellite/notice/CXP4DCCMW7U/documents"
+      }
+    ],
+    "lotes": [
+      {
+        "id": "1",
+        "nombre": "Forderungs- und Debitorenmangement",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "2",
+        "nombre": "Technisches Datenmanagement",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "3",
+        "nombre": "Abrechnungs- und Forderungsmanagement",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "4",
+        "nombre": "Marktkommunikation/Lieferantenwechsel",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "5",
+        "nombre": "Abrechnung von SLP Kunden",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "6",
+        "nombre": "Abrechnung von SLP&RLM Kunden",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "7",
+        "nombre": "Marktkommunikation/Lieferantenwechsel",
+        "importe": null,
+        "precio": null
+      },
+      {
+        "id": "8",
+        "nombre": "IT-Beratung",
+        "importe": null,
+        "precio": null
+      }
+    ],
+    "fecha_primera_aparicion": "2026-10-22",
+    "encaje": {
+      "nota": 1,
+      "motivos": [],
+      "riesgos": [
+        "No es uno de los servicios de la agencia",
+        "Fuera de España (Alemania): idioma y presencia local"
+      ]
     }
   },
   {
@@ -38385,298 +37314,6 @@ window.TENDERS_DATA = [
       "importe": 347556,
       "desde": "2021",
       "en_este_organismo": 552
-    }
-  },
-  {
-    "id": "0f13b3779744d2ef",
-    "titulo": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-19",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=T2BxvsmTD6yTylGzYmBF9Q%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/017059",
-    "resumen": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "PRODUCCIONES IZQUIERDO MORENO S.L.",
-    "empresa_nif": "B42219212",
-    "fecha_adjudicacion": "2026-10-19",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 240.0,
-    "importe_adjudicado_display": "240 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-21",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 139,
-      "adjudicaciones": 700,
-      "organismos": 4,
-      "importe": 336806,
-      "desde": "2021",
-      "en_este_organismo": 696
-    }
-  },
-  {
-    "id": "dd2fc99ffe18f47b",
-    "titulo": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-19",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=BQQjrhmwvBBrhBlEHQFSKA%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/017057",
-    "resumen": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "RADIO ARLANZON, S.L.",
-    "empresa_nif": "B09339862",
-    "fecha_adjudicacion": "2026-10-19",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 240.0,
-    "importe_adjudicado_display": "240 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-21",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 126,
-      "adjudicaciones": 601,
-      "organismos": 12,
-      "importe": 185646,
-      "desde": "2021",
-      "en_este_organismo": 575
-    }
-  },
-  {
-    "id": "4280b0c9a89c7354",
-    "titulo": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-19",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=pWVTtvib4m5q1DdmE7eaXg%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/017056",
-    "resumen": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "CYSPRO MEDIA",
-    "empresa_nif": "B49295199",
-    "fecha_adjudicacion": "2026-10-19",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 225.0,
-    "importe_adjudicado_display": "225 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-21",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 127,
-      "adjudicaciones": 781,
-      "organismos": 7,
-      "importe": 521515,
-      "desde": "2021",
-      "en_este_organismo": 717
-    }
-  },
-  {
-    "id": "60014f8887bb1a6c",
-    "titulo": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-19",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=iaBpnZFr3EzXOjazN1Dw9Q%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/017052",
-    "resumen": "Campaña de publicidad institucional de comunicación sobre minimización de residuos, que se publicará entre los días 21 al 27 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "JUAN C. HERVAS HERNANDEZ",
-    "empresa_nif": "***6155**",
-    "fecha_adjudicacion": "2026-10-19",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 237.0,
-    "importe_adjudicado_display": "237 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-21",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 141,
-      "adjudicaciones": 570,
-      "organismos": 1,
-      "importe": 133230,
-      "desde": "2021",
-      "en_este_organismo": 570
     }
   },
   {
@@ -57703,152 +56340,6 @@ window.TENDERS_DATA = [
       "importe": 48150,
       "desde": "2021",
       "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "f393b58aca637a75",
-    "titulo": "Campaña de publicidad institucional de comunicación de difusión de las ayudas al alumnado que realice su primera matrícula de primer curso de grado universitario, que se publicará entre los días 11 al 24 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-07",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=%2FGFlqHWPDssadbH3CysQuQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/016502",
-    "resumen": "Campaña de publicidad institucional de comunicación de difusión de las ayudas al alumnado que realice su primera matrícula de primer curso de grado universitario, que se publicará entre los días 11 al 24 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "TRISOL COMUNICACIONES,SL",
-    "empresa_nif": "B37491487",
-    "fecha_adjudicacion": "2026-10-07",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 260.0,
-    "importe_adjudicado_display": "260 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-09",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 304,
-      "adjudicaciones": 427,
-      "organismos": 2,
-      "importe": 55822,
-      "desde": "2022",
-      "en_este_organismo": 422
-    }
-  },
-  {
-    "id": "bd58290ea4690941",
-    "titulo": "Campaña de publicidad institucional de comunicación de difusión de las ayudas al alumnado que realice su primera matrícula de primer curso de grado universitario, que se publicará entre los días 11 al 24 de octubre de 2026.",
-    "organismo": "Consejería de la Presidencia de la Junta de Castilla y León",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-10-07",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=D06nwDmOgXYaF6cS8TCh%2FA%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "B2026/016501",
-    "resumen": "Campaña de publicidad institucional de comunicación de difusión de las ayudas al alumnado que realice su primera matrícula de primer curso de grado universitario, que se publicará entre los días 11 al 24 de octubre de 2026.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "GLOBAL FISTERRA S.L.",
-    "empresa_nif": "B24647539",
-    "fecha_adjudicacion": "2026-10-07",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 2904.0,
-    "importe_adjudicado_display": "2,904 EUR",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Valladolid",
-    "comunidad": "Castilla y León",
-    "fecha_primera_aparicion": "2026-10-09",
-    "historial_organismo": {
-      "id": 15,
-      "adjudicaciones": 30147,
-      "empresas": 264,
-      "importe": 36715150,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 87,
-          "nombre": "DESDE LEON AL MUNDO",
-          "adjudicaciones": 956,
-          "importe": 1453650
-        },
-        {
-          "id": 130,
-          "nombre": "PUBLIALBOR S.L.",
-          "adjudicaciones": 570,
-          "importe": 1364742
-        },
-        {
-          "id": 15357,
-          "nombre": "VIRTUAL LEMON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 1305908
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 154,
-      "adjudicaciones": 593,
-      "organismos": 2,
-      "importe": 711519,
-      "desde": "2021",
-      "en_este_organismo": 560
     }
   },
   {
@@ -81177,7 +79668,7 @@ window.TENDERS_DATA = [
     "revisar_manual": false,
     "enlace": "https://ted.europa.eu/es/notice/-/detail/656260-2026",
     "enlace_directo": true,
-    "codigo_expediente": "CBA3844/2026",
+    "codigo_expediente": null,
     "resumen": "España – Servicios de gestión publicitaria – Servicios De Compra De Espacios En Medios De Comunicación Y Demás Soportes Publicitarios Para La Materialización De La Campaña De Publicidad Institucional Denominada Concienciación Y Sensibilización Sobre Las Falsificaciones De Bienes Y Mercancías Y Sus Consecuencias Sociales Y Económicas (Ministerio De Industria Y Turismo-Oficina Española De Patentes Y Marcas, O.A.)",
     "tipo_contrato": "Servicios de gestión publicitaria",
     "tipo_registro": "adjudicacion",
@@ -85978,865 +84469,6 @@ window.TENDERS_DATA = [
     }
   },
   {
-    "id": "89357690be3e5957",
-    "titulo": "Chequia – Material de publicidad – DNS NA MARKETINGOVÉ SLUŽBY",
-    "organismo": "LOM PRAHA s.p.",
-    "fuente": "UE",
-    "pais_territorio": "Chequia",
-    "region_nuts": "CZ010",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": 50000000.0,
-    "presupuesto_display": "50,000,000 CZK",
-    "cpv": [
-      "22462000",
-      "79810000",
-      "39294100",
-      "79822500",
-      "79956000",
-      "79800000",
-      "22462000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/646731-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "Chequia – Material de publicidad – DNS NA MARKETINGOVÉ SLUŽBY",
-    "tipo_contrato": "Material de publicidad",
-    "tipo_registro": "licitacion",
-    "por_que": {
-      "terminos": [
-        "publicidad"
-      ],
-      "tipo_ted": "Material de publicidad"
-    },
-    "provincia": null,
-    "comunidad": null,
-    "hora_limite": null,
-    "pliegos": [
-      {
-        "tipo": "documentacion",
-        "nombre": null,
-        "url": "https://nen.nipez.cz/profily-zadavatelu/detail-profilu/00000515/zahajene-zakazky"
-      }
-    ],
-    "lotes": [
-      {
-        "id": "1",
-        "nombre": "Kategorie DNS č. 1 – Propagační a reklamní předměty",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "4",
-        "nombre": "Kategorie DNS č. 4 – Grafické, fotografické a audiovizuální služby",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "3",
-        "nombre": "Kategorie DNS č. 3 – Veletrhy, výstavy a prezentační akce",
-        "importe": null,
-        "precio": null
-      },
-      {
-        "id": "2",
-        "nombre": "Kategorie DNS č. 2 – Tiskoviny a reklamní nosiče",
-        "importe": null,
-        "precio": null
-      }
-    ],
-    "duracion_meses": 120.0,
-    "fecha_primera_aparicion": "2026-09-27",
-    "encaje": {
-      "nota": 4,
-      "motivos": [
-        "Servicio principal de la agencia: Publicidad y comunicación (general)"
-      ],
-      "riesgos": [
-        "Fuera de España (Chequia): idioma y presencia local"
-      ]
-    }
-  },
-  {
-    "id": "f5e21a96c3792e8c",
-    "titulo": "España – Servicios de publicidad y de marketing – Servicio de producción audiovisual con destino a la Oficina de Comunicación del Ministerio del Interior",
-    "organismo": "Subdirección General de Gestión Económica y Patrimonial",
-    "fuente": "UE",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79340000",
-      "79960000",
-      "92112000",
-      "79340000",
-      "79960000",
-      "92112000"
-    ],
-    "categorias": [
-      "Producción de vídeo / contenido audiovisual",
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://ted.europa.eu/es/notice/-/detail/649518-2026",
-    "enlace_directo": true,
-    "codigo_expediente": null,
-    "resumen": "España – Servicios de publicidad y de marketing – Servicio de producción audiovisual con destino a la Oficina de Comunicación del Ministerio del Interior",
-    "tipo_contrato": "Servicios de publicidad y de marketing",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "Hey Avenue Comunicación S.L.",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": null,
-    "importe_adjudicado_display": "no publicado",
-    "por_que": {
-      "terminos": [
-        "producción audiovisual",
-        "Comunicación"
-      ]
-    },
-    "provincia": "Madrid",
-    "comunidad": "Madrid",
-    "documentos_adjudicacion": [
-      {
-        "tipo": "expediente",
-        "nombre": "Documentación del expediente",
-        "url": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=Iz9Z0yeSBQd6nTs9LZ9RhQ%3D%3D"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-09-27",
-    "historial_organismo": {
-      "id": 537,
-      "adjudicaciones": 15,
-      "empresas": 12,
-      "importe": 5781596,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1894,
-          "nombre": "NTT DATA SPAIN, S.L.U.",
-          "adjudicaciones": 2,
-          "importe": 3479047
-        },
-        {
-          "id": 2994,
-          "nombre": "ALTEN SOLUCIONES PRODUCTOS AUDITORIA E INGENIERIA. S.A.U",
-          "adjudicaciones": 1,
-          "importe": 1672634
-        },
-        {
-          "id": 1015,
-          "nombre": "Hey Avenue Comunicación S.L.",
-          "adjudicaciones": 3,
-          "importe": 340251
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 1015,
-      "adjudicaciones": 25,
-      "organismos": 17,
-      "importe": 738611,
-      "desde": "2021",
-      "en_este_organismo": 3
-    }
-  },
-  {
-    "id": "743781f7ea0135ef",
-    "titulo": "Concesión administrativa para el uso privativo del dominio público municipal, consistente en la instalación y explotación de soportes publicitarios estáticos ubicados en MUPIS, así como soportes ubicados en autobuses de titularidad municipal.",
-    "organismo": "Concejalía Delegada de Contratación del Ayuntamiento de Alcázar de San Juan",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": 7500.0,
-    "presupuesto_display": "7,500 EUR",
-    "cpv": [
-      "79341200"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=sdsYjf9d67MadbH3CysQuQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "3/2026 Patrimonial",
-    "resumen": "Concesión administrativa para el uso privativo del dominio público municipal, consistente en la instalación y explotación de soportes publicitarios estáticos ubicados en MUPIS, así como soportes ubicados en autobuses de titularidad municipal.",
-    "tipo_contrato": "Servicios de gestión publicitaria",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "R3 recymed, S.L.",
-    "empresa_nif": "****9605*",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 7510.0,
-    "importe_adjudicado_display": "7,510 EUR",
-    "por_que": {
-      "terminos": [
-        "publicitarios"
-      ]
-    },
-    "provincia": "Ciudad Real",
-    "comunidad": "Castilla-La Mancha",
-    "ofertas": 1,
-    "documentos_adjudicacion": [
-      {
-        "tipo": "apertura",
-        "nombre": "Actos públicos informativos o de aperturas de ofertas",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-4a65eaa2-12eb-4d2f-bb23-d432a9c03b7a"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-10-04",
-    "historial_organismo": {
-      "id": 621,
-      "adjudicaciones": 29,
-      "empresas": 21,
-      "importe": 388616,
-      "desde": "2022",
-      "principales": [
-        {
-          "id": 19174,
-          "nombre": "INGENIERIA TECNICA DEL HORMIGON, S.L.",
-          "adjudicaciones": 1,
-          "importe": 152526
-        },
-        {
-          "id": 52,
-          "nombre": "UNIPREX, S.A.U.",
-          "adjudicaciones": 2,
-          "importe": 41149
-        },
-        {
-          "id": 454,
-          "nombre": "EDICIONES LM S.L.",
-          "adjudicaciones": 2,
-          "importe": 25182
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 29119,
-      "adjudicaciones": 1,
-      "organismos": 1,
-      "importe": 7510,
-      "desde": "2026",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "3a6f49799d1f2646",
-    "titulo": "Servicio de mantenimiento del portal Transparencia, WEB Institucional y Tablón de Edictos (LOTE 1)\r\nServicio de Información y Atención Telefónica (010), y Asistencia Telemática de la CAM (POWETE)(LOTE 2)",
-    "organismo": "Consejería de Hacienda de la Ciudad Autónoma de Melilla",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": 421980.62,
-    "presupuesto_display": "421,981 EUR",
-    "cpv": [
-      "72514200",
-      "79512000",
-      "72514100",
-      "72514300",
-      "79510000"
-    ],
-    "categorias": [
-      "Diseño y desarrollo web",
-      "Atención al cliente / soporte"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=fz9teJShS1j%2Fa9DgO%2BoYKQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "139/2025/CMA",
-    "resumen": "Servicio de mantenimiento del portal Transparencia, WEB Institucional y Tablón de Edictos (LOTE 1)\r\nServicio de Información y Atención Telefónica (010), y Asistencia Telemática de la CAM (POWETE)(LOTE 2)",
-    "tipo_contrato": "Servicios de gestión de instalaciones para el desarrollo de sistemas informáticos",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "CONTROLNET WEB SLU",
-    "empresa_nif": "B35982461",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 134726.95,
-    "importe_adjudicado_display": "134,727 EUR",
-    "por_que": {
-      "terminos": [
-        "WEB Institucional",
-        "Atención Telefónica"
-      ]
-    },
-    "provincia": "Melilla",
-    "comunidad": "Melilla",
-    "documentos_adjudicacion": [
-      {
-        "tipo": "informe_valoracion",
-        "nombre": "Informe de valoración de los criterios de adjudicación cuantificables mediante juicio de valor",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-130d2251-c4bf-4c04-aa59-15aa09fc63d7"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2025-16d87d2b-db0e-4f11-9338-b10ca470d56b"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-f7c162e0-c94f-479a-a60b-21078a330c03"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-912717ad-25ab-495e-a818-005b23a7daa1"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-5c07aecd-174d-4057-a376-b7e1280cad63"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-f9fe8aa0-c6ba-4e4e-b65b-667c5fb7eaed"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-e78a50a1-6e81-4ef3-9905-5cf807566b38"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-18b43b6a-4aad-47e3-a47d-b00b502dde3c"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-5246b9e1-829c-4559-a70e-c56c2fa8cd34"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-6267d935-950e-4450-b82e-1739f6813874"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 135,
-      "adjudicaciones": 22,
-      "empresas": 11,
-      "importe": 6777500,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 13394,
-          "nombre": "TALHER S.A.",
-          "adjudicaciones": 1,
-          "importe": 4240385
-        },
-        {
-          "id": 228,
-          "nombre": "SERGLOBIN SLU",
-          "adjudicaciones": 9,
-          "importe": 1635940
-        },
-        {
-          "id": 13209,
-          "nombre": "COMPETITIVIDAD DESARROLLO E INNOVACION SL",
-          "adjudicaciones": 1,
-          "importe": 209277
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 227,
-      "adjudicaciones": 5,
-      "organismos": 3,
-      "importe": 362477,
-      "desde": "2024",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "be4e8af467f6188b",
-    "titulo": "Servicio de producción de contenidos multimedia y audiovisuales para difundir las actividades que realiza el Área de Desarrollo Rural, Reto Demográfico y Turismo de la Diputación de Badajoz.",
-    "organismo": "Presidencia de la Diputación de Badajoz",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341000"
-    ],
-    "categorias": [
-      "Creación de contenidos"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=7MXLXc46rVV6nTs9LZ9RhQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "417/26",
-    "resumen": "Servicio de producción de contenidos multimedia y audiovisuales para difundir las actividades que realiza el Área de Desarrollo Rural, Reto Demográfico y Turismo de la Diputación de Badajoz.",
-    "tipo_contrato": "Servicios de publicidad",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "UAS GESTION Y CONSULTORIA SL",
-    "empresa_nif": "B06763288",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 17448.2,
-    "importe_adjudicado_display": "17,448 EUR",
-    "por_que": {
-      "terminos": [
-        "producción de contenidos"
-      ]
-    },
-    "provincia": "Badajoz",
-    "comunidad": "Extremadura",
-    "documentos_adjudicacion": [
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-fbc7026c-c267-4750-8ba0-6fe281ccc6fb"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-e1b37358-bab5-4b14-8c65-76c71fc07235"
-      },
-      {
-        "tipo": "otro",
-        "nombre": "Informe técnico valoración de ofertas (417-26 Informe juicios valor.pdf)",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-22a7b4b2-f9af-41d1-a841-1d1b02abec5f"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-09-27",
-    "historial_organismo": {
-      "id": 10,
-      "adjudicaciones": 426,
-      "empresas": 254,
-      "importe": 5751213,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 326,
-          "nombre": "LA CASA DE LA GUASA SLU",
-          "adjudicaciones": 2,
-          "importe": 598223
-        },
-        {
-          "id": 6910,
-          "nombre": "REINA DE CORAZONES CULTURA DE PROYECTOS S.L.",
-          "adjudicaciones": 4,
-          "importe": 462419
-        },
-        {
-          "id": 2623,
-          "nombre": "PRODUCCIONES DE GRANDES EVENTOS, S.L.",
-          "adjudicaciones": 9,
-          "importe": 396693
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 229,
-      "adjudicaciones": 1,
-      "organismos": 1,
-      "importe": 14420,
-      "desde": "2026",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "205a6fdfb1f5757b",
-    "titulo": "Contrato específico SDA suministraciones de publicidad, merchandising y premios (Categoría I):  Adquisición del material de difusión de los premios mulleres no foco",
-    "organismo": "Presidencia de la Diputación Provincial de Pontevedra",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "22460000",
-      "22462000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=S4d1dJokWb6TylGzYmBF9Q%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2026063645",
-    "resumen": "Contrato específico SDA suministraciones de publicidad, merchandising y premios (Categoría I):  Adquisición del material de difusión de los premios mulleres no foco",
-    "tipo_contrato": "Material de publicidad comercial, catálogos comerciales y manuales",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "EDICIONES Y PRODUCCIONES EMPRESARIALES, S.A.U.",
-    "empresa_nif": "A36751287",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 5085.33,
-    "importe_adjudicado_display": "5,085 EUR",
-    "por_que": {
-      "terminos": [
-        "publicidad"
-      ]
-    },
-    "provincia": "Pontevedra",
-    "comunidad": "Galicia",
-    "documentos_adjudicacion": [
-      {
-        "tipo": "informe_anormales",
-        "nombre": "Informe sobre las ofertas incursas en presunción de anormalidad",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-08f3dc5c-4d59-4e8e-8141-528bde74f5bb"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-09-27",
-    "historial_organismo": {
-      "id": 116,
-      "adjudicaciones": 392,
-      "empresas": 160,
-      "importe": 11708310,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 2000,
-          "nombre": "FARO DE VIGO SA UNIPERSONAL",
-          "adjudicaciones": 15,
-          "importe": 2005062
-        },
-        {
-          "id": 688,
-          "nombre": "LA VOZ DE GALICIA, S.A.",
-          "adjudicaciones": 9,
-          "importe": 952076
-        },
-        {
-          "id": 6303,
-          "nombre": "LEREZ EDICIONES, SL",
-          "adjudicaciones": 8,
-          "importe": 824278
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 201,
-      "adjudicaciones": 4,
-      "organismos": 3,
-      "importe": 10829,
-      "desde": "2024",
-      "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "e90b421f2c4d97e3",
-    "titulo": "Obras de \"Refuerzos de firme en diferentes carreteras provinciales pertenecientes a la Excma. Diputación Provincial de Teruel y Vías de Comunicación Intermunicipal. Anualidad 2026\" ( 9 Lotes)",
-    "organismo": "Diputación Provincial de Teruel",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "45233220"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=PaTJHq7FDmCcTfjQf3USOg%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2245/2026",
-    "resumen": "Obras de \"Refuerzos de firme en diferentes carreteras provinciales pertenecientes a la Excma. Diputación Provincial de Teruel y Vías de Comunicación Intermunicipal. Anualidad 2026\" ( 9 Lotes)",
-    "tipo_contrato": "Trabajos de pavimentación de carreteras",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "Construcciones y Excavaciones LECHA, S.L.",
-    "empresa_nif": "B44100170",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 364500.85,
-    "importe_adjudicado_display": "364,501 EUR",
-    "por_que": {
-      "terminos": [
-        "Comunicación"
-      ]
-    },
-    "provincia": "Teruel",
-    "comunidad": "Aragón",
-    "documentos_adjudicacion": [
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-57c94204-218d-4b17-bf10-33b416c19be6"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "Acta del órgano de asistencia",
-        "url": "https://contrataciondelestado.es/wps/wcm/connect/PLACE_es/Site/area/docAccCmpnt?srv=cmpnt&cmpntname=GetDocumentsById&source=library&DocumentIdParam=2026-8a9a7976-a986-4620-a000-af859093cde8"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-09-27",
-    "historial_organismo": {
-      "id": 136,
-      "adjudicaciones": 134,
-      "empresas": 54,
-      "importe": 16748263,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 232,
-          "nombre": "EMIPESA S.A.",
-          "adjudicaciones": 17,
-          "importe": 4973668
-        },
-        {
-          "id": 230,
-          "nombre": "Construcciones y Excavaciones LECHA, S.L.",
-          "adjudicaciones": 9,
-          "importe": 3207340
-        },
-        {
-          "id": 19604,
-          "nombre": "ASFALTOS Y HORMIGONES TERUEL S.L.",
-          "adjudicaciones": 11,
-          "importe": 3140087
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 230,
-      "adjudicaciones": 9,
-      "organismos": 1,
-      "importe": 3207340,
-      "desde": "2021",
-      "en_este_organismo": 9
-    }
-  },
-  {
-    "id": "a9fb35034a7ecb3f",
-    "titulo": "Patrocinio publicitario para la promoción de la marca turística \"Ibiza\" en el marco de la organización y celebración del evento deportivo IBIZA SPRINT TRIATHLON 2026",
-    "organismo": "Vicepresidencia del Consejo de Administración de Fires, Congressos i Esdeveniments D'Eivissa, S.A.U.",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79340000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=l94xArc2wXL5Rey58Yagpg%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "56-2026 ESP",
-    "resumen": "Patrocinio publicitario para la promoción de la marca turística \"Ibiza\" en el marco de la organización y celebración del evento deportivo IBIZA SPRINT TRIATHLON 2026",
-    "tipo_contrato": "Servicios de publicidad y de marketing",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "ASOCIACIÓN DEPORTIVA IBIZA HALF TRIATHLON",
-    "empresa_nif": "G57876799",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 30000.0,
-    "importe_adjudicado_display": "30,000 EUR",
-    "por_que": {
-      "terminos": [
-        "publicitario",
-        "marca turística"
-      ]
-    },
-    "provincia": "Illes Balears",
-    "comunidad": "Illes Balears",
-    "fecha_primera_aparicion": "2026-09-28",
-    "historial_organismo": {
-      "id": 137,
-      "adjudicaciones": 165,
-      "empresas": 64,
-      "importe": 9992036,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 207,
-          "nombre": "FEDERACIÓN ESPAÑOLA DE TRIATLÓN",
-          "adjudicaciones": 2,
-          "importe": 1351240
-        },
-        {
-          "id": 851,
-          "nombre": "CLUB ESPORTIU IBIZASPORT",
-          "adjudicaciones": 9,
-          "importe": 771209
-        },
-        {
-          "id": 5167,
-          "nombre": "REAL FEDERACIÓN ESPAÑOLA DE NATACIÓN",
-          "adjudicaciones": 2,
-          "importe": 743802
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 233,
-      "adjudicaciones": 10,
-      "organismos": 2,
-      "importe": 309519,
-      "desde": "2022",
-      "en_este_organismo": 9
-    }
-  },
-  {
-    "id": "4919b47702aca666",
-    "titulo": "contratacion servicios publicidad - la Voz de Tu Comarcal semestral",
-    "organismo": "Alcaldía del Ayuntamiento de Canet d'en Berenguer",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341400"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=aerwFhxTteyHCIsjvJ3rhQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "4940/2026",
-    "resumen": "contratacion servicios publicidad - la Voz de Tu Comarcal semestral",
-    "tipo_contrato": "Servicios de campañas de publicidad",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "Javier Lage (La Voz de Tu Comarca)",
-    "empresa_nif": "***6467**",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 2758.8,
-    "importe_adjudicado_display": "2,759 EUR",
-    "por_que": {
-      "terminos": [
-        "publicidad"
-      ]
-    },
-    "provincia": "Valencia",
-    "comunidad": "Comunitat Valenciana",
-    "fecha_primera_aparicion": "2026-09-28",
-    "historial_organismo": {
-      "id": 138,
-      "adjudicaciones": 17,
-      "empresas": 15,
-      "importe": 284963,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1628,
-          "nombre": "IURBAN DIGITAL TOURISM, S.L.",
-          "adjudicaciones": 1,
-          "importe": 81276
-        },
-        {
-          "id": 11917,
-          "nombre": "PRODUCCIONES VISUALES JM S.L.",
-          "adjudicaciones": 3,
-          "importe": 79246
-        },
-        {
-          "id": 31843,
-          "nombre": "SERVICIOS DE EMERGENCIAS MÉDICAS CASTELLÓN, S.L.",
-          "adjudicaciones": 1,
-          "importe": 70566
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 234,
-      "adjudicaciones": 1,
-      "organismos": 1,
-      "importe": 2280,
-      "desde": "2026",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "d69e111541e5d016",
-    "titulo": "Servicios de análisis estratégico, definición de arquitectura de marca y desarrollo de identidad visual para Cesce.",
-    "organismo": "Jefatura de Unidad de Medios Internos -Área de Compras de la Compañía Española de Seguros de Crédito a la Exportación S.A., S.M.E. (CESCE)",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79413000",
-      "79340000"
-    ],
-    "categorias": [
-      "Diseño gráfico / branding"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=n%2Btp%2BMLAYomP%2Bo96UAV7cQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "A22-0726",
-    "resumen": "Servicios de análisis estratégico, definición de arquitectura de marca y desarrollo de identidad visual para Cesce.",
-    "tipo_contrato": "Servicios de consultoría en gestión de marketing",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "BRANDEAL CONSULTANTS SL.",
-    "empresa_nif": "B72768799",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 81070.0,
-    "importe_adjudicado_display": "81,070 EUR",
-    "por_que": {
-      "terminos": [
-        "arquitectura de marca"
-      ]
-    },
-    "provincia": "Madrid",
-    "comunidad": "Madrid",
-    "fecha_primera_aparicion": "2026-09-28",
-    "historial_organismo": {
-      "id": 140,
-      "adjudicaciones": 93,
-      "empresas": 56,
-      "importe": 14367616,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 18338,
-          "nombre": "CTI TECNOLOGÍA Y GESTIÓN SA",
-          "adjudicaciones": 4,
-          "importe": 6392000
-        },
-        {
-          "id": 162,
-          "nombre": "IRISMEDIA AGENCIA DE MEDIOS S.L.",
-          "adjudicaciones": 2,
-          "importe": 2895000
-        },
-        {
-          "id": 9622,
-          "nombre": "MINDSHARE SPAIN SAU",
-          "adjudicaciones": 1,
-          "importe": 1660000
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 236,
-      "adjudicaciones": 2,
-      "organismos": 1,
-      "importe": 81900,
-      "desde": "2025",
-      "en_este_organismo": 2
-    }
-  },
-  {
     "id": "93fe0f11043069f6",
     "titulo": "Contrato menor de servicios para inserción de publicidad último trimestre 2026",
     "organismo": "Alcaldía del Ayuntamiento de San Vicente Raspeig",
@@ -87127,79 +84759,6 @@ window.TENDERS_DATA = [
     }
   },
   {
-    "id": "3ec8b8f5ea447ad6",
-    "titulo": "Creación página web del ICF para Murcia",
-    "organismo": "Junta de Gobierno del Ayuntamiento de Murcia",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "72000000"
-    ],
-    "categorias": [
-      "Diseño y desarrollo web"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=anKuC7COOVw7u6%2B%2FR7DUoA%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "023/22026/64383",
-    "resumen": "Creación página web del ICF para Murcia",
-    "tipo_contrato": "Servicios TI: consultoría, desarrollo de software, Internet y apoyo",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "SOLUCION BASE SOFTWARE, S.L.",
-    "empresa_nif": "B73986762",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 3693.7,
-    "importe_adjudicado_display": "3,694 EUR",
-    "por_que": {
-      "terminos": [
-        "página web"
-      ]
-    },
-    "provincia": "Murcia",
-    "comunidad": "Murcia",
-    "fecha_primera_aparicion": "2026-10-16",
-    "historial_organismo": {
-      "id": 132,
-      "adjudicaciones": 840,
-      "empresas": 393,
-      "importe": 6748283,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 7094,
-          "nombre": "UCAM MURCIA CLUB DE BALONCESTO, S.A.D.",
-          "adjudicaciones": 2,
-          "importe": 1090910
-        },
-        {
-          "id": 413,
-          "nombre": "PROXIMIA HAVAS S.L.",
-          "adjudicaciones": 1,
-          "importe": 900000
-        },
-        {
-          "id": 7014,
-          "nombre": "CLUB ASOCIACIÓN DEPORTIVA ELPOZO",
-          "adjudicaciones": 2,
-          "importe": 545454
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 5881,
-      "adjudicaciones": 17,
-      "organismos": 2,
-      "importe": 95071,
-      "desde": "2021",
-      "en_este_organismo": 16
-    }
-  },
-  {
     "id": "821d675c9ce2dc8d",
     "titulo": "Desarrollo y ejecución de una campaña publicitaria del Portal del IEEX para dar a conocer la actividad y producción estadística llevaba a cabo por el IEEX que es difundida a través su portal.",
     "organismo": "Consejería de Economía, Empleo y Transformación Digital",
@@ -87270,634 +84829,6 @@ window.TENDERS_DATA = [
       "importe": 958802,
       "desde": "2021",
       "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "a4bff2f755197419",
-    "titulo": "Contrato menor para la realización y difusión en redes sociales de pieza audiovisual gestión recibos zona sierra y bahía de cádiz (expediente interno 41/2026)",
-    "organismo": "Diputación Provincial de Cádiz",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341400"
-    ],
-    "categorias": [
-      "Redes sociales / community management",
-      "Producción de vídeo / contenido audiovisual"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=Amjq3WFI6Zns%2BnLj3vAg5A%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "2026_CMSER_00285",
-    "resumen": "Contrato menor para la realización y difusión en redes sociales de pieza audiovisual gestión recibos zona sierra y bahía de cádiz (expediente interno 41/2026)",
-    "tipo_contrato": "Servicios de campañas de publicidad",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "BOOM SOCIAL MEDIA SOCIEDAD LIMITADA",
-    "empresa_nif": "B90399593",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 16873.45,
-    "importe_adjudicado_display": "16,873 EUR",
-    "por_que": {
-      "terminos": [
-        "redes sociales",
-        "pieza audiovisual"
-      ]
-    },
-    "provincia": "Cádiz",
-    "comunidad": "Andalucía",
-    "fecha_primera_aparicion": "2026-09-28",
-    "historial_organismo": {
-      "id": 55,
-      "adjudicaciones": 315,
-      "empresas": 199,
-      "importe": 12933913,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 6001,
-          "nombre": "SMS 91 SL",
-          "adjudicaciones": 1,
-          "importe": 9729500
-        },
-        {
-          "id": 3101,
-          "nombre": "ORANGE ESPAGNE, S.A.U.",
-          "adjudicaciones": 1,
-          "importe": 334915
-        },
-        {
-          "id": 250,
-          "nombre": "FEDERICO JOLY  Y CIA, S.L.",
-          "adjudicaciones": 6,
-          "importe": 94587
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 33,
-      "adjudicaciones": 24,
-      "organismos": 15,
-      "importe": 281218,
-      "desde": "2021",
-      "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "d895a8cbef8803ae",
-    "titulo": "Servicio de  campaña de publicidad en prensa recaudación voluntaria segundo semestre 2026.",
-    "organismo": "Junta de Gobierno Local del Ayuntamiento de Jerez",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contrataciondelestado.es/wps/poc?uri=deeplink:detalle_licitacion&idEvl=O5nouei7Z7zVGIpKDxgsAQ%3D%3D",
-    "enlace_directo": true,
-    "codigo_expediente": "ASUECO 2026/1609",
-    "resumen": "Servicio de  campaña de publicidad en prensa recaudación voluntaria segundo semestre 2026.",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "FEDERICO JOLY  Y CIA, S.L.",
-    "empresa_nif": "B11000221",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 1000.0,
-    "importe_adjudicado_display": "1,000 EUR",
-    "por_que": {
-      "terminos": [
-        "publicidad"
-      ]
-    },
-    "provincia": "Cádiz",
-    "comunidad": "Andalucía",
-    "fecha_primera_aparicion": "2026-09-28",
-    "historial_organismo": {
-      "id": 147,
-      "adjudicaciones": 762,
-      "empresas": 136,
-      "importe": 2494515,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 268,
-          "nombre": "NF AGENCIA DE MEDIOS INDEPENDIENTE SLU",
-          "adjudicaciones": 2,
-          "importe": 199498
-        },
-        {
-          "id": 250,
-          "nombre": "FEDERICO JOLY  Y CIA, S.L.",
-          "adjudicaciones": 72,
-          "importe": 184508
-        },
-        {
-          "id": 251,
-          "nombre": "DIARIO DE JEREZ, S.A.",
-          "adjudicaciones": 34,
-          "importe": 145168
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 250,
-      "adjudicaciones": 113,
-      "organismos": 21,
-      "importe": 503785,
-      "desde": "2021",
-      "en_este_organismo": 72
-    }
-  },
-  {
-    "id": "df5913743db3188f",
-    "titulo": "Producción y publicación del podcast «Zientzia oro» de divulgación científica en euskera",
-    "organismo": "Gobierno Vasco",
-    "fuente": "Euskadi",
-    "pais_territorio": "País Vasco",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "92211000-3"
-    ],
-    "categorias": [
-      "Producción de vídeo / contenido audiovisual"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expjaso725410/es_doc/index.html",
-    "enlace_directo": true,
-    "codigo_expediente": "GAB-2026-02126781_00001",
-    "resumen": "Producción y publicación del podcast «Zientzia oro» de divulgación científica en euskera",
-    "tipo_contrato": "Servicios de producción radiofónica",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "ELHUYAR FUNDAZIOA",
-    "empresa_nif": "G20780896",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "2026-09-21",
-    "importe_adjudicado_valor": 68970.0,
-    "importe_adjudicado_display": "68,970 EUR",
-    "por_que": {
-      "terminos": [
-        "podcast"
-      ]
-    },
-    "provincia": null,
-    "comunidad": "País Vasco",
-    "ofertas": 2,
-    "licitadores": [
-      {
-        "nombre": "IDEIEN FAKTORIA KOOP ELKARTE TXIKIA",
-        "nif": "F75150862",
-        "pyme": true,
-        "provincia": "Gipuzkoa",
-        "id": 25109
-      },
-      {
-        "nombre": "ELHUYAR FUNDAZIOA",
-        "nif": "G20780896",
-        "pyme": true,
-        "provincia": "Gipuzkoa",
-        "id": 2373
-      }
-    ],
-    "documentos_adjudicacion": [
-      {
-        "tipo": "informe_valoracion",
-        "nombre": "GAB-2026-021_Juicios de Valor.pdf",
-        "detalle": "GAB-2026-021_Juicios de Valor.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6178020&R01HNoPortal=true"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "GAB-2026-021_Capacidad y Solvencia.pdf",
-        "detalle": "GAB-2026-021_Capacidad y Solvencia.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6136714&R01HNoPortal=true"
-      },
-      {
-        "tipo": "acta",
-        "nombre": "GAB-2026-021_Formulas - 3 sobres.pdf",
-        "detalle": "GAB-2026-021_Formulas - 3 sobres.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6188013&R01HNoPortal=true"
-      },
-      {
-        "tipo": "resolucion",
-        "nombre": "GAB-2026-021 RESOLUCIÓN ADJUDICACIÓN CONTRATO.pdf",
-        "detalle": "GAB-2026-021 RESOLUCIÓN ADJUDICACIÓN CONTRATO.pdf",
-        "url": "https://www.contratacion.euskadi.eus/ac70cPublicidadWar/downloadDokusiREST/descargaFicheroPorIdFichero?idFichero=6253799&R01HNoPortal=true"
-      }
-    ],
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 45,
-      "adjudicaciones": 1163,
-      "empresas": 471,
-      "importe": 10541800,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1907,
-          "nombre": "CM Norte, S.L.",
-          "adjudicaciones": 28,
-          "importe": 270931
-        },
-        {
-          "id": 1137,
-          "nombre": "EDITORIAL IPARRAGUIRRE, S.A.",
-          "adjudicaciones": 24,
-          "importe": 258210
-        },
-        {
-          "id": 1909,
-          "nombre": "EUSKALPRENSA, S.L.",
-          "adjudicaciones": 27,
-          "importe": 242915
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 2373,
-      "adjudicaciones": 14,
-      "organismos": 11,
-      "importe": 438168,
-      "desde": "2021",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "43dee0ecdd9c7696",
-    "titulo": "Acuerdo marco para la contratación de los servicios de conexión, configuración e integración de nuevas redes de infraestructuras de tecnologías de la información y comunicación (TIC) y de tendido de fibra óptica por afectación a la red activa del Ayuntamiento de Barcelona por equipamientos municipales o dentro del ámbito espacio público.",
-    "organismo": "Barcelona d'Infraestructures Municipals SA",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "72700000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/44172866-6f03-44d4-a8ed-b8280fef809e/300901375",
-    "enlace_directo": true,
-    "codigo_expediente": "600.2026.012",
-    "resumen": "Acuerdo marco para la contratación de los servicios de conexión, configuración e integración de nuevas redes de infraestructuras de tecnologías de la información y comunicación (TIC) y de tendido de fibra óptica por afectación a la red activa del Ayuntamiento de Barcelona por equipamientos municipales o dentro del ámbito espacio público.",
-    "tipo_contrato": "Servicios de red informática",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "SISTEMAS INTEGRALES DE REDES Y TELECOMUNICACIONES, S.L. (SIRT)",
-    "empresa_nif": "B61588737",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": null,
-    "importe_adjudicado_display": "no publicado",
-    "por_que": {
-      "terminos": [
-        "comunicación"
-      ]
-    },
-    "provincia": "Barcelona",
-    "comunidad": "Cataluña",
-    "ofertas": 1,
-    "fecha_primera_aparicion": "2026-10-09",
-    "historial_organismo": {
-      "id": 6257,
-      "adjudicaciones": 43,
-      "empresas": 20,
-      "importe": 3151087,
-      "desde": "2022",
-      "principales": [
-        {
-          "id": 295,
-          "nombre": "CHECK MATE SERV. ESTRATEGICS S.L.",
-          "adjudicaciones": 4,
-          "importe": 1384484
-        },
-        {
-          "id": 28887,
-          "nombre": "CROQUIS DISSENY MUNTATGES I REALITZACIONS, SA",
-          "adjudicaciones": 2,
-          "importe": 844674
-        },
-        {
-          "id": 29049,
-          "nombre": "CONSORCIO DE TRANSITO Y ORGANIZACION LOGISTICA EN MUDANZAS",
-          "adjudicaciones": 2,
-          "importe": 344328
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 16711,
-      "adjudicaciones": 13,
-      "organismos": 4,
-      "importe": 1617168,
-      "desde": "2023",
-      "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "8a84fe1e88e182e5",
-    "titulo": "Acord marc per a la contractació dels serveis de connexió, configuració i integració de noves xarxes d’infraestructures de tecnologies de la informació i comunicació (TIC) i d’estesa de fibra òptica per afectació a la xarxa activa de l’Ajuntament de Barcelona per equipaments municipals o dins àmbit espai públic.",
-    "organismo": "Barcelona d'Infraestructures Municipals SA",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "72700000"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/44172866-6f03-44d4-a8ed-b8280fef809e/300887866",
-    "enlace_directo": true,
-    "codigo_expediente": "600.2026.012",
-    "resumen": "Acord marc per a la contractació dels serveis de connexió, configuració i integració de noves xarxes d’infraestructures de tecnologies de la informació i comunicació (TIC) i d’estesa de fibra òptica per afectació a la xarxa activa de l’Ajuntament de Barcelona per equipaments municipals o dins àmbit espai públic.",
-    "tipo_contrato": "Servicios de red informática",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "SISTEMAS INTEGRALES DE REDES Y TELECOMUNICACIONES, S.L. (SIRT)",
-    "empresa_nif": "B61588737",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": null,
-    "importe_adjudicado_display": "no publicado",
-    "por_que": {
-      "terminos": [
-        "comunicació"
-      ]
-    },
-    "provincia": "Barcelona",
-    "comunidad": "Cataluña",
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 6257,
-      "adjudicaciones": 43,
-      "empresas": 20,
-      "importe": 3151087,
-      "desde": "2022",
-      "principales": [
-        {
-          "id": 295,
-          "nombre": "CHECK MATE SERV. ESTRATEGICS S.L.",
-          "adjudicaciones": 4,
-          "importe": 1384484
-        },
-        {
-          "id": 28887,
-          "nombre": "CROQUIS DISSENY MUNTATGES I REALITZACIONS, SA",
-          "adjudicaciones": 2,
-          "importe": 844674
-        },
-        {
-          "id": 29049,
-          "nombre": "CONSORCIO DE TRANSITO Y ORGANIZACION LOGISTICA EN MUDANZAS",
-          "adjudicaciones": 2,
-          "importe": 344328
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 16711,
-      "adjudicaciones": 13,
-      "organismos": 4,
-      "importe": 1617168,
-      "desde": "2023",
-      "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "f2d1c7c295b993f0",
-    "titulo": "Que segons l’article 22 de la Llei 34/1988, d’11 de novembre, general de publicitat (el contracte de patrocini és aquell pel qual el patrocinat, a canvi d’una ajuda econòmica per a la realització de la seva activitat esportiva, benefica, cultural, científica o d’altre caire es compromet a col·laborar en la publicitat de patrocinador.\n\nConcretament l’objecte d’aquest contracte privat de patrocini compren, mitjançant la realització d’una sèrie d’actuacions publicitàries\n\n-\tla promoció i el foment de l’esport del basquetbol professional, juvenil i semi professional al municipi de Cornellà de Llobregat durant la temporada 2025-26 afavorint d’aquesta forma la pràctica i la difusió de l’activitat física i l’esport, com eina per la socialització i com element saludable i de qualitat de vida, així com la seva implantació com factor corrector de desequilibris socials que contribueix a la igualtat entre els ciutadans, dirigint-se de manera principal i preferent a la joventut, donant-li a aquesta noves vies d’ocupabilitat i professionalitat en l’àmbit esportiu.\n\n-\tla promoció de l’esport inclusiu de persones amb discapacitat i diversitat funcional al municipi de Cornellà de Llobregat durant la temporada 2025-2026, afavorint la seva inclusió social i integració positiva en la comunitat.\n\n-la difusió de Cornellà de Llobregat com municipi vinculat a l’esport professional, juvenil i semi professional mitjançant el recolzament als equips esportius d’especial interès i de més repercussió tant per la projecció de la seva disciplina, en aquest cas el basquetbol, com per la modalitat i categoria esportiva on competeix (nacional), així com per la seva projecció mediàtica i social que contribueixen a potenciar la imatge de Cornellà de Llobregat, de la seva empresa municipal, PROCORNELLÀ, vinculada a l’esport municipal, així com de les instal·lacions del PARC ESPORTIU CORNELLÀ, seu dels partits del primer equip masculí en categoria nacional.",
-    "organismo": "Procornellà",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "79341200"
-    ],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/15c2824d-d7d3-40c7-bdcf-ba8d253ad0a7/300887790",
-    "enlace_directo": true,
-    "codigo_expediente": "EXP 25-76",
-    "resumen": "Que segons l’article 22 de la Llei 34/1988, d’11 de novembre, general de publicitat (el contracte de patrocini és aquell pel qual el patrocinat, a canvi d’una ajuda econòmica per a la realització de la seva activitat esportiva, benefica, cultural, científica o d’altre caire es compromet a col·laborar en la publicitat de patrocinador.\n\nConcretament l’objecte d’aquest contracte privat de patrocini compren, mitjançant la realització d’una sèrie d’actuacions publicitàries\n\n-\tla promoció i el foment de l’esport del basquetbol professional, juvenil i semi professional al municipi de Cornellà de Llobregat durant la temporada 2025-26 afavorint d’aquesta forma la pràctica i la difusió de l’activitat física i l’esport, com eina per la socialització i com element saludable i de qualitat de vida, així com la seva implantació com factor corrector de desequilibris socials que contribueix a la igualtat entre els ciutadans, dirigint-se de manera principal i preferent a la joventut, donant-li a aquesta noves vies d’ocupabilitat i professionalitat en l’àmbit esportiu.\n\n-\tla promoció de l’esport inclusiu de persones amb discapacitat i diversitat funcional al municipi de Cornellà de Llobregat durant la temporada 2025-2026, afavorint la seva inclusió social i integració positiva en la comunitat.\n\n-la difusió de Cornellà de Llobregat com municipi vinculat a l’esport professional, juvenil i semi professional mitjançant el recolzament als equips esportius d’especial interès i de més repercussió tant per la projecció de la seva disciplina, en aquest cas el basquetbol, com per la modalitat i categoria esportiva on competeix (nacional), així com per la seva projecció mediàtica i social que contribueixen a potenciar la imatge de Cornellà de Llobregat, de la seva empresa municipal, PROCORNELLÀ, vinculada a l’esport municipal, així com de les instal·lacions del PARC ESPORTIU CORNELLÀ, seu dels partits del primer equip masculí en categoria nacional.",
-    "tipo_contrato": "Servicios de gestión publicitaria",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "CLUB BASQUETBOL CORNELLÀ",
-    "empresa_nif": "G58592064",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 40000.0,
-    "importe_adjudicado_display": "40,000 EUR",
-    "por_que": {
-      "terminos": [
-        "publicitàries"
-      ]
-    },
-    "provincia": "Barcelona",
-    "comunidad": "Cataluña",
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 6255,
-      "adjudicaciones": 15,
-      "empresas": 6,
-      "importe": 2368570,
-      "desde": "2023",
-      "principales": [
-        {
-          "id": 27641,
-          "nombre": "CONTINENTAL PARKING SL",
-          "adjudicaciones": 2,
-          "importe": 1727050
-        },
-        {
-          "id": 27875,
-          "nombre": "UNIÓ ESPORTIVA CORNELLÀ SAD",
-          "adjudicaciones": 4,
-          "importe": 340000
-        },
-        {
-          "id": 28185,
-          "nombre": "Jordi Tejeiro Castellâ",
-          "adjudicaciones": 2,
-          "importe": 94640
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 27648,
-      "adjudicaciones": 2,
-      "organismos": 1,
-      "importe": 80000,
-      "desde": "2024",
-      "en_este_organismo": 2
-    }
-  },
-  {
-    "id": "4dcaa73d1a372a72",
-    "titulo": "Contracte específic de serveis de la formació relativa a “Excel·lència en l’atenció al client”",
-    "organismo": "Barcelona de Serveis Municipals SA",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "80511000"
-    ],
-    "categorias": [
-      "Atención al cliente / soporte"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contractaciopublica.cat/ca/detall-publicacio/cf6dfa91-388e-4867-a6fb-1b8ff0a7312c/300887700",
-    "enlace_directo": true,
-    "codigo_expediente": "2024RH0007ACV137",
-    "resumen": "Contracte específic de serveis de la formació relativa a “Excel·lència en l’atenció al client”",
-    "tipo_contrato": "Servicios de formación del personal",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "JEIL 4, S.L",
-    "empresa_nif": "B63498778",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 37800.0,
-    "importe_adjudicado_display": "37,800 EUR",
-    "por_que": {
-      "terminos": [
-        "atenció al client"
-      ]
-    },
-    "provincia": "Barcelona",
-    "comunidad": "Cataluña",
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 630,
-      "adjudicaciones": 543,
-      "empresas": 160,
-      "importe": 84551846,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 1057,
-          "nombre": "IBERMÁTICA, S.A.",
-          "adjudicaciones": 15,
-          "importe": 8882496
-        },
-        {
-          "id": 20,
-          "nombre": "NARGY, S.L.",
-          "adjudicaciones": 6,
-          "importe": 6458476
-        },
-        {
-          "id": 4387,
-          "nombre": "UTTE NTT DATA SPAI BPO-NTT DATA SPAIN",
-          "adjudicaciones": 2,
-          "importe": 6043216
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 27649,
-      "adjudicaciones": 1,
-      "organismos": 1,
-      "importe": 37800,
-      "desde": "2026",
-      "en_este_organismo": 1
-    }
-  },
-  {
-    "id": "b1e3121bf3f1d6ba",
-    "titulo": "Servicio de desarrollo, puesta en marcha y explotación de herramienta de apoyo al Call Center de averías de Canal de Isabel II, S.A., M.P.",
-    "organismo": "Canal de Isabel II, S.A.",
-    "fuente": "Estado",
-    "pais_territorio": "España",
-    "fecha_publicacion": "2026-09-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [
-      "64214200"
-    ],
-    "categorias": [
-      "Atención al cliente / soporte"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://contratos-publicos.comunidad.madrid/contrato-publico/servicio-desarrollo-puesta-marcha-explotacion-herramienta-apoyo-call-center",
-    "enlace_directo": true,
-    "codigo_expediente": "15-2025",
-    "resumen": "Servicio de desarrollo, puesta en marcha y explotación de herramienta de apoyo al Call Center de averías de Canal de Isabel II, S.A., M.P.",
-    "tipo_contrato": "Servicios de centralitas telefónicas",
-    "tipo_registro": "adjudicacion",
-    "empresa_adjudicataria": "SILICE TECNOLOGIA Y SERVICIOS, S.L.",
-    "empresa_nif": "B06441828",
-    "fecha_adjudicacion": "2026-09-21",
-    "fecha_fin_estimada": "no publicado",
-    "importe_adjudicado_valor": 464586.0,
-    "importe_adjudicado_display": "464,586 EUR",
-    "por_que": {
-      "terminos": [
-        "Call Center"
-      ]
-    },
-    "provincia": "Madrid",
-    "comunidad": "Madrid",
-    "fecha_primera_aparicion": "2026-10-02",
-    "historial_organismo": {
-      "id": 141,
-      "adjudicaciones": 37,
-      "empresas": 18,
-      "importe": 63808418,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 8851,
-          "nombre": "UTE TELEFÓNICA",
-          "adjudicaciones": 7,
-          "importe": 20707204
-        },
-        {
-          "id": 1250,
-          "nombre": "SERVINFORM, S.A.",
-          "adjudicaciones": 3,
-          "importe": 17638243
-        },
-        {
-          "id": 418,
-          "nombre": "TELECYL, S.A",
-          "adjudicaciones": 3,
-          "importe": 17638243
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 237,
-      "adjudicaciones": 2,
-      "organismos": 2,
-      "importe": 479186,
-      "desde": "2024",
-      "en_este_organismo": 1
     }
   },
   {
@@ -103476,6 +100407,290 @@ window.TENDERS_DATA = [
     }
   },
   {
+    "id": "9fc922b95c031f6b",
+    "titulo": "Digitalde-sare sozialak kudeatzeko zerbitzua/digitalde-servicio de gestión de redes sociales",
+    "organismo": "Ayuntamiento de Getxo",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-01-20",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Redes sociales / community management"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expgegetxo12026000249/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "GET$2026000249607_00001",
+    "resumen": "Digitalde-sare sozialak kudeatzeko zerbitzua/digitalde-servicio de gestión de redes sociales",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "contrato_menor_venciendo",
+    "empresa_adjudicataria": "DIGITALDE COMUNICACIÓN EN RED S.L.",
+    "empresa_nif": "B95682241",
+    "fecha_adjudicacion": "2026-01-20",
+    "fecha_fin_estimada": "2027-01-20",
+    "importe_adjudicado_valor": 18148.79,
+    "importe_adjudicado_display": "18,149 EUR",
+    "por_que": {
+      "terminos": [
+        "gestión de redes sociales"
+      ]
+    },
+    "provincia": "Bizkaia",
+    "comunidad": "País Vasco",
+    "fecha_primera_aparicion": "2026-10-22",
+    "historial_organismo": {
+      "id": 938,
+      "adjudicaciones": 265,
+      "empresas": 120,
+      "importe": 1131817,
+      "desde": "2021",
+      "principales": [
+        {
+          "id": 7813,
+          "nombre": "NEXUS AUDIOVISUAL, S.L.",
+          "adjudicaciones": 6,
+          "importe": 64607
+        },
+        {
+          "id": 7602,
+          "nombre": "VERSIA CONTACT CENTER SL",
+          "adjudicaciones": 10,
+          "importe": 52203
+        },
+        {
+          "id": 19774,
+          "nombre": "MIKEL AINGERU RICO GONZALEZ",
+          "adjudicaciones": 5,
+          "importe": 51488
+        }
+      ]
+    },
+    "historial_empresa": {
+      "id": 6571,
+      "adjudicaciones": 20,
+      "organismos": 11,
+      "importe": 284028,
+      "desde": "2021",
+      "en_este_organismo": 3
+    }
+  },
+  {
+    "id": "ece64107091ceef4",
+    "titulo": "Prentsa taldearen lanerako laguntza/apoyo para tareas del gabinete de prensa",
+    "organismo": "Ayuntamiento de Getxo",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-01-20",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expgegetxo12026000414/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "GET$2026000414607_00001",
+    "resumen": "Prentsa taldearen lanerako laguntza/apoyo para tareas del gabinete de prensa",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "contrato_menor_venciendo",
+    "empresa_adjudicataria": "SORMEN KOMUNIKAZIOA, S.L.",
+    "empresa_nif": "B95760328",
+    "fecha_adjudicacion": "2026-01-20",
+    "fecha_fin_estimada": "2027-01-20",
+    "importe_adjudicado_valor": 17908.0,
+    "importe_adjudicado_display": "17,908 EUR",
+    "por_que": {
+      "terminos": [
+        "gabinete de prensa"
+      ]
+    },
+    "provincia": "Bizkaia",
+    "comunidad": "País Vasco",
+    "fecha_primera_aparicion": "2026-10-22",
+    "historial_organismo": {
+      "id": 938,
+      "adjudicaciones": 265,
+      "empresas": 120,
+      "importe": 1131817,
+      "desde": "2021",
+      "principales": [
+        {
+          "id": 7813,
+          "nombre": "NEXUS AUDIOVISUAL, S.L.",
+          "adjudicaciones": 6,
+          "importe": 64607
+        },
+        {
+          "id": 7602,
+          "nombre": "VERSIA CONTACT CENTER SL",
+          "adjudicaciones": 10,
+          "importe": 52203
+        },
+        {
+          "id": 19774,
+          "nombre": "MIKEL AINGERU RICO GONZALEZ",
+          "adjudicaciones": 5,
+          "importe": 51488
+        }
+      ]
+    },
+    "historial_empresa": {
+      "id": 1217,
+      "adjudicaciones": 34,
+      "organismos": 14,
+      "importe": 856068,
+      "desde": "2021",
+      "en_este_organismo": 2
+    }
+  },
+  {
+    "id": "bd1979eb9c1c6dd4",
+    "titulo": "Erreprodukzio, banaketa eta komunikazio publikorako jabetza intelektualaren eskubideak /derechos de propiedad intelectual de reproducción (cedro)",
+    "organismo": "Ayuntamiento de Getxo",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-01-20",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expgegetxo12026001475/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "GET$2026001475607_00001",
+    "resumen": "Erreprodukzio, banaketa eta komunikazio publikorako jabetza intelektualaren eskubideak /derechos de propiedad intelectual de reproducción (cedro)",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "contrato_menor_venciendo",
+    "empresa_adjudicataria": "CEDRO-CENTRO ESPAÑOLDE DERECHOS REPOGRÁFICOS",
+    "empresa_nif": "G78652203",
+    "fecha_adjudicacion": "2026-01-20",
+    "fecha_fin_estimada": "2027-01-20",
+    "importe_adjudicado_valor": 217.8,
+    "importe_adjudicado_display": "218 EUR",
+    "por_que": {
+      "terminos": [
+        "komunikazio"
+      ]
+    },
+    "provincia": "Bizkaia",
+    "comunidad": "País Vasco",
+    "fecha_primera_aparicion": "2026-10-22",
+    "historial_organismo": {
+      "id": 938,
+      "adjudicaciones": 265,
+      "empresas": 120,
+      "importe": 1131817,
+      "desde": "2021",
+      "principales": [
+        {
+          "id": 7813,
+          "nombre": "NEXUS AUDIOVISUAL, S.L.",
+          "adjudicaciones": 6,
+          "importe": 64607
+        },
+        {
+          "id": 7602,
+          "nombre": "VERSIA CONTACT CENTER SL",
+          "adjudicaciones": 10,
+          "importe": 52203
+        },
+        {
+          "id": 19774,
+          "nombre": "MIKEL AINGERU RICO GONZALEZ",
+          "adjudicaciones": 5,
+          "importe": 51488
+        }
+      ]
+    },
+    "historial_empresa": {
+      "id": 5061,
+      "adjudicaciones": 4,
+      "organismos": 4,
+      "importe": 9374,
+      "desde": "2025",
+      "en_este_organismo": 1
+    }
+  },
+  {
+    "id": "ec49549613e7d892",
+    "titulo": "jai eta ospakizunetako publizitatea eta komunikazioa zabaltzea",
+    "organismo": "Ayuntamiento de Errenteria",
+    "fuente": "Euskadi",
+    "pais_territorio": "País Vasco",
+    "fecha_publicacion": "2026-01-20",
+    "fecha_limite": "no publicado",
+    "presupuesto_valor": null,
+    "presupuesto_display": "no publicado",
+    "cpv": [],
+    "categorias": [
+      "Publicidad y comunicación (general)"
+    ],
+    "revisar_manual": false,
+    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expcm504947/es_doc/index.html",
+    "enlace_directo": true,
+    "codigo_expediente": "2026-ESKA-000102-00615_00001",
+    "resumen": "jai eta ospakizunetako publizitatea eta komunikazioa zabaltzea",
+    "tipo_contrato": "no publicado",
+    "tipo_registro": "contrato_menor_venciendo",
+    "empresa_adjudicataria": "AMARKO SISTEMAS INTEGRADOS SL",
+    "empresa_nif": "B20720660",
+    "fecha_adjudicacion": "2026-01-20",
+    "fecha_fin_estimada": "2027-01-20",
+    "importe_adjudicado_valor": 484.0,
+    "importe_adjudicado_display": "484 EUR",
+    "por_que": {
+      "terminos": [
+        "publizitatea"
+      ]
+    },
+    "provincia": "Gipuzkoa",
+    "comunidad": "País Vasco",
+    "fecha_primera_aparicion": "2026-10-22",
+    "historial_organismo": {
+      "id": 2643,
+      "adjudicaciones": 204,
+      "empresas": 52,
+      "importe": 402172,
+      "desde": "2021",
+      "principales": [
+        {
+          "id": 14072,
+          "nombre": "RAMOS ACOSTA AGUSTIN",
+          "adjudicaciones": 7,
+          "importe": 58714
+        },
+        {
+          "id": 2583,
+          "nombre": "THENIU KOMUNIKAZIOA Y ESTRATEGIA, S.L.L.",
+          "adjudicaciones": 10,
+          "importe": 49265
+        },
+        {
+          "id": 9567,
+          "nombre": "TALAIOS AHALDUNTZEAN S.KOOP.",
+          "adjudicaciones": 15,
+          "importe": 45326
+        }
+      ]
+    },
+    "historial_empresa": {
+      "id": 14158,
+      "adjudicaciones": 16,
+      "organismos": 3,
+      "importe": 6063,
+      "desde": "2021",
+      "en_este_organismo": 13
+    }
+  },
+  {
     "id": "4f745aa5743f86b2",
     "titulo": "Servicio de construcción y diseño de página Web de la Asociación de Desarrollo del Levante Almeriense",
     "organismo": "Presidencia de la Asociación de Desarrollo del Levante Almeriense",
@@ -110486,77 +107701,6 @@ window.TENDERS_DATA = [
       "importe": 21431,
       "desde": "2022",
       "en_este_organismo": 7
-    }
-  },
-  {
-    "id": "565a495cd402ff01",
-    "titulo": "personal shopper egitasmoaren komunikazio lanak",
-    "organismo": "Ayuntamiento de Hernani",
-    "fuente": "Euskadi",
-    "pais_territorio": "País Vasco",
-    "fecha_publicacion": "2025-10-21",
-    "fecha_limite": "no publicado",
-    "presupuesto_valor": null,
-    "presupuesto_display": "no publicado",
-    "cpv": [],
-    "categorias": [
-      "Publicidad y comunicación (general)"
-    ],
-    "revisar_manual": false,
-    "enlace": "https://www.contratacion.euskadi.eus/webkpe00-kpeperfi/es/contenidos/anuncio_contratacion/expcm486944/es_doc/index.html",
-    "enlace_directo": true,
-    "codigo_expediente": "2025-ESKA-000831-00463_00001",
-    "resumen": "personal shopper egitasmoaren komunikazio lanak",
-    "tipo_contrato": "no publicado",
-    "tipo_registro": "contrato_menor_venciendo",
-    "empresa_adjudicataria": "BIRA KOOP.ELK.TXIKIA",
-    "empresa_nif": "F75188789",
-    "fecha_adjudicacion": "2025-10-21",
-    "fecha_fin_estimada": "2026-10-21",
-    "importe_adjudicado_valor": 4477.0,
-    "importe_adjudicado_display": "4,477 EUR",
-    "por_que": {
-      "terminos": [
-        "komunikazio"
-      ]
-    },
-    "provincia": "Gipuzkoa",
-    "comunidad": "País Vasco",
-    "fecha_primera_aparicion": "2026-10-06",
-    "historial_organismo": {
-      "id": 2672,
-      "adjudicaciones": 148,
-      "empresas": 63,
-      "importe": 357756,
-      "desde": "2021",
-      "principales": [
-        {
-          "id": 7422,
-          "nombre": "IAMETZA INTERAKTIBOA S.L.",
-          "adjudicaciones": 13,
-          "importe": 41715
-        },
-        {
-          "id": 6343,
-          "nombre": "KALAKA KOOP.ELK.TXIKIA",
-          "adjudicaciones": 2,
-          "importe": 28610
-        },
-        {
-          "id": 1909,
-          "nombre": "EUSKALPRENSA, S.L.",
-          "adjudicaciones": 3,
-          "importe": 26926
-        }
-      ]
-    },
-    "historial_empresa": {
-      "id": 21517,
-      "adjudicaciones": 5,
-      "organismos": 4,
-      "importe": 34100,
-      "desde": "2021",
-      "en_este_organismo": 2
     }
   }
 ];
