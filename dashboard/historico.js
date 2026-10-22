@@ -651,6 +651,10 @@
 
   function pintarDirectorio() {
     var deEmpresas = estado.vista === "empresas";
+    // El mismo interruptor que en Nuestra competencia (estado.sinMedios).
+    var elSinMedios = document.getElementById("boton-sin-medios-directorio");
+    elSinMedios.hidden = !deEmpresas;
+    elSinMedios.setAttribute("aria-pressed", estado.sinMedios ? "true" : "false");
     var campo = deEmpresas ? "empresa" : "organismo";
     var campoOtro = deEmpresas ? "organismo" : "empresa";
     var textos = deEmpresas ? TEXTO_EMPRESA : TEXTO_ORGANISMO;
@@ -660,6 +664,7 @@
       if (!pasaFiltros(f)) return;
       var k = f[campo];
       if (estado.texto && textos[k].indexOf(estado.texto) === -1) return;
+      if (deEmpresas && estado.sinMedios && ES_MEDIO[k]) return;
       var g = grupos[k] || (grupos[k] = { clave: k, numero: 0, importe: 0, conImporte: 0, vistos: {}, otros: 0, ultima: "" });
       g.numero++;
       if (f.importe) { g.importe += f.importe; g.conImporte++; }
@@ -737,6 +742,12 @@
       ' aria-pressed="' + sigue + '" title="' + (sigue ? "Dejar de seguir" : "Seguir: aparecerá en Nuestra competencia") + '" aria-label="' +
       (sigue ? "Dejar de seguir a " : "Seguir a ") + escaparHtml(empresa[1]) + '">' + Nav.icono("marcador") + "</button>";
   }
+
+  document.getElementById("boton-sin-medios-directorio").addEventListener("click", function () {
+    estado.sinMedios = !estado.sinMedios;
+    estado.pagina = 0;
+    pintarDirectorio();
+  });
 
   document.getElementById("directorio-tabla").addEventListener("click", function (ev) {
     var s = ev.target.closest("[data-seguir-lista]");
@@ -1111,6 +1122,7 @@
   }
 
   function pintarCompetencia() {
+    document.getElementById("boton-sin-medios").setAttribute("aria-pressed", estado.sinMedios ? "true" : "false");
     var seguidas = leerSeguidas();
     var soloSeguidas = estado.competencia === "sigo";
     var filas = FILAS.filter(function (f) { return pasaFiltros(f) && pasaTexto(f); });
