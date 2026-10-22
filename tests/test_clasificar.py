@@ -210,3 +210,31 @@ def test_servicios_que_no_son_de_agencia_se_descartan(titulo):
 
 def test_campana_sobre_recogida_de_residuos_sigue_entrando():
     assert clasificar_texto("Diseño de campaña publicitaria y propaganda sobre la recogida de residuos")["incluir"] is True
+
+
+# Auditoría de la taxonomía del 2026-10-22 (config.CONTEXTO_OBLIGATORIO,
+# NEGATIVOS y ALTAS_AUDITORIA).
+@pytest.mark.parametrize("titulo", [
+    "Suministro de Apple Studio Display para la sede",
+    "Proyección de la película Campeones en el cine de verano",
+    "Desarrollo de aplicaciones del Ministerio de Sanidad",
+    "Cena con motivo de Press Trip de influencers",
+    "Mantenimiento del sistema de comunicaciones de voz y datos",
+    "Gestión de redes de bibliotecas con AbsysNET",
+    "Licencias de Zoom para webinar y videoconferencia",
+])
+def test_ruido_que_quito_la_auditoria(titulo):
+    assert clasificar_texto(titulo)["incluir"] is False
+
+
+@pytest.mark.parametrize("titulo, categoria", [
+    ("Campaña de publicidad display y programática en medios digitales", "SEM / paid media"),
+    ("Campaña con influencers para promocionar el destino", "Marketing de influencers / creators"),
+    ("Emisión de cuñas publicitarias en radio local", "Planificación de medios"),
+    ("Plan de comunicación de crisis y media training", "Reputación online / gestión de crisis"),
+    ("Servicio de clipping de prensa", "Reputación online / gestión de crisis"),
+    ("Gestión de las RRSS del Ayuntamiento", "Redes sociales / community management"),
+    ("Diseño del cartel de las fiestas patronales", "Diseño gráfico / branding"),
+])
+def test_lo_que_recoge_cada_categoria_tras_la_auditoria(titulo, categoria):
+    assert categoria in clasificar_texto(titulo)["categorias"]

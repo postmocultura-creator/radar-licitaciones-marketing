@@ -119,10 +119,20 @@
 
       <!-- Empresas que se siguen (Nuestra competencia) -->
       <section id="vista-competencia" hidden>
-        <div class="tabla-envoltorio">
-          <table class="tabla" id="competencia-tabla"></table>
+        <div class="ranking__controles">
+          <div class="segmented" id="segmented-competencia" role="group" aria-label="Qué empresas"></div>
+          <button type="button" class="boton boton--contorno" id="boton-sin-medios" aria-pressed="true"
+                  title="Oculta emisoras, periódicos y demás medios a los que se compra espacio publicitario: no compiten con la agencia">Sin medios de comunicación</button>
         </div>
-        <p class="sin-resultados" id="competencia-vacio" hidden>Todavía no sigues a ninguna empresa. En <a class="enlace" href="#/empresas">Empresas</a>, pulsa el marcador al final de su fila (o «Seguir» en su ficha).</p>
+        <div class="kpis" id="competencia-kpis"></div>
+        <div class="barra-estado">
+          <p class="conteo" id="competencia-conteo" aria-live="polite"></p>
+          <div class="paginacion" id="competencia-paginacion"></div>
+        </div>
+        <div class="tabla-envoltorio">
+          <table class="tabla tabla--ranking" id="competencia-tabla"></table>
+        </div>
+        <p class="sin-resultados" id="competencia-vacio" hidden></p>
       </section>
 
       <!-- Ficha de una empresa o de un organismo -->

@@ -256,4 +256,25 @@
 }
 
 .visualmente-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-#competencia-tabla td:first-child { min-width: 200px; }
+/* ---------- Nuestra competencia: ranking ---------- */
+
+.ranking__controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px; }
+#competencia-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 16px; }
+.tabla--ranking td:nth-child(2) { min-width: 200px; }
+.tabla--ranking .ranking__celda { min-width: 110px; }
+.ranking__cifra { display: block; }
+.ranking__pista { display: block; height: 6px; margin-top: 4px; border-radius: var(--radius-full); background: var(--color-muted-bg); overflow: hidden; }
+.ranking__barra { display: block; height: 100%; margin-left: auto; border-radius: var(--radius-full); background: var(--color-primary); }
+.tabla--ranking .col-reparto { min-width: 110px; }
+.ranking__reparto { display: flex; height: 8px; margin-top: 5px; border-radius: var(--radius-full); background: var(--color-criterio-formula); overflow: hidden; }
+.ranking__euskadi { display: block; height: 100%; background: var(--color-primary); }
+.ranking__cambio { display: block; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.ranking__cambio--sube { color: var(--color-success); }
+.ranking__cambio--baja { color: var(--color-destructive); }
+.ranking__cambio--nueva { color: var(--color-primary); font-weight: 500; }
+.ranking__seguida { background: var(--color-primary-soft); }
+.tabla tbody tr.ranking__seguida:hover { background: var(--color-primary-soft); }
+@media (max-width: 640px) {
+  #competencia-kpis { grid-template-columns: minmax(0, 1fr); }
+  .tabla--ranking .col-reparto { display: none; }
+}

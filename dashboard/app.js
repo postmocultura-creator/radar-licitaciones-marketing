@@ -43,7 +43,6 @@
     "Diseño y desarrollo web",
     "Diseño y desarrollo de apps",
     "Reputación online / gestión de crisis",
-    "Atención al cliente / soporte",
     "Publicidad y comunicación (general)",
     "Planificación de medios",
     "Diseño gráfico / branding",

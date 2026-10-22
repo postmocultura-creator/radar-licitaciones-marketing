@@ -54,7 +54,6 @@ DIAS_HISTORIAL_CONTRATO_MENOR = 455  # ~15 meses (365 + DIAS_AVISO_CONTRATO_MENO
 CPV_RANGOS = [
     (79300000, 79342999, "Estudios de mercado, publicidad y marketing"),
     (79416000, 79416200, "Relaciones públicas"),
-    (79510000, 79512999, "Atención telefónica / centros de llamada"),
     (72400000, 72428999, "Internet, diseño y desarrollo web"),
     (92100000, 92200999, "Producción audiovisual, cine, radio y televisión"),
     (79822500, 79822500, "Servicios de diseño gráfico"),
@@ -192,8 +191,10 @@ CATEGORIAS = {
         "produccion audiovisual", "produccion de video",
         "video corporativo", "contenido audiovisual", "spot publicitario",
         "realizacion audiovisual", "produccion de videos promocionales",
-        "grabacion y edicion de video", "cine y video", "pelicula",
-        "videocinta", "contenidos de video", "contenido de video",
+        # "pelicula" y "videocinta" se quitaron el 2026-10-22: 1.443 títulos
+        # del histórico, casi todos proyecciones y derechos de exhibición.
+        "grabacion y edicion de video", "cine y video",
+        "contenidos de video", "contenido de video",
         "postproduccion", "posproduccion",
         "produccion de contenidos audiovisuales", "video promocional",
         "video institucional", "produccion de spots", "motion graphics",
@@ -208,8 +209,7 @@ CATEGORIAS = {
         "piezas audiovisuales", "realizacion de video",
         "realizacion de videos", "realizacion de un video",
         "grabacion de videos", "podcast", "podcasts",
-        "servicio de fotografia", "servicios de fotografia",
-        "reportaje fotografico", "reportajes fotograficos",
+        # Fotografía de actos fuera desde el 2026-10-22 (decisión de Mikel).
     ],
     "Diseño y desarrollo web": [
         "diseno web", "desarrollo web", "diseno y desarrollo de pagina web",
@@ -239,12 +239,17 @@ CATEGORIAS = {
         "aplicacion movil", "app movil", "desarrollo de app",
         "aplicacion para smartphone", "desarrollo de aplicaciones moviles",
         "app nativa", "aplicacion android", "aplicacion ios",
-        "desarrollo de aplicaciones", "app hibrida",
+        # "desarrollo de aplicaciones" a secas se quitó el 2026-10-22: 314
+        # títulos de informática genérica (licencias, low code, Kubernetes).
+        "app hibrida",
         "aplicacion multiplataforma", "desarrollo de app movil",
         "diseno de app", "prototipado de app",
     ],
     "Reputación online / gestión de crisis": [
-        "reputacion online", "reputacion digital", "gestion de crisis",
+        # "gestion de crisis" a secas metía seguros y simulacros (2026-10-22).
+        "reputacion online", "reputacion digital",
+        "comunicacion de crisis", "crisis de comunicacion",
+        "crisis de reputacion", "crisis reputacional",
         "monitorizacion de medios", "escucha activa", "gestion de la reputacion",
         "clipping de prensa", "seguimiento de medios",
         "monitorizacion de redes sociales", "analisis de sentimiento",
@@ -252,13 +257,9 @@ CATEGORIAS = {
         "gestion de crisis de comunicacion",
         "seguimiento de noticias", "seguimiento de prensa", "press clipping",
     ],
-    "Atención al cliente / soporte": [
-        "atencion al cliente", "centro de llamadas", "call center",
-        "atencion telefonica", "soporte al usuario", "contact center",
-        "atencion multicanal", "servicio de atencion ciudadana",
-        "atencion por whatsapp", "atencion por redes sociales",
-        "gestion de chat en vivo", "chatbot de atencion al cliente",
-    ],
+    # "Atención al cliente / soporte" se quitó el 2026-10-22 (decisión de
+    # Mikel): call centers, auxiliares y chatbots de atención ciudadana, casi
+    # nada de agencia (1.323 títulos del histórico).
     "Publicidad y comunicación (general)": [
         "publicidad", "campana de comunicacion", "agencia de publicidad",
         "agencia de comunicacion", "promocion institucional",
@@ -418,7 +419,9 @@ CATEGORIAS = {
         "herramientas de inteligencia artificial para marketing",
         "chatbot de marketing", "asistente virtual de marketing",
         "marketing conversacional", "ia para marketing",
-        "personalizacion con ia", "chatbot",
+        "personalizacion con ia",
+        # "chatbot" suelto se quitó el 2026-10-22: 160 de 164 eran
+        # chatbots de atención ciudadana.
     ],
     "Marketing B2B": [
         "marketing b2b", "marketing btob", "account based marketing",
@@ -486,6 +489,121 @@ SOLO_CANAL_EN_MEDIOS = {
     ],
 }
 
+# Auditoría de la taxonomía del 2026-10-22: cada categoría se muestreó sobre
+# los 150.000 títulos del histórico y cada arreglo se midió antes de ponerlo.
+#
+# CONTEXTO_OBLIGATORIO: la palabra solo cuenta si el título dice además algo
+# de esta lista (como "seo" y "sem"; ver clasificar._coincide).
+CONTEXTO_OBLIGATORIO = {
+    # 484 títulos: monitores, cables, displays de máquinas.
+    "display": [
+        "publicidad", "publicitaria", "publicitario", "publicitarias", "publicitarios", "publicitat", "publicidade",
+        "campana", "campanas", "campanya", "banner", "banners", "programatica", "google", "ads", "sem", "seo",
+        "rrss", "redes sociales", "anuncios", "anuncio", "marketing", "impresiones", "formatos", "medios digitales",
+        "publicacion de display", "red de display",
+    ],
+    # Peste porcina, obras "PPC", maquinaria. Sin "ppc" en su propio contexto.
+    "ppc": [c for c in SEM_CONTEXTO if c != "ppc"],
+}
+
+# NEGATIVOS: la palabra no cuenta si el título contiene alguna de estas.
+_TELECOM = [
+    "voz", "datos", "telefonia", "telefonica", "fibra", "nodos", "satelital", "satelite", "sistema de comunicacion",
+    "sistemas de comunicacion", "equipos de comunicacion", "equipo de comunicacion", "vias de comunicacion",
+    "via de comunicacion", "centrales de comunicacion", "redes de comunicacion", "red de comunicacion",
+    "tecnologias de la informacion", "tecnologies de la informacio", "radiocomunicacion", "comunicaciones",
+    "cableado", "control y comunicacion", "automatizacion", "scada", "telecomunicacion", "telecomunicaciones",
+    "intercomunicacion", "megafonia", "walkie", "emisoras", "dispositivos", "terminales",
+]
+_CURSOS_DE_COMUNICACION = [
+    "habilidades de comunicacion", "habilidades comunicativas", "comunicacion no verbal", "comunicacion oral",
+    "comunicacion efectiva", "comunicacion en lengua", "comunicacion asertiva", "oratoria",
+    "comunicacion en ingles", "competencias clave", "comunicacion y lenguaje", "trastornos de la comunicacion",
+    "comunicacion aumentativa", "sistemas alternativos", "lengua de signos",
+]
+_COMPRAS_CON_COMUNICACION = [
+    "suministro de mobiliario", "mobiliario", "portatil", "agencia de viajes", "comunicacion publica",
+    "comunicacio publica", "derechos de explotacion", "prensa diaria", "suscripcion",
+]
+_LOGISTICA = [
+    "alojamiento", "cena", "almuerzo", "comida", "restauracion", "manutencion", "transporte", "traslado",
+    "traslados", "visita guiada", "agencia de viajes", "hotel", "billete", "billetes", "espectaculo",
+    "exposicion", "charla", "transfers", "desayuno",
+]
+_MARCA_EN_OBJETOS = [
+    "suministro", "adquisicion", "vestuario", "uniformidad", "uniformes", "carpetas", "letras", "placas",
+    "vinilos", "vinilo", "vinilado", "banderolas", "tarjetas de visita", "usb", "estuches", "fundas",
+    "corporeo", "atril", "totem", "boligrafos", "merchandising", "patrocinio", "patrocini",
+]
+NEGATIVOS = {
+    # "comunicación" suelta: telecomunicaciones, TIC, cursos de habilidades.
+    **{k: _TELECOM + _CURSOS_DE_COMUNICACION + _COMPRAS_CON_COMUNICACION
+       for k in ("comunicacion", "comunicacio", "komunikazio", "komunikazioa")},
+    # Mailing postal: reparto, manipulado, recibos.
+    "mailing": [
+        "postal", "postales", "reparto", "manipulado", "manipulacion", "recibos", "carta", "cartas", "correspondencia",
+        "impresos", "tarjeta de discapacidad", "tarjetas de discapacidad", "tarjetas discapacidad", "buzoneo", "sobres",
+        "ensobrado", "calendario", "correos", "envio postal", "preparacion y distribucion", "taller de escritura",
+    ],
+    # Redes de bibliotecas, de datos, de agua...
+    "gestion de redes": [
+        "biblioteca", "bibliotecas", "absysnet", "inalambricas", "de datos", "comunicaciones", "telecomunicaciones",
+        "ip", "informaticas", "electricas", "agua", "abastecimiento", "saneamiento", "riego", "calor", "seguridad",
+        "sistema de gestion de redes", "software",
+    ],
+    "landing": ["landing zone", "soft landing", "lamparas", "luz", "taxi", "kids landing"],
+    # Plataformas de gestión de TI, no webs de agencia.
+    "plataforma web": [
+        "para la gestion", "de gestion", "gestion documental", "licencia", "suministro", "subministrament", "tramitacion",
+        "intranet", "base de datos", "base de dades", "expedientes", "pagos", "pagaments", "software", "saas", "cloud",
+        "nube", "datos", "parquimetros", "portafirmas", "oracle", "visores", "camaras",
+    ],
+    # Marca en objetos (vinilos, uniformes...) y patrocinios.
+    "imagen corporativa": _MARCA_EN_OBJETOS, "imagen de marca": _MARCA_EN_OBJETOS,
+    "marca turistica": _MARCA_EN_OBJETOS, "naming": ["naming rights", "naming & ip"],
+    # Equipos y licencias de streaming o de videoconferencia, cursos.
+    "streaming": ["licencia", "licencias", "suministro", "adquisicion", "emisora", "radio", "unified streaming",
+                  "formacion virtual"],
+    "webinar": ["licencia", "licencias", "zoom", "videoconferencia", "video conferencia", "inscripcion", "patrocinio",
+                "curso", "impartir", "imparticion", "formacion", "formacio", "docencia", "software"],
+    # Logística de viajes de prensa e influencers (cenas, hotel, traslados).
+    **{k: _LOGISTICA for k in ("influencer", "influencers", "creadores de contenido", "creador de contenido")},
+}
+
+# Altas: formas de pedir el servicio que solo caían en la categoría general.
+ALTAS_AUDITORIA = {
+    "Planificación de medios": [
+        "cunas publicitarias", "cuna publicitaria", "cunas de radio", "cuna de radio", "emision de cunas",
+        "emision de spots", "publicidad en prensa", "publicidad en radio", "publicidad en la radio",
+        "publicidad en television", "publicidad en la television", "publicidad exterior",
+        "faldon publicitario", "faldones publicitarios", "falques publicitaries", "falques de radio",
+        "publicidad radiofonica", "publicidad en emisoras",
+        "publicidad institucional en medio", "publicidad institucional en medios", "publicidad institucional medios",
+        "publicidad institucional medio", "en medio radiofonico", "en medios radiofonicos", "en medio impreso",
+        "en medios impresos", "en medio digital",
+        # Campañas de la Junta de Castilla y León ("...que se publicará entre
+        # el 1 y el 15 de..."): 23.232 títulos, cada uno una compra de medios.
+        "que se publicara entre", "que se publicara el", "que se realizara entre",
+    ],
+    "Reputación online / gestión de crisis": [
+        "clipping", "recull de premsa", "resumen de prensa", "monitorizacion de noticias",
+        "monitorizacion de contenidos en medios", "seguimiento de los impactos",
+    ],
+    "Redes sociales / community management": [
+        "gestion de rrss", "gestion de las rrss", "dinamizacion de rrss", "xestion de rrss", "gestion rrss",
+        "gestion de cuentas de instagram", "gestion de las cuentas de instagram",
+    ],
+    "Diseño gráfico / branding": [
+        "identidad corporativa", "identidad grafica", "diseno de cartel", "diseno del cartel", "diseno de carteles",
+        "creacion de logotipo", "creacion del logotipo", "creacion de un logotipo", "diseno del logotipo",
+    ],
+    "SEM / paid media": [
+        "publicidad en instagram", "publicidad en facebook", "publicidad en meta", "campana de facebook",
+        "campanas digitales", "campana digital", "medios pagados", "post promocionados", "publicaciones promocionadas",
+        "anuncios en redes sociales", "promocion de pago",
+    ],
+}
+
 TERMINOS_OTRAS_LENGUAS = {
     "SEO / posicionamiento en buscadores": [
         "posicionament web", "posicionament en cercadors",
@@ -517,9 +635,6 @@ TERMINOS_OTRAS_LENGUAS = {
     ],
     "Reputación online / gestión de crisis": [
         "reputacio online", "seguiment de mitjans",
-    ],
-    "Atención al cliente / soporte": [
-        "atencio al client", "atencio telefonica", "atencion ao cliente",
     ],
     "Publicidad y comunicación (general)": [
         # Equivalentes de "publicidad", "comunicacion" y "marketing".
@@ -561,6 +676,8 @@ TERMINOS_OTRAS_LENGUAS = {
 }
 
 for _categoria, _terminos in TERMINOS_OTRAS_LENGUAS.items():
+    CATEGORIAS[_categoria].extend(_terminos)
+for _categoria, _terminos in ALTAS_AUDITORIA.items():
     CATEGORIAS[_categoria].extend(_terminos)
 
 # ---------------------------------------------------------------------------
@@ -673,4 +790,12 @@ SERVICIOS_NO_OFRECIDOS = [
     "soporte de software", "software de sistema",
     "servicio publico de comunicacion audiovisual",
     "neteja viaria", "recollida i trasllat de residus",
+    # 2026-10-22, decisión de Mikel tras la auditoría: patrocinar clubes,
+    # eventos o deportistas (4.937 títulos) y el merchandising o material
+    # publicitario físico (1.200), como la imprenta.
+    "patrocinio publicitario", "patrocinios publicitarios", "patrocini publicitari",
+    "patrocinio deportivo", "contrato de patrocinio", "contrato privado de patrocinio",
+    "merchandising", "articulos publicitarios", "articulos promocionales",
+    "productos publicitarios", "regalos promocionales", "objetos promocionales",
+    "suministro de material publicitario", "publicidad y propaganda",
 ]

@@ -133,6 +133,12 @@ def _coincide(texto_norm: str, keyword: str) -> bool:
     "sem" suelto, con contexto digital o publicitario (config.SEM_CONTEXTO)."""
     if not _contiene_keyword(texto_norm, keyword):
         return False
+    # Contexto obligatorio y negativos por palabra (auditoría del 2026-10-22).
+    contexto = config.CONTEXTO_OBLIGATORIO.get(keyword)
+    if contexto and not any(_contiene_keyword(texto_norm, c) for c in contexto):
+        return False
+    if any(_contiene_keyword(texto_norm, n) for n in config.NEGATIVOS.get(keyword, ())):
+        return False
     if keyword == "sem":
         return any(_contiene_keyword(texto_norm, palabra) for palabra in config.SEM_CONTEXTO)
     if keyword != "seo":

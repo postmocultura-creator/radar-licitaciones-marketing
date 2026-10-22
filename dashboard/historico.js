@@ -180,6 +180,11 @@
     metricaEvolucion: "importe", metricaEmpresas: "importe",
     vista: "mercado", id: null,
     ordenDirectorio: "importe", pagina: 0,
+    // Nuestra competencia: "todas" las que ganan con los filtros o "sigo".
+    competencia: "todas", ordenRanking: "numero",
+    // Sin emisoras, periódicos y demás medios a los que se compra espacio:
+    // no compiten con la agencia (ver ES_MEDIO).
+    sinMedios: true,
   };
 
   var elCabecera = document.getElementById("cabecera-vista");
@@ -234,6 +239,7 @@
   segmented("segmented-menor", [["", "Todo"], ["licitacion", "Licitaciones"], ["menor", "Contratos menores"]], "menor");
   segmented("metrica-evolucion", [["importe", "Importe"], ["numero", "Nº"]], "metricaEvolucion");
   segmented("metrica-empresas", [["importe", "Importe"], ["numero", "Nº"]], "metricaEmpresas");
+  segmented("segmented-competencia", [["todas", "Todas las que compiten"], ["sigo", "Las que sigo"]], "competencia");
 
   var elAnio = document.getElementById("filtro-anio");
   var anios = {};
@@ -1054,64 +1060,188 @@
       : '<p class="barras__vacio" style="padding:12px 20px 20px">Sin adjudicaciones con estos filtros.</p>';
   }
 
-  // Cifras de las empresas que se siguen: últimos 12 meses frente a los 12
-  // anteriores, contados hacia atrás desde la fecha del histórico.
+  // Ranking de las empresas que ganan con los filtros puestos (también el
+  // año). Con un año elegido, la flecha compara la posición con el año
+  // anterior. El % de éxito sale de los concursos vascos en los que figura
+  // como licitadora (LICITADORAS): es la única fuente que publica quién se
+  // presenta.
+  var COLUMNAS_RANKING = [
+    ["numero", "Ganadas"], ["importe", "Importe"], ["euskadi", "Euskadi / Estado"],
+    ["exito", "Éxito"], ["rebaja", "Rebaja"],
+  ];
+
+  // Medios de comunicación: por el nombre (radio, diario, editorial...) o
+  // porque al menos el 60 % de lo que ganan es inserción en medios y el
+  // nombre no dice que sean una agencia (las centrales de medios sí
+  // compiten). Medido el 2026-10-22 sobre las 70 empresas que más ganan.
+  var RE_NOMBRE_MEDIO = /\b(radio\w*|irrati\w*|cadena|uniprex|editorial|ediciones|diario|periodico\w*|\w*prensa\w*|\w*prentsa\w*|press|noticias|television|televisio|telebista|tv|emisoras?|publicaciones|grupo de comunicacion|media|eitb)\b/;
+  var RE_NOMBRE_AGENCIA = /agencia|agency|publicidad|publicitat|marketing|comunicacion|creativ|estudio|diseno/;
+  var ES_MEDIO = (function () {
+    var bit = CATEGORIAS.indexOf("Planificación de medios");
+    var total = [], enMedios = [];
+    FILAS.forEach(function (f) {
+      total[f.empresa] = (total[f.empresa] || 0) + 1;
+      if (bit !== -1 && f.mascara & (1 << bit)) enMedios[f.empresa] = (enMedios[f.empresa] || 0) + 1;
+    });
+    return D.empresa.map(function (e, i) {
+      var nombre = NOMBRE_EMPRESA[i];
+      if (RE_NOMBRE_MEDIO.test(nombre)) return true;
+      return (total[i] || 0) >= 20 && (enMedios[i] || 0) / total[i] >= 0.6 && !RE_NOMBRE_AGENCIA.test(nombre);
+    });
+  })();
+
+  function rankingDe(filas) {
+    var g = {};
+    filas.forEach(function (f) {
+      if (estado.sinMedios && ES_MEDIO[f.empresa]) return;
+      var x = g[f.empresa] || (g[f.empresa] = { clave: f.empresa, numero: 0, importe: 0, enEuskadi: 0, rebajas: [] });
+      x.numero++;
+      x.importe += f.importe;
+      if (f.euskadi) x.enEuskadi++;
+      if (f.rebaja > 0) x.rebajas.push(f.rebaja);
+    });
+    return Object.keys(g).map(function (k) { return g[k]; });
+  }
+
+  function posiciones(lista) {
+    var pos = {};
+    lista.slice().sort(function (a, b) { return b.numero - a.numero || b.importe - a.importe; })
+      .forEach(function (x, i) { pos[x.clave] = i + 1; });
+    return pos;
+  }
+
   function pintarCompetencia() {
     var seguidas = leerSeguidas();
-    var nifs = Object.keys(seguidas);
-    var tabla = document.getElementById("competencia-tabla");
-    document.getElementById("competencia-vacio").hidden = nifs.length > 0;
-    tabla.parentNode.hidden = !nifs.length;
-    if (!nifs.length) return;
-    var fin = H.actualizado.slice(0, 10);
-    var hace = function (meses) {
-      var d = new Date(fin + "T12:00:00");
-      d.setMonth(d.getMonth() - meses);
-      return d.toISOString().slice(0, 10);
-    };
-    var hace12 = hace(12), hace24 = hace(24);
-    var anioFiltro = estado.anio;
-    estado.anio = "";
-    var filas = nifs.map(function (nif) {
-      var id = idEmpresaPorNif(nif);
-      var suyas = id === -1 ? [] : FILAS.filter(function (f) { return f.empresa === id && pasaFiltros(f); });
-      var ahora = suyas.filter(function (f) { return f.fecha > hace12; });
-      var antes = suyas.filter(function (f) { return f.fecha > hace24 && f.fecha <= hace12; });
-      var suma = function (l) { return l.reduce(function (s, f) { return s + f.importe; }, 0); };
-      var ultima = suyas.reduce(function (m, f) { return f.fecha > m ? f.fecha : m; }, "");
-      return { nif: nif, id: id, nombre: id !== -1 ? D.empresa[id][1] : seguidas[nif], ahora: ahora.length, antes: antes.length,
-        importeAhora: suma(ahora), importeAntes: suma(antes), rebaja: mediana(ahora.filter(function (f) { return f.rebaja > 0; }).map(function (f) { return f.rebaja; })),
-        ultima: ultima, exito: LICITADORAS[nif] };
+    var soloSeguidas = estado.competencia === "sigo";
+    var filas = FILAS.filter(function (f) { return pasaFiltros(f) && pasaTexto(f); });
+    var lista = rankingDe(filas);
+    var posicion = posiciones(lista);
+
+    // Posición del año anterior, con los mismos filtros.
+    var antes = null;
+    if (estado.anio) {
+      var anio = estado.anio;
+      estado.anio = String(Number(anio) - 1);
+      antes = posiciones(rankingDe(FILAS.filter(function (f) { return pasaFiltros(f) && pasaTexto(f); })));
+      estado.anio = anio;
+    }
+
+    lista.forEach(function (x) {
+      var e = D.empresa[x.clave];
+      x.nif = nifPublicable(e[0]);
+      x.seguida = !!(x.nif && seguidas[x.nif]);
+      x.euskadi = x.enEuskadi / x.numero;
+      var lic = x.nif && LICITADORAS[x.nif];
+      x.exitoDatos = lic && lic[0] >= MIN_CONCURSOS_EXITO ? lic : null;
+      x.exito = x.exitoDatos ? x.exitoDatos[1] / x.exitoDatos[0] : -1;
+      x.rebaja = x.rebajas.length ? mediana(x.rebajas) : -1;
     });
-    estado.anio = anioFiltro;
-    filas.sort(function (a, b) { return b.importeAhora - a.importeAhora || b.ahora - a.ahora; });
-    var variacion = function (ahora, antes) {
-      if (!antes) return ahora ? '<span class="barras__sec">nuevo</span>' : "";
-      var v = Math.round(100 * (ahora - antes) / antes);
-      return '<span class="barras__sec">' + (v > 0 ? "+" : "") + v + " %</span>";
+
+    // Cifras de arriba: del mercado entero con estos filtros.
+    var importeTotal = lista.reduce(function (s, x) { return s + x.importe; }, 0);
+    var top5 = lista.slice().sort(function (a, b) { return b.importe - a.importe; }).slice(0, 5)
+      .reduce(function (s, x) { return s + x.importe; }, 0);
+    var nuevas = estado.anio ? lista.filter(function (x) { return (PRIMERA_FECHA[x.clave] || "").slice(0, 4) === estado.anio; }).length : null;
+    pintarKpis(document.getElementById("competencia-kpis"), [
+      ["Empresas que ganan", miles(lista.length)],
+      ["Las 5 primeras se llevan", importeTotal ? porcentaje(top5 / importeTotal) : "—", "del importe adjudicado"],
+      nuevas == null
+        ? ["Que sigues, entre ellas", miles(lista.filter(function (x) { return x.seguida; }).length)]
+        : ["Nuevas en " + estado.anio, miles(nuevas), "primer contrato desde 2021"],
+    ]);
+
+    if (soloSeguidas) lista = lista.filter(function (x) { return x.seguida; });
+    var col = estado.ordenRanking;
+    lista.sort(function (a, b) { return b[col] - a[col] || b.numero - a.numero || b.importe - a.importe; });
+
+    var vacio = document.getElementById("competencia-vacio");
+    vacio.hidden = lista.length > 0;
+    vacio.innerHTML = soloSeguidas
+      ? "Todavía no sigues a ninguna empresa con estos filtros. Pulsa el marcador de una fila en «Todas las que compiten» (o en <a class=\"enlace\" href=\"#/empresas\">Empresas</a>)."
+      : "Ninguna empresa gana con estos filtros.";
+    var tabla = document.getElementById("competencia-tabla");
+    tabla.parentNode.hidden = !lista.length;
+
+    var total = lista.length;
+    var paginas = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
+    if (estado.pagina >= paginas) estado.pagina = paginas - 1;
+    var desde = estado.pagina * FILAS_POR_PAGINA;
+    var visibles = lista.slice(desde, desde + FILAS_POR_PAGINA);
+    document.getElementById("competencia-conteo").textContent = total
+      ? miles(desde + 1) + "–" + miles(desde + visibles.length) + " de " + miles(total) + " empresas"
+      : "";
+    var elPag = document.getElementById("competencia-paginacion");
+    elPag.hidden = paginas < 2;
+    elPag.innerHTML = "<span>Página " + (estado.pagina + 1) + " de " + miles(paginas) + "</span>" +
+      '<button type="button" class="boton boton--contorno" data-paso="-1"' + (estado.pagina === 0 ? " disabled" : "") + ">Anterior</button>" +
+      '<button type="button" class="boton boton--contorno" data-paso="1"' + (estado.pagina >= paginas - 1 ? " disabled" : "") + ">Siguiente</button>";
+    if (!lista.length) return;
+
+    var maxNumero = lista.reduce(function (m, x) { return Math.max(m, x.numero); }, 0) || 1;
+    var maxImporte = lista.reduce(function (m, x) { return Math.max(m, x.importe); }, 0) || 1;
+    var celdaBarra = function (texto, fraccion) {
+      return '<span class="ranking__cifra">' + texto + '</span><span class="ranking__pista"><span class="ranking__barra" style="width:' +
+        (100 * fraccion).toFixed(1) + '%"></span></span>';
     };
-    tabla.innerHTML = '<thead><tr><th scope="col">Empresa</th><th scope="col" class="num" title="Adjudicaciones de los últimos 12 meses y variación frente a los 12 anteriores">Gana (12 m)</th>' +
-      '<th scope="col" class="num" title="Importe adjudicado en los últimos 12 meses y variación">Importe (12 m)</th><th scope="col" class="num" title="Rebaja mediana al ganar, últimos 12 meses">Rebaja</th><th scope="col">Última</th>' +
-      '<th scope="col" class="num" title="Concursos vascos ganados de los que se presentó">Éxito Euskadi</th><th scope="col"><span class="visualmente-oculto">Quitar</span></th></tr></thead><tbody>' +
-      filas.map(function (x) {
-        var nombre = escaparHtml(x.nombre || "NIF " + x.nif);
-        return "<tr><td>" + (x.id !== -1 ? '<a href="#/empresa/' + x.id + '">' + nombre + "</a>" : nombre) +
-          '<div class="barras__sec">NIF ' + escaparHtml(x.nif) + "</div></td>" +
-          '<td class="num">' + miles(x.ahora) + " " + variacion(x.ahora, x.antes) + "</td>" +
-          '<td class="num">' + euros(x.importeAhora) + " " + variacion(x.importeAhora, x.importeAntes) + "</td>" +
-          '<td class="num">' + (x.rebaja == null ? "—" : porcentaje(x.rebaja)) + "</td>" +
-          '<td class="col-fecha">' + (x.ultima ? fechaLarga(x.ultima) : "—") + "</td>" +
-          '<td class="num">' + (x.exito && x.exito[0] >= MIN_CONCURSOS_EXITO ? Math.round(100 * x.exito[1] / x.exito[0]) + " %" +
-            '<div class="barras__sec">' + x.exito[1] + " de " + x.exito[0] + "</div>" : "—") + "</td>" +
-          '<td><button type="button" class="boton boton--contorno" data-dejar="' + escaparHtml(x.nif) + '">Quitar</button></td></tr>';
+    var flecha = function (x) {
+      if (!antes) return "";
+      var p = antes[x.clave];
+      if (!p) return '<span class="ranking__cambio ranking__cambio--nueva" title="No ganó nada el año anterior">nueva</span>';
+      var d = p - posicion[x.clave];
+      if (!d) return "";
+      return '<span class="ranking__cambio ranking__cambio--' + (d > 0 ? "sube" : "baja") + '" title="Puesto ' + p + " el año anterior\">" +
+        (d > 0 ? "▲" : "▼") + Math.abs(d) + "</span>";
+    };
+
+    tabla.innerHTML = '<thead><tr><th class="col-posicion" scope="col">#</th><th scope="col">Empresa</th>' +
+      COLUMNAS_RANKING.map(function (c) {
+        return '<th scope="col" class="' + (c[0] === "euskadi" ? "col-reparto" : "num") + (c[0] === "rebaja" ? " col-secundaria" : "") + '"' +
+          (c[0] === col ? ' aria-sort="descending"' : "") + '><button type="button" class="tabla__orden" data-orden="' + c[0] + '">' + c[1] + Nav.icono("chevron") + "</button></th>";
+      }).join("") + '<th scope="col" class="col-seguir"><span class="visualmente-oculto">Seguir</span></th></tr></thead><tbody>' +
+      visibles.map(function (x) {
+        var e = D.empresa[x.clave];
+        return '<tr' + (x.seguida ? ' class="ranking__seguida"' : "") + '><td class="col-posicion">' + miles(posicion[x.clave]) + flecha(x) + "</td>" +
+          '<td><a href="#/empresa/' + x.clave + '">' + escaparHtml(e[1]) + "</a>" + (x.nif ? '<span class="tabla__sub">NIF ' + escaparHtml(x.nif) + "</span>" : "") + "</td>" +
+          '<td class="num ranking__celda">' + celdaBarra(miles(x.numero), x.numero / maxNumero) + "</td>" +
+          '<td class="num ranking__celda">' + celdaBarra(euros(x.importe), x.importe / maxImporte) + "</td>" +
+          '<td class="col-reparto"><span class="ranking__reparto" title="' + porcentaje(x.euskadi) + " en Euskadi, " + porcentaje(1 - x.euskadi) + ' en el Estado">' +
+            '<span class="ranking__euskadi" style="width:' + (100 * x.euskadi).toFixed(1) + '%"></span></span>' +
+            '<span class="tabla__sub">' + (x.euskadi >= 0.5 ? porcentaje(x.euskadi) + " Euskadi" : porcentaje(1 - x.euskadi) + " Estado") + "</span></td>" +
+          '<td class="num"' + (x.exitoDatos ? ' title="Gana ' + x.exitoDatos[1] + " de " + x.exitoDatos[0] + ' concursos a los que se presenta"' : "") + ">" +
+            (x.exitoDatos ? porcentaje(x.exito) : "—") + "</td>" +
+          '<td class="num col-secundaria">' + (x.rebaja >= 0 ? porcentaje(x.rebaja) : "—") + "</td>" +
+          '<td class="col-seguir">' + botonSeguir(e, seguidas) + "</td></tr>";
       }).join("") + "</tbody>";
   }
 
   document.getElementById("vista-competencia").addEventListener("click", function (ev) {
-    var b = ev.target.closest && ev.target.closest("[data-dejar]");
-    if (!b) return;
-    alternarSeguida(b.getAttribute("data-dejar"), null);
-    pintarCompetencia();
+    var s = ev.target.closest && ev.target.closest("[data-seguir-lista]");
+    if (s) {
+      alternarSeguida(s.getAttribute("data-seguir-lista"), s.getAttribute("data-nombre"));
+      pintarCompetencia();
+      return;
+    }
+    var m = ev.target.closest && ev.target.closest("#boton-sin-medios");
+    if (m) {
+      estado.sinMedios = !estado.sinMedios;
+      m.setAttribute("aria-pressed", estado.sinMedios ? "true" : "false");
+      estado.pagina = 0;
+      pintarCompetencia();
+      return;
+    }
+    var o = ev.target.closest && ev.target.closest("[data-orden]");
+    if (o) {
+      estado.ordenRanking = o.getAttribute("data-orden");
+      estado.pagina = 0;
+      pintarCompetencia();
+      return;
+    }
+    var p = ev.target.closest && ev.target.closest("#competencia-paginacion button[data-paso]");
+    if (p && !p.disabled) {
+      estado.pagina += Number(p.getAttribute("data-paso"));
+      pintarCompetencia();
+      document.getElementById("herramientas").scrollIntoView({ block: "start" });
+    }
   });
 
   // ---------- Rutas ----------
@@ -1148,7 +1278,7 @@
     elVistas.directorio.hidden = !esDirectorio;
     elVistas.ficha.hidden = !esFicha;
     elVistas.competencia.hidden = estado.vista !== "competencia";
-    elCampoTexto.hidden = esFicha || estado.vista === "competencia";
+    elCampoTexto.hidden = esFicha;
 
     if (estado.vista === "mercado") pintarMercado();
     else if (estado.vista === "competencia") pintarCompetencia();

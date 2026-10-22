@@ -103,6 +103,13 @@ listas de `config.py`:
   medios...), nombrar las redes sociales o una web como canal no lo hace de
   Redes sociales ni de Diseño web (`SOLO_CANAL_EN_MEDIOS`): hace falta que
   el título encargue gestionarlas o diseñarla.
+- Algunas palabras solo cuentan con contexto (`CONTEXTO_OBLIGATORIO`:
+  "display" con algo publicitario, como "seo" y "sem") o dejan de contar
+  junto a otras (`NEGATIVOS`: "comunicación" en telecomunicaciones o cursos,
+  "mailing" postal, "influencers" en la logística de un viaje de prensa...).
+  Salen de la auditoría de categorías del 2026-10-22, medida sobre los
+  150.000 títulos del histórico; las frases que se añadieron entonces están
+  en `ALTAS_AUDITORIA`.
 - Si además aparece algo ajeno (`EXCLUSIONES`, p. ej. comunicación y
   limpieza en el mismo contrato), entra marcada "revisar".
 
