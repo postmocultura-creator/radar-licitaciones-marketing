@@ -106,6 +106,33 @@
 
 .columnas__etiqueta { font-size: 12.5px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
+/* Repartos en columnas (competencia y rebaja): más bajos que la evolución y
+   con la etiqueta en dos líneas si hace falta. */
+.columnas--bajas { height: 180px; gap: 8px; }
+.columnas--bajas .columnas__etiqueta { text-align: center; line-height: 1.25; }
+.columnas__relleno--suave { background: var(--color-criterio-formula); }
+
+/* ---------- Reparto en una barra (procedimientos) ---------- */
+
+.reparto--alto { max-width: none; height: 14px; margin: 10px 0 14px; }
+.reparto__tramo--s0 { background: var(--color-primary); }
+.reparto__tramo--s1 { background: color-mix(in srgb, var(--color-primary) 70%, var(--color-surface)); }
+.reparto__tramo--s2 { background: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface)); }
+.reparto__tramo--s3 { background: color-mix(in srgb, var(--color-primary) 25%, var(--color-surface)); }
+.reparto__tramo--s4 { background: var(--color-criterio-precio); }
+
+.leyenda { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+.leyenda li { display: flex; align-items: center; gap: 8px; }
+.leyenda__muestra { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 2px; }
+.leyenda__nombre { flex: 1 1 auto; min-width: 0; }
+.leyenda__valor { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Marcador para seguir una empresa desde el directorio. */
+.tabla .col-seguir { width: 1%; padding-top: 4px; padding-bottom: 4px; text-align: right; }
+.boton-seguir { color: var(--color-muted); }
+.boton-seguir[aria-pressed="true"] { color: var(--color-primary); }
+.boton-seguir[aria-pressed="true"] svg { fill: currentColor; }
+
 /* ---------- Tablas (directorios y contratos de una ficha) ---------- */
 
 .tabla-envoltorio {

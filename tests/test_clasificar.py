@@ -164,3 +164,49 @@ def test_descartes_con_su_motivo():
         ("Diseño e impresión de piezas publicitarias", "servicio_no_ofrecido", "impresión"),
         ("Campaña de Navidad del comercio local", "sin_categoria", None),
     ]
+
+
+REDES = "Redes sociales / community management"
+MEDIOS = "Planificación de medios"
+WEB = "Diseño y desarrollo web"
+
+
+@pytest.mark.parametrize("titulo", [
+    "Planificación y compra de espacios publicitarios en prensa, radio, televisión, medios on-line y redes sociales para diversas campañas",
+    "Servei d'inserció de publicitat institucional a diferents xarxes socials per a la difusió d'informació en matèria de consum",
+    "Contratación de la inserción publicitaria en plataformas de Internet y redes sociales.",
+])
+def test_compra_de_medios_que_nombra_las_redes_no_es_de_redes(titulo):
+    categorias = clasificar_texto(titulo)["categorias"]
+    assert MEDIOS in categorias and REDES not in categorias
+
+
+@pytest.mark.parametrize("titulo", [
+    "Servicio de gestión y coordinación de redes sociales municipales y diseños de espacios publicitarios.",
+    "Servicios creación de contenidos, community manager y compra de espacios publicitarios para el Ayuntamiento",
+    "Servicios de planificación, mediación, compra de espacios publicitarios, gestión de redes sociales y acciones de comunicación",
+])
+def test_medios_y_gestion_de_redes_conserva_las_dos(titulo):
+    categorias = clasificar_texto(titulo)["categorias"]
+    assert MEDIOS in categorias and REDES in categorias
+
+
+def test_banner_en_una_web_no_es_diseno_web():
+    categorias = clasificar_texto("Servicio de uso de un espacio publicitario digital 250x250 px en la página web Beckmesser.")["categorias"]
+    assert MEDIOS in categorias and WEB not in categorias
+    # Sin contrato de medios, la página web sigue contando.
+    assert WEB in clasificar_texto("Mantenimiento de la página web municipal")["categorias"]
+
+
+@pytest.mark.parametrize("titulo", [
+    "Servicio de Gestión Integral de Atención al Cliente y Restauración a Bordo en trenes de Renfe Viajeros",
+    "Cesión temporal de uso de espacios para la explotación de la actividad publicitaria en la red de Metro de Madrid, S.A.",
+    "Ampliación, Actualización Y Soporte De Software De Sistema Para La Ejecución Y Desarrollo De Aplicaciones En Los Entornos Mainframe",
+    "Servei de recollida i trasllat de residus municipals i neteja viària del municipi, amb campanya de comunicació",
+])
+def test_servicios_que_no_son_de_agencia_se_descartan(titulo):
+    assert clasificar_texto(titulo)["incluir"] is False
+
+
+def test_campana_sobre_recogida_de_residuos_sigue_entrando():
+    assert clasificar_texto("Diseño de campaña publicitaria y propaganda sobre la recogida de residuos")["incluir"] is True

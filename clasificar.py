@@ -199,6 +199,14 @@ def clasificar_texto(titulo: str, ted: bool = False) -> dict:
         if any(_coincide(texto_norm, kw) for kw in keywords)
     ]
 
+    # Un contrato de medios que nombra las redes o una web como canal no es
+    # de esas categorías (config.SOLO_CANAL_EN_MEDIOS).
+    if "Planificación de medios" in categorias:
+        for categoria, canales in config.SOLO_CANAL_EN_MEDIOS.items():
+            if categoria in categorias and not any(
+                    _coincide(texto_norm, kw) for kw in config.CATEGORIAS[categoria] if kw not in canales):
+                categorias.remove(categoria)
+
     if not categorias:
         return {"incluir": False, "categorias": [], "revisar_manual": False}
 

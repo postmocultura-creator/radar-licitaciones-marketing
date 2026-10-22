@@ -96,7 +96,13 @@ listas de `config.py`:
 - Si no aparece ninguna palabra de `CATEGORIAS` (o su versión en catalán,
   gallego y euskera, `TERMINOS_OTRAS_LENGUAS`), no entra.
 - Si aparece un servicio que la agencia no ofrece (`SERVICIOS_NO_OFRECIDOS`:
-  imprenta, impresión, artes gráficas...), no entra.
+  imprenta, impresión, artes gráficas...) o algo que no es de agencia
+  (concesiones de soportes publicitarios, restauración a bordo, licencias de
+  software...), no entra.
+- En un contrato de medios (inserción, compra de espacios, central de
+  medios...), nombrar las redes sociales o una web como canal no lo hace de
+  Redes sociales ni de Diseño web (`SOLO_CANAL_EN_MEDIOS`): hace falta que
+  el título encargue gestionarlas o diseñarla.
 - Si además aparece algo ajeno (`EXCLUSIONES`, p. ej. comunicación y
   limpieza en el mismo contrato), entra marcada "revisar".
 
@@ -368,7 +374,7 @@ para que cada una tenga su dirección y funcione el botón "atrás":
 | Prospección comercial | Contratos menores por vencer | `index.html#/menores` |
 | Competencia | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
 | Competencia | Análisis de mercado (histórico desde 2021) | `historico.html#/mercado` |
-| Competencia | Empresas y ficha de empresa | `historico.html#/empresas`, `#/empresa/<id>` |
+| Competencia | Empresas y ficha de empresa (el marcador de cada fila la añade a «Nuestra competencia») | `historico.html#/empresas`, `#/empresa/<id>` |
 | Competencia | Organismos y ficha de organismo | `historico.html#/organismos`, `#/organismo/<id>` |
 
 `index.html` lee `dashboard/tenders-data.js` (no `data/tenders.json`

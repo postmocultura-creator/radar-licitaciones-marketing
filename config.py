@@ -179,6 +179,14 @@ CATEGORIAS = {
         "gestion de tiktok", "gestion de linkedin", "gestion de twitter",
         "dinamizacion de redes sociales", "dinamizacion de redes",
         "gestion de comunidad digital", "community manager",
+        # Formas de encargar la gestión que no decían "gestion de redes
+        # sociales" tal cual: con ellas un contrato de medios conserva
+        # Redes sociales (ver SOLO_CANAL_EN_MEDIOS).
+        "gestion de las redes sociales", "coordinacion de redes sociales",
+        "gestion y coordinacion de redes", "gestion y dinamizacion de redes",
+        "contenidos en redes sociales", "contenidos para redes sociales",
+        "contenidos en webs y redes sociales", "perfiles en redes sociales",
+        "redes sociales municipales", "redes sociales institucionales",
     ],
     "Producción de vídeo / contenido audiovisual": [
         "produccion audiovisual", "produccion de video",
@@ -225,6 +233,7 @@ CATEGORIAS = {
         # aplicaciones y servicios web de gestión (24 nuevos, casi todos TI).
         "diseno de la web", "desarrollo de la web", "rediseno de la web",
         "mantenimiento de la web", "nueva web",
+        "realizacion de la pagina web", "elaboracion de la pagina web",
     ],
     "Diseño y desarrollo de apps": [
         "aplicacion movil", "app movil", "desarrollo de app",
@@ -312,6 +321,20 @@ CATEGORIAS = {
     ],
     "Planificación de medios": [
         "planificacion de medios", "plan de medios", "compra de espacios",
+        # Octubre de 2026: con solo esas tres frases, los contratos de
+        # inserción y compra de medios no entraban aquí y, como enumeran los
+        # canales ("prensa, radio, televisión y redes sociales"), acababan
+        # en Redes sociales (ver SOLO_CANAL_EN_MEDIOS).
+        "espacios publicitarios", "espacio publicitario",
+        "insercion publicitaria", "inserciones publicitarias",
+        "insercion de publicidad", "insercion de anuncios",
+        "insercion de campanas", "insercion de la campana",
+        "central de medios", "agencia de medios", "compra de medios",
+        "planificacion y compra", "difusion en medios",
+        "difusion en los medios", "publicidad en medios",
+        "campana en medios",
+        # "soportes publicitarios" no: también es diseñar las piezas
+        # ("elaboración de soportes publicitarios: página web, tríptico...").
     ],
     "Diseño gráfico / branding": [
         "diseno grafico", "identidad visual", "branding", "imagen corporativa",
@@ -446,6 +469,23 @@ CATEGORIAS = {
 #
 # Las claves son las de CATEGORIAS: no se crean categorías nuevas (el
 # histórico guarda las categorías como bits según el orden del diccionario).
+# Canales que un contrato de medios nombra sin encargar nada sobre ellos
+# ("inserción en prensa, radio, televisión y redes sociales", "banner en la
+# página web de la revista"): no lo hacen de esa categoría. Solo cuenta si el
+# título usa otra palabra clave de la categoría (gestionar las redes, diseñar
+# la web...). Ver clasificar.clasificar_texto.
+SOLO_CANAL_EN_MEDIOS = {
+    "Redes sociales / community management": [
+        "redes sociales", "social media", "xarxes socials", "redes sociais",
+        "sare sozial", "sare sozialak", "sare sozialen", "sare sozialetan",
+    ],
+    "Diseño y desarrollo web": [
+        "pagina web", "paginas web", "sitio web", "sitios web", "portal web",
+        "portales web", "lloc web", "llocs web", "paxina web", "paxinas web",
+        "webgune", "webgunea", "webgunearen",
+    ],
+}
+
 TERMINOS_OTRAS_LENGUAS = {
     "SEO / posicionamiento en buscadores": [
         "posicionament web", "posicionament en cercadors",
@@ -453,6 +493,9 @@ TERMINOS_OTRAS_LENGUAS = {
     ],
     "Redes sociales / community management": [
         "xarxes socials", "redes sociais",
+        "gestio de xarxes socials", "gestio de les xarxes socials",
+        "dinamitzacio de xarxes socials", "continguts per a xarxes socials",
+        "xestion de redes sociais",
         "sare sozial", "sare sozialak", "sare sozialen", "sare sozialetan",
     ],
     "Producción de vídeo / contenido audiovisual": [
@@ -495,6 +538,9 @@ TERMINOS_OTRAS_LENGUAS = {
     ],
     "Planificación de medios": [
         "pla de mitjans", "planificacio de mitjans", "compra de mitjans",
+        "espais publicitaris", "insercio publicitaria", "insercio de publicitat",
+        "insercio d'anuncis", "insercio d anuncis", "central de mitjans",
+        "espazos publicitarios",
     ],
     "Diseño gráfico / branding": [
         "disseny grafic", "identitat visual", "imatge corporativa",
@@ -614,4 +660,17 @@ SERVICIOS_NO_OFRECIDOS = [
     "impressio", "impremta", "retolacio", "senyaletica", "enquadernacio",
     "papereria", "sinaletica", "encadernacion", "papelaria",
     "inprimaketa", "inprenta",
+    # Octubre de 2026: contratos que no son de agencia y que, por su tamaño,
+    # encabezaban el análisis de mercado (296 M€ de atención y restauración
+    # en trenes, concesiones de soportes publicitarios del metro, recogida de
+    # residuos, licencias de software, la gestión de una televisión...).
+    # Medido sobre el histórico: cada término solo aparece en el servicio en
+    # sí, no en campañas sobre él (por eso no "recogida de residuos", que
+    # también está en campañas de sensibilización).
+    "restauracion a bordo", "explotacion publicitaria",
+    "explotacion de la actividad publicitaria", "cesion temporal de uso de espacios",
+    "paciente enfermera", "pacient infermera",
+    "soporte de software", "software de sistema",
+    "servicio publico de comunicacion audiovisual",
+    "neteja viaria", "recollida i trasllat de residus",
 ]

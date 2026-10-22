@@ -35,25 +35,21 @@
     mercado: {
       nav: "mercado",
       titulo: "Análisis de mercado",
-      descripcion: "Adjudicaciones de organismos públicos españoles (Estado y Euskadi) desde 2021 ganadas por empresas españolas (incluidas las vascas), incluidos contratos menores, filtradas por categoría de servicio de agencia. Fuentes: PLACSP (perfiles propios y plataformas autonómicas agregadas), el portal de contratación de Euskadi para los contratos menores de organismos vascos y TED para lo que solo se publica allí. Importes sin IVA; en los acuerdos marco con varias empresas adjudicatarias, el importe se reparte a partes iguales entre ellas. Cada lote adjudicado cuenta como una adjudicación. El filtro de importe se aplica al importe de cada adjudicación y deja fuera las que no lo publican. Se actualiza cada día.",
       buscar: "Buscar empresa, NIF u organismo…",
     },
     empresas: {
       nav: "empresas",
       titulo: "Empresas",
-      descripcion: "Todas las empresas españolas que han ganado contratos de servicios de agencia a organismos públicos españoles desde 2021. Los filtros (ámbito, tipo de adjudicación, año, categoría, provincia e importe) recalculan las cifras de cada empresa. Pulsa una empresa para ver su ficha.",
       buscar: "Buscar empresa o NIF…",
     },
     organismos: {
       nav: "organismos",
       titulo: "Organismos",
-      descripcion: "Todos los organismos públicos españoles que han adjudicado contratos de servicios de agencia desde 2021. Los filtros (ámbito, tipo de adjudicación, año, categoría, provincia e importe) recalculan las cifras de cada organismo. Pulsa un organismo para ver qué empresas ganan en él.",
       buscar: "Buscar organismo…",
     },
     competencia: {
       nav: "competencia",
       titulo: "Nuestra competencia",
-      descripcion: "Las empresas que sigues, con lo que han ganado en los últimos 12 meses frente a los 12 anteriores (hasta la fecha del histórico). Se guardan en este navegador, como las guardadas del radar: no se comparten. Los filtros de ámbito, tipo, categoría, provincia e importe se aplican; el de año no. Para añadir una, pulsa «Seguir» en su ficha.",
     },
     empresa: { nav: "empresas" },
     organismo: { nav: "organismos" },
@@ -510,38 +506,79 @@
     barras(document.getElementById("grafico-organismos"),
       ordenar(agrupar(filas, function (f) { return f.organismo; }), "numero").slice(0, TOP_ORGANISMOS), "numero",
       function (x) { return D.organismo[x.clave]; }, function (x) { return "#/organismo/" + x.clave; });
-    barras(document.getElementById("grafico-procedimientos"), porProcedimiento(filas), "numero", nombreProcedimiento);
-    barras(document.getElementById("grafico-ofertas"),
-      TRAMOS_OFERTAS.map(function (t, i) {
-        var x = { clave: i, numero: 0, importe: 0 };
-        filas.forEach(function (f) { if (!f.menor && f.ofertas >= t[0] && f.ofertas <= t[1]) { x.numero++; x.importe += f.importe; } });
-        return x;
-      }).filter(function (x) { return x.numero; }), "numero",
-      function (x) { return TRAMOS_OFERTAS[x.clave][2]; });
-    var rebajasPorTramo = rebajaPorOfertas(filas);
-    barras(document.getElementById("grafico-rebaja"), rebajasPorTramo, "rebaja",
-      function (x) { return TRAMOS_OFERTAS[x.clave][2]; });
+    repartoProcedimientos(document.getElementById("grafico-procedimientos"), porProcedimiento(filas));
+    var porOfertas = TRAMOS_OFERTAS.map(function (t, i) {
+      var x = { clave: i, numero: 0 };
+      filas.forEach(function (f) { if (!f.menor && f.ofertas >= t[0] && f.ofertas <= t[1]) x.numero++; });
+      return x;
+    });
+    columnasReparto(document.getElementById("grafico-ofertas"), porOfertas, function (x) { return TRAMOS_OFERTAS[x.clave][2]; });
+    // Rebaja de la ganadora: cuántos contratos se ganaron con cada tramo de
+    // rebaja, con la mitad central (del primer al tercer cuartil) resaltada.
+    var q1 = cuantil(r.rebajas, 0.25), q3 = cuantil(r.rebajas, 0.75);
+    var porRebaja = TRAMOS_REBAJA.map(function (t, i) {
+      return { clave: i, numero: r.rebajas.filter(function (x) { return x >= t[0] && x < t[1]; }).length,
+        central: q1 != null && t[0] <= q3 && t[1] > q1 };
+    });
+    columnasReparto(document.getElementById("grafico-rebaja"), r.rebajas.length >= MIN_CONTRATOS_TRAMO ? porRebaja : [],
+      function (x) { return TRAMOS_REBAJA[x.clave][2]; });
 
-    pintarConclusiones(filas, r, rebajasPorTramo);
+    pintarConclusiones(filas, r);
   }
 
   var TRAMOS_OFERTAS = [[1, 1, "1 oferta"], [2, 2, "2 ofertas"], [3, 5, "3 a 5"], [6, 10, "6 a 10"], [11, 1e9, "Más de 10"]];
-  // Con menos contratos, la mediana de un tramo baila demasiado.
+  // Con menos contratos, una mediana o un reparto bailan demasiado.
   var MIN_CONTRATOS_TRAMO = 20;
 
-  // Rebaja mediana de la ganadora según cuántas ofertas recibió el
-  // contrato (solo cuando hay rebaja).
-  function rebajaPorOfertas(filas) {
-    return TRAMOS_OFERTAS.map(function (t, i) {
-      var lista = [];
-      filas.forEach(function (f) { if (f.rebaja > 0 && f.ofertas >= t[0] && f.ofertas <= t[1]) lista.push(f.rebaja); });
-      return { clave: i, numero: lista.length, importe: 0, rebaja: mediana(lista) };
-    }).filter(function (x) { return x.numero >= MIN_CONTRATOS_TRAMO; });
+  function cuantil(lista, p) {
+    if (!lista.length) return null;
+    var s = lista.slice().sort(function (a, b) { return a - b; });
+    var i = (s.length - 1) * p, base = Math.floor(i);
+    return s[base] + (s[Math.min(base + 1, s.length - 1)] - s[base]) * (i - base);
+  }
+
+  // Columnas con el porcentaje de cada tramo sobre el total. Las marcadas
+  // `central` se pintan en el color fuerte y el resto, en uno suave.
+  function columnasReparto(el, lista, etiqueta) {
+    var total = lista.reduce(function (s, x) { return s + x.numero; }, 0);
+    if (!total) {
+      el.innerHTML = '<p class="barras__vacio">Sin datos suficientes con estos filtros.</p>';
+      return;
+    }
+    var max = lista.reduce(function (m, x) { return Math.max(m, x.numero); }, 0);
+    var conCentral = lista.some(function (x) { return x.central; });
+    el.innerHTML = lista.map(function (x) {
+      return '<div class="columnas__col" title="' + cuantos(x.numero, "contrato", "contratos") + '"><span class="columnas__valor">' + porcentaje(x.numero / total) + "</span>" +
+        '<span class="columnas__pista"><span class="columnas__relleno' + (conCentral && !x.central ? " columnas__relleno--suave" : "") +
+        '" style="height:' + (100 * x.numero / max).toFixed(1) + '%"></span></span>' +
+        '<span class="columnas__etiqueta">' + escaparHtml(etiqueta(x)) + "</span></div>";
+    }).join("");
+  }
+
+  // Reparto por procedimiento en una sola barra: los cuatro más frecuentes
+  // y el resto juntos.
+  var MAX_TRAMOS_REPARTO = 4;
+  function repartoProcedimientos(el, lista) {
+    var total = lista.reduce(function (s, x) { return s + x.numero; }, 0);
+    if (!total) {
+      el.innerHTML = '<p class="barras__vacio">Sin datos con estos filtros.</p>';
+      return;
+    }
+    var tramos = lista.slice(0, MAX_TRAMOS_REPARTO).map(function (x) { return { nombre: nombreProcedimiento(x), numero: x.numero }; });
+    var resto = lista.slice(MAX_TRAMOS_REPARTO).reduce(function (s, x) { return s + x.numero; }, 0);
+    if (resto) tramos.push({ nombre: "Otros", numero: resto });
+    el.innerHTML = '<div class="reparto reparto--alto" aria-hidden="true">' + tramos.map(function (x, i) {
+      return '<span class="reparto__tramo reparto__tramo--s' + i + '" style="width:' + (100 * x.numero / total).toFixed(2) + '%"></span>';
+    }).join("") + "</div>" +
+      '<ul class="leyenda">' + tramos.map(function (x, i) {
+        return '<li><span class="leyenda__muestra reparto__tramo--s' + i + '"></span><span class="leyenda__nombre">' + escaparHtml(x.nombre) + "</span>" +
+          '<span class="leyenda__valor">' + porcentaje(x.numero / total) + ' <span class="barras__sec">· ' + miles(x.numero) + "</span></span></li>";
+      }).join("") + "</ul>";
   }
 
   // Lo que dicen los datos, en frases: la conclusión antes que el gráfico.
   // Se recalcula con los filtros (una categoría, una provincia, un año...).
-  function pintarConclusiones(filas, r, rebajasPorTramo) {
+  function pintarConclusiones(filas, r) {
     var frases = [];
     var empresasPorImporte = ordenar(agrupar(filas, function (f) { return f.empresa; }), "importe");
 
@@ -559,19 +596,13 @@
         " por licitación, y en el " + porcentaje(unaSola) + " solo se presentó una.");
     }
 
+    // Quien licita no sabe cuántas empresas se van a presentar: el precio
+    // se cuenta como la franja en la que suelen ganar, no según las ofertas.
     if (r.rebajas.length >= MIN_CONTRATOS_TRAMO) {
-      var frase = "<strong>Precio.</strong> Cuando la ganadora rebaja el presupuesto, lo hace una mediana del " + porcentaje(r.rebajaMediana);
-      // Del tramo de una sola oferta al de más competencia con datos.
-      var conUna = rebajasPorTramo.filter(function (x) { return TRAMOS_OFERTAS[x.clave][0] === 1; });
-      var conMas = rebajasPorTramo[rebajasPorTramo.length - 1];
-      if (conUna.length && conMas && conMas !== conUna[0]) {
-        var tramo = TRAMOS_OFERTAS[conMas.clave];
-        var cuantasOfertas = tramo[1] > 100 ? "más de " + (tramo[0] - 1) : (tramo[0] === tramo[1] ? String(tramo[0]) : tramo[2]);
-        frase += ": un " + porcentaje(conUna[0].rebaja) + " si compite sola y un " + porcentaje(conMas.rebaja) + " con " + cuantasOfertas + " ofertas";
-      }
-      frase += ". En el " + porcentaje(r.sinRebaja / r.conRebaja) +
-        " de los contratos se adjudica por el presupuesto (negociados y precios unitarios, donde la rebaja no se ve).";
-      frases.push(frase);
+      frases.push("<strong>Precio.</strong> La mitad de las ganadoras rebajó el presupuesto entre un " + porcentaje(cuantil(r.rebajas, 0.25)) +
+        " y un " + porcentaje(cuantil(r.rebajas, 0.75)) + " (mediana, " + porcentaje(r.rebajaMediana) + "); un cuarto ganó con menos rebaja y otro cuarto, con más. " +
+        "En el " + porcentaje(r.sinRebaja / r.conRebaja) +
+        " de los contratos se adjudica por el presupuesto (negociados y precios unitarios, donde la rebaja no se ve).");
     }
 
     if (r.conPyme >= MIN_CONTRATOS_TRAMO) {
@@ -658,6 +689,7 @@
       '<button type="button" class="boton boton--contorno" data-paso="-1"' + (estado.pagina === 0 ? " disabled" : "") + ">Anterior</button>" +
       '<button type="button" class="boton boton--contorno" data-paso="1"' + (estado.pagina >= paginas - 1 ? " disabled" : "") + ">Siguiente</button>";
 
+    var seguidas = deEmpresas ? leerSeguidas() : {};
     var cabecera = '<th class="col-posicion" scope="col">#</th><th scope="col">' + (deEmpresas ? "Empresa" : "Organismo") + "</th>" +
       COLUMNAS_DIRECTORIO.map(function (c) {
         var etiqueta = c[0] === "otros" ? (deEmpresas ? "Organismos" : "Empresas") : c[1];
@@ -665,7 +697,8 @@
         if (c[0] === "numero") etiqueta = '<span class="solo-ancho">' + etiqueta + '</span><abbr class="solo-estrecho" title="Adjudicaciones">Nº</abbr>';
         return '<th scope="col" class="num' + (c[2] ? " col-secundaria" : "") + '"' + (c[0] === col ? ' aria-sort="descending"' : "") + ">" +
           '<button type="button" class="tabla__orden" data-col="' + c[0] + '">' + etiqueta + Nav.icono("chevron") + "</button></th>";
-      }).join("");
+      }).join("") +
+      (deEmpresas ? '<th scope="col" class="col-seguir"><span class="visualmente-oculto">Seguir</span></th>' : "");
 
     var cuerpo = visibles.map(function (g, i) {
       var nombre, sub = "";
@@ -681,13 +714,33 @@
         '<td class="num">' + euros(g.importe) + "</td>" +
         '<td class="num col-secundaria">' + euros(g.medio) + "</td>" +
         '<td class="num col-secundaria">' + miles(g.otros) + "</td>" +
-        '<td class="num col-secundaria">' + fechaLarga(g.ultima) + "</td></tr>";
+        '<td class="num col-secundaria">' + fechaLarga(g.ultima) + "</td>" +
+        (deEmpresas ? '<td class="col-seguir">' + botonSeguir(D.empresa[g.clave], seguidas) + "</td>" : "") + "</tr>";
     }).join("");
 
     document.getElementById("directorio-tabla").innerHTML = "<thead><tr>" + cabecera + "</tr></thead><tbody>" + cuerpo + "</tbody>";
   }
 
+  // Marcador para seguir una empresa desde la lista (también en su ficha).
+  // Sin NIF publicable (personas físicas) no se puede seguir.
+  function botonSeguir(empresa, seguidas) {
+    var nif = nifPublicable(empresa[0]);
+    if (!nif) return "";
+    var sigue = !!seguidas[nif];
+    return '<button type="button" class="boton-icono boton-seguir" data-seguir-lista="' + escaparHtml(nif) + '" data-nombre="' + escaparHtml(empresa[1]) + '"' +
+      ' aria-pressed="' + sigue + '" title="' + (sigue ? "Dejar de seguir" : "Seguir: aparecerá en Nuestra competencia") + '" aria-label="' +
+      (sigue ? "Dejar de seguir a " : "Seguir a ") + escaparHtml(empresa[1]) + '">' + Nav.icono("marcador") + "</button>";
+  }
+
   document.getElementById("directorio-tabla").addEventListener("click", function (ev) {
+    var s = ev.target.closest("[data-seguir-lista]");
+    if (s) {
+      var sigue = alternarSeguida(s.getAttribute("data-seguir-lista"), s.getAttribute("data-nombre"));
+      s.setAttribute("aria-pressed", sigue ? "true" : "false");
+      s.title = sigue ? "Dejar de seguir" : "Seguir: aparecerá en Nuestra competencia";
+      s.setAttribute("aria-label", (sigue ? "Dejar de seguir a " : "Seguir a ") + s.getAttribute("data-nombre"));
+      return;
+    }
     var b = ev.target.closest(".tabla__orden");
     if (!b) return;
     estado.ordenDirectorio = b.getAttribute("data-col");
@@ -1074,16 +1127,15 @@
         '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(e[1]) + "</h1>" +
         (nifSeguible ? '<p><button type="button" class="boton boton--contorno" data-seguir="' + escaparHtml(nifSeguible) + '" aria-pressed="' + (seguida ? "true" : "false") + '">' +
           (seguida ? "Siguiendo · dejar de seguir" : "Seguir") + "</button></p>" : "") +
-        '<p class="pagina__descripcion">' + (nifPublicable(e[0]) ? "NIF " + escaparHtml(e[0]) + " · " : "") + "Contratos de servicios de agencia ganados a organismos públicos españoles desde 2021. Las cifras cambian con los filtros seleccionados (ámbito, tipo, año, categoría, provincia e importe).</p></div></header>";
+        (nifPublicable(e[0]) ? '<p class="pagina__descripcion">NIF ' + escaparHtml(e[0]) + "</p>" : "") + "</div></header>";
       document.title = e[1] + " — Radar de licitaciones";
     } else if (estado.vista === "organismo") {
       var nombre = D.organismo[estado.id];
       html = '<nav class="migas" aria-label="Ruta"><a href="#/organismos">Organismos</a><span aria-hidden="true">›</span><span>Ficha de organismo</span></nav>' +
-        '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(nombre) + "</h1>" +
-        '<p class="pagina__descripcion">Contratos de servicios de agencia que este organismo ha adjudicado a empresas españolas desde 2021. Las cifras cambian con los filtros seleccionados (tipo, año, categoría, provincia e importe).</p></div></header>';
+        '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + escaparHtml(nombre) + "</h1></div></header>";
       document.title = nombre + " — Radar de licitaciones";
     } else {
-      html = '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + v.titulo + '</h1><p class="pagina__descripcion">' + v.descripcion + "</p></div></header>";
+      html = '<header class="pagina__cabecera"><div class="pagina__titulo"><h1>' + v.titulo + "</h1></div></header>";
       document.title = v.titulo + " — Radar de licitaciones";
     }
     elCabecera.innerHTML = html;

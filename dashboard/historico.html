@@ -88,19 +88,19 @@
 
           <section class="panel" aria-labelledby="t-procedimientos">
             <h2 id="t-procedimientos">Por procedimiento</h2>
-            <ol class="barras" id="grafico-procedimientos"></ol>
+            <div id="grafico-procedimientos"></div>
           </section>
 
           <section class="panel" aria-labelledby="t-competencia">
             <h2 id="t-competencia">Competencia: ofertas recibidas por licitación</h2>
-            <ol class="barras" id="grafico-ofertas"></ol>
-            <p class="panel__nota">Solo licitaciones que publican el número de ofertas. Sin contratos menores, que no tienen concurso.</p>
+            <div class="columnas columnas--bajas" id="grafico-ofertas"></div>
+            <p class="panel__nota">Qué parte de las licitaciones recibió cada número de ofertas. Solo las que lo publican; sin contratos menores, que no tienen concurso.</p>
           </section>
 
           <section class="panel" aria-labelledby="t-rebaja">
-            <h2 id="t-rebaja">Rebaja de la ganadora según las ofertas</h2>
-            <ol class="barras" id="grafico-rebaja"></ol>
-            <p class="panel__nota">Mediana de la rebaja sobre el presupuesto (sin IVA), en contratos de un solo lote que no son menores ni acuerdos marco y que se adjudicaron por debajo del presupuesto. Solo tramos con al menos 20 contratos.</p>
+            <h2 id="t-rebaja">Rebaja con la que se gana</h2>
+            <div class="columnas columnas--bajas" id="grafico-rebaja"></div>
+            <p class="panel__nota">Qué parte de las adjudicaciones se ganó con cada rebaja sobre el presupuesto (sin IVA). En color fuerte, la franja donde está la mitad central. Contratos de un solo lote que no son menores ni acuerdos marco y que se adjudicaron por debajo del presupuesto.</p>
           </section>
         </div>
       </section>
@@ -122,7 +122,7 @@
         <div class="tabla-envoltorio">
           <table class="tabla" id="competencia-tabla"></table>
         </div>
-        <p class="sin-resultados" id="competencia-vacio" hidden>Todavía no sigues a ninguna empresa. Abre la ficha de una (desde <a class="enlace" href="#/empresas">Empresas</a>) y pulsa «Seguir».</p>
+        <p class="sin-resultados" id="competencia-vacio" hidden>Todavía no sigues a ninguna empresa. En <a class="enlace" href="#/empresas">Empresas</a>, pulsa el marcador al final de su fila (o «Seguir» en su ficha).</p>
       </section>
 
       <!-- Ficha de una empresa o de un organismo -->
