@@ -15,6 +15,7 @@
     "licitaciones/plazo-largo": { tipo: "plazo_largo", nav: "licitaciones", titulo: "Licitaciones" },
     "calls": { tipo: "convocatoria_ue", nav: "calls", titulo: "Calls for proposals UE" },
     "menores": { tipo: "contrato_menor_venciendo", nav: "menores", titulo: "Contratos menores por vencer" },
+    "vencer": { tipo: "licitacion_venciendo", nav: "vencer", titulo: "Licitaciones por vencer" },
     "adjudicaciones": { tipo: "adjudicacion", nav: "adjudicaciones", titulo: "Adjudicaciones recientes" },
     "guardadas": { tipo: "guardadas", nav: "guardadas", titulo: "Guardadas" },
   };
@@ -68,6 +69,7 @@
     plazo_largo: ["Euskadi", "Estado", "UE"],
     adjudicacion: ["Euskadi", "Estado", "UE"],
     contrato_menor_venciendo: ["Euskadi", "Estado"],
+    licitacion_venciendo: ["Euskadi", "Estado"],
     convocatoria_ue: ["UE-subvenciones"],
     guardadas: ["Euskadi", "Estado", "UE"],
   };
@@ -105,6 +107,7 @@
     guardadas: { campo: "presupuesto_valor", nombre: "Presupuesto", tramos: TRAMOS_GENERALES },
     adjudicacion: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
     contrato_menor_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: [3000, 5000, 10000, 15000] },
+    licitacion_venciendo: { campo: "importe_adjudicado_valor", nombre: "Importe adjudicado", tramos: TRAMOS_GENERALES },
   };
 
   // Opciones de "Ordenar por" de cada vista: [clave, etiqueta]. La primera
@@ -134,6 +137,10 @@
       ["importe-desc", "Importe adjudicado (mayor primero)"],
       ["fecha-desc", "Adjudicación (más reciente)"],
     ],
+    licitacion_venciendo: [
+      ["vencimiento", "Vencimiento (más próximo)"],
+      ["importe-desc", "Importe adjudicado (mayor primero)"],
+    ],
     convocatoria_ue: [
       ["plazo", "Fecha límite de solicitud (más próxima)"],
       ["encaje-desc", "Encaje con la agencia (mejor primero)"],
@@ -155,6 +162,7 @@
   var BUSQUEDA_POR_TIPO = {
     adjudicacion: "Buscar por título, organismo o empresa…",
     contrato_menor_venciendo: "Buscar por título, organismo o empresa…",
+    licitacion_venciendo: "Buscar por título, organismo o empresa…",
   };
   var BUSQUEDA_GENERAL = "Buscar por título u organismo…";
 
@@ -175,6 +183,7 @@
     plazo_largo: "de plazo largo",
     adjudicacion: "adjudicaciones",
     contrato_menor_venciendo: "contratos menores",
+    licitacion_venciendo: "contratos",
     convocatoria_ue: "calls for proposals",
     guardadas: "guardadas",
   };
@@ -1034,7 +1043,8 @@
   function plantillaTarjeta(t, abierta) {
     var tipo = t.tipo_registro;
     var esAdjudicacion = tipo === "adjudicacion";
-    var esMenor = tipo === "contrato_menor_venciendo";
+    // Contratos por vencer, menores o licitados: misma tarjeta.
+    var esMenor = tipo === "contrato_menor_venciendo" || tipo === "licitacion_venciendo";
     var esCall = tipo === "convocatoria_ue";
     var conEmpresa = esAdjudicacion || esMenor;
 
@@ -1104,6 +1114,7 @@
       fechas = [par("Fecha de adjudicación", fechaLarga(t.fecha_adjudicacion), true), par("Vigente hasta", finEstimado, true)];
     } else if (esMenor) {
       fechas = [par("Adjudicado el", fechaLarga(t.fecha_adjudicacion), true), par("Vence el (estimado)", finEstimado, true)];
+      if (t.duracion_meses) fechas.push(par("Duración (sin prórrogas)", duracionTexto(t.duracion_meses), true));
     } else if (esCall) {
       fechas = [par("Apertura", fechaLarga(t.fecha_publicacion), true), par("Fecha límite de solicitud", fechaLarga(t.fecha_limite), true)];
     } else {
@@ -1726,7 +1737,7 @@
       rebajas = filtrados.map(function (t) { return t.rebaja; }).filter(function (x) { return x; });
       cifras.push(["Ofertas por concurso", ofertas.length ? numeroEs(Math.round(10 * media(ofertas)) / 10) : "—", "Media de las " + cuantos(ofertas.length, "adjudicación", "adjudicaciones") + " que publican cuántas ofertas recibieron"]);
       cifras.push(["Rebaja de la ganadora", rebajas.length ? numeroEs(Math.round(10 * media(rebajas)) / 10) + " %" : "—", "Media de las " + cuantos(rebajas.length, "adjudicación", "adjudicaciones") + " con rebaja calculable"]);
-    } else if (tipo !== "contrato_menor_venciendo") {
+    } else if (tipo !== "contrato_menor_venciendo" && tipo !== "licitacion_venciendo") {
       ofertas = filtrados.map(function (t) { return t.prevision && t.prevision.ofertas && t.prevision.ofertas.valor; }).filter(function (x) { return x; });
       rebajas = filtrados.map(function (t) { return t.prevision && t.prevision.rebaja && t.prevision.rebaja.valor; }).filter(function (x) { return x; });
       if (ofertas.length) {
@@ -1861,7 +1872,9 @@
     var p = leida.params;
     estado.tipoRegistro = vista.tipo;
     estado.texto = sinTildes((p.q || "").trim());
-    estado.fuente = p.fuente || "";
+    // Los contratos por vencer se abren en Euskadi (con «Todas» se ve el
+    // Estado): la lista entera es demasiado larga para trabajarla.
+    estado.fuente = p.fuente || (vista.tipo === "contrato_menor_venciendo" || vista.tipo === "licitacion_venciendo" ? "Euskadi" : "");
     estado.categoria = CATEGORIAS_CONOCIDAS.indexOf(p.cat) !== -1 ? p.cat : "";
     estado.pais = "";
     // La provincia elegida se conserva al cambiar de vista: quien mira
@@ -1932,6 +1945,7 @@
       licitaciones: deTipo("licitacion").length,
       calls: deTipo("convocatoria_ue").length,
       menores: deTipo("contrato_menor_venciendo").length,
+      vencer: deTipo("licitacion_venciendo").length,
       adjudicaciones: deTipo("adjudicacion").length,
     };
     actualizarConteoGuardadas();

@@ -28,7 +28,13 @@ def fecha_corte() -> date:
 # delante desde hoy se considera que un contrato menor "está a punto de
 # terminar" y merece una visita comercial. Ver README, sección "Contratos
 # menores".
-DIAS_AVISO_CONTRATO_MENOR = 90
+DIAS_AVISO_CONTRATO_MENOR = 60  # 90 hasta el 2026-10-23: 584 contratos, lista interminable
+
+# Contratos adjudicados por licitación (no menores) que terminan en los
+# próximos N días: el organismo está preparando el pliego nuevo. Un concurso
+# tarda meses en prepararse, por eso más que en los menores; a un año vista
+# todavía no hay nada que hacer (decisión de Mikel, 2026-10-23).
+DIAS_AVISO_LICITACION = 182
 
 # Cuánto hay que mirar hacia ATRÁS al pedir contratos menores a Euskadi para
 # no perderse ninguno que venza pronto. No es lo mismo que "adjudicado

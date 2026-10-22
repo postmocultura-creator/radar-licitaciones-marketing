@@ -33,6 +33,7 @@
     ["convocatoria_ue", "Calls for proposals UE"],
     ["adjudicacion", "Adjudicaciones"],
     ["contrato_menor_venciendo", "Contratos menores"],
+    ["licitacion_venciendo", "Licitaciones por vencer"],
   ];
   // Qué mira cada fuente antes del texto (columna "Otros filtros").
   var OTROS = {
@@ -69,7 +70,7 @@
       licitacion: ["fuera de plazo", "fuera de plazo"],
       convocatoria_ue: ["ya cerrada", "ya cerradas"],
       adjudicacion: ["de hace más de 30 días", "de hace más de 30 días"],
-      contrato_menor_venciendo: ["que no vence en los próximos 90 días", "que no vencen en los próximos 90 días"],
+      contrato_menor_venciendo: ["que no vence en los próximos 60 días", "que no vencen en los próximos 60 días"],
     }[tipo];
     var despues = [
       extranjeras ? cuantos(extranjeras, "ganada por una empresa extranjera", "ganadas por empresas extranjeras") : "",

@@ -602,3 +602,38 @@ def test_comunicacion_politica_y_canales_tecnicos_no_cuentan():
              "Projects will organise dissemination workshops for regional stakeholders and the wider public.")
     frases = normalizar._frases_comunicacion(texto)
     assert frases == ["Projects will organise dissemination workshops for regional stakeholders and the wider public."]
+
+
+def test_licitaciones_por_vencer(monkeypatch):
+    """Contratos licitados que terminan en la ventana y no se han vuelto a
+    licitar; ni menores, ni sin duración, ni fuera de plazo."""
+    cats = ["Redes sociales / community management", "Diseño y desarrollo web"]
+    def exp(id_, titulo, menor=0, duracion=12.0, euskadi=1):
+        # [id, titulo, organismo, euskadi, tipo, proc, menor, mascara, enlace, ted, actualizado, presupuesto, lugar, duración]
+        return [id_, titulo, 0, euskadi, 0, 0, menor, 1, "https://ejemplo.invalid/" + id_, 0, "2025-11-01", 40000.0, 0, duracion]
+    historico = {
+        "categorias": cats, "prefijo_enlace": "",
+        "dic": {"organismo": ["Ayuntamiento de Ejemplo"], "tipo": ["Servicios"], "procedimiento": ["Abierto"],
+                "lugar": [["Bizkaia", "País Vasco"]], "empresa": [["B10000000", "Agencia Uno SL"]]},
+        "exp": [
+            exp("a", "Gestión de redes sociales municipales"),                 # vence el 2026-12-01: sale
+            exp("b", "Mantenimiento de la web municipal turística"),          # se ha vuelto a licitar: no
+            exp("c", "Campaña de verano en redes sociales", duracion=36.0),   # vence en 2028: no
+            exp("d", "Dinamización de redes sociales juveniles", menor=1),    # menor: no
+            exp("e", "Diseño de la imagen del festival", duracion=None),     # sin duración: no
+            exp("f", "Gestión de redes sociales municipales"),                 # el mismo contrato dos veces
+        ],
+        "lotes": [[i, 0, "2025-12-01", 35000, 3, 1] for i in range(6)],
+    }
+    monkeypatch.setattr(normalizar, "_historico_completo", lambda: historico)
+    abierta = {"tipo_registro": "licitacion", "organismo": "Ayuntamiento de Ejemplo",
+               "titulo": "Nuevo mantenimiento de la web municipal turística 2027"}
+    vencen = normalizar._licitaciones_por_vencer([abierta], hoy=date(2026, 10, 23))
+    assert [v["titulo"] for v in vencen] == ["Gestión de redes sociales municipales"]
+    v = vencen[0]
+    assert v["tipo_registro"] == "licitacion_venciendo" and v["fuente"] == "Euskadi"
+    assert v["fecha_fin_estimada"] == "2026-12-01" and v["empresa_adjudicataria"] == "Agencia Uno SL"
+    assert v["categorias"] == ["Redes sociales / community management"] and v["provincia"] == "Bizkaia"
+    # Sin histórico, nada.
+    monkeypatch.setattr(normalizar, "_historico_completo", lambda: None)
+    assert normalizar._licitaciones_por_vencer([abierta]) == []

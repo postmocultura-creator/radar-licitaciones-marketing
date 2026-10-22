@@ -9,8 +9,10 @@ estático (https://licitacionesmarketing.vercel.app):
 - **Calls for proposals de la UE**: convocatorias cuyo proyecto financiado
   previsiblemente necesitará comunicación o difusión.
 - **Contratos menores por vencer**: quién tiene hoy un contrato menor que
-  termina en los próximos 90 días, para visitar al organismo antes de que
+  termina en los próximos 60 días, para visitar al organismo antes de que
   lo renueve.
+- **Licitaciones por vencer**: contratos adjudicados por licitación que
+  terminan en los próximos 6 meses y todavía no se han vuelto a licitar.
 - **Competencia**: adjudicaciones recientes y un histórico desde 2021 de qué
   empresas ganan qué contratos de agencia, en qué organismos y por cuánto.
 
@@ -141,9 +143,19 @@ nuevos se comprueban antes en
   plataformas autonómicas de PLACSP no traen ninguno. Si una adjudicación
   llega por TED y por PLACSP o Euskadi, se queda con los documentos sueltos
   y las empresas presentadas de la otra fuente.
-- **Contratos menores por vencer**: fecha de fin entre hoy y 90 días
-  (`DIAS_AVISO_CONTRATO_MENOR`). Euskadi la publica; en PLACSP se calcula con
-  la fecha de adjudicación y la duración.
+- **Contratos menores por vencer**: fecha de fin entre hoy y 60 días
+  (`DIAS_AVISO_CONTRATO_MENOR`; 90 hasta el 2026-10-23). Euskadi la publica;
+  en PLACSP se calcula con la fecha de adjudicación y la duración.
+- **Licitaciones por vencer** (`normalizar._licitaciones_por_vencer`):
+  contratos no menores del histórico cuya fecha de fin estimada (fecha de
+  adjudicación + duración sin prórrogas, que el histórico guarda desde
+  octubre de 2026 de PLACSP y TED) cae en los próximos
+  `DIAS_AVISO_LICITACION` días (182). Fuera los que ya se han vuelto a
+  licitar: misma organización con una licitación abierta de título parecido
+  (el criterio de los contratos anteriores parecidos). Sin duración publicada
+  no salen. Las prórrogas no se publican de forma fiable: la fecha es una
+  estimación. Las dos listas de contratos por vencer se abren filtradas a
+  Euskadi.
 - **Calls for proposals UE**: abiertas o próximas, traducidas al español
   (MyMemory, o `data/traducciones_manuales.json`). Una call no se licita: la
   agencia entraría como socio de comunicación del consorcio, como solicitante
@@ -379,6 +391,7 @@ para que cada una tenga su dirección y funcione el botón "atrás":
 | Oportunidades | Licitaciones (la portada: sin ruta, o con una que no existe, se abre aquí): pestañas "Publicadas recientemente", "Licitaciones abiertas" y "Sistemas dinámicos y plazo largo" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas`, `#/licitaciones/plazo-largo` |
 | Oportunidades | Calls for proposals UE | `index.html#/calls` |
 | Prospección | Contratos menores por vencer | `index.html#/menores` |
+| Prospección | Licitaciones por vencer (6 meses) | `index.html#/vencer` |
 | Prospección | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
 | Competencia | Análisis de mercado (histórico desde 2021) | `historico.html#/mercado` |
 | Competencia | Empresas y ficha de empresa (el marcador de cada fila la añade a «Nuestra competencia») | `historico.html#/empresas`, `#/empresa/<id>` |

@@ -47,6 +47,7 @@
       titulo: "Prospección",
       items: [
         ["menores", "Contratos menores por vencer", "index.html", "#/menores", "reloj"],
+        ["vencer", "Licitaciones por vencer", "index.html", "#/vencer", "calendario"],
         ["adjudicaciones", "Adjudicaciones recientes", "index.html", "#/adjudicaciones", "premio"],
       ],
     },

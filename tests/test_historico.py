@@ -116,3 +116,22 @@ def test_reclasificar_publicados_aplica_la_taxonomia_actual():
     # Título recortado a MAX_TITULO o de TED: no se puede reclasificar con
     # seguridad (falta parte del título o el tipo de servicio del CPV).
     assert "c" in quedan and "d" in quedan
+
+
+def test_la_duracion_se_guarda_y_sobrevive_a_compactar():
+    registro = _registro("a", "Agencia Uno SL", "B10000000")
+    registro["duracion_meses"] = 24.0
+    vueltos = h._expandir(h._compactar([registro, _registro("b", "Agencia Uno SL", "B10000000")]))
+    assert [r["duracion_meses"] for r in vueltos] == [24.0, None]
+
+
+def test_duracion_de_placsp_en_meses():
+    import xml.etree.ElementTree as ET
+    ns = 'xmlns:cac="{}" xmlns:cbc="{}"'.format(h.NS["cac"], h.NS["cbc"])
+    proyecto = ET.fromstring('<cac:ProcurementProject {}><cac:PlannedPeriod>'
+                             '<cbc:DurationMeasure unitCode="ANN">2</cbc:DurationMeasure>'
+                             '</cac:PlannedPeriod></cac:ProcurementProject>'.format(ns))
+    assert h._duracion_placsp(proyecto) == 24.0
+    sin = ET.fromstring('<cac:ProcurementProject {}/>'.format(ns))
+    assert h._duracion_placsp(sin) is None
+    assert h._meses("6", "MONTH") == 6.0 and h._meses("x", "MON") is None and h._meses("3", "SIGLO") is None

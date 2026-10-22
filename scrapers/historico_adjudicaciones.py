@@ -104,6 +104,30 @@ def _importe(texto: str | None) -> float | None:
     return valor if valor else None
 
 
+# Meses por unidad de duración: PLACSP (ANN, MON, DAY) y TED (YEAR, MONTH...).
+_MESES_POR_UNIDAD = {"ANN": 12, "MON": 1, "DAY": 1 / 30, "YEAR": 12, "MONTH": 1, "WEEK": 7 / 30}
+
+
+def _meses(valor, unidad: str | None) -> float | None:
+    try:
+        meses = float(valor) * _MESES_POR_UNIDAD[unidad]
+    except (KeyError, TypeError, ValueError):
+        return None
+    return round(meses, 1) if meses > 0 else None
+
+
+def _duracion_placsp(proyecto) -> float | None:
+    """Duración del contrato sin prórrogas (PlannedPeriod), la del proyecto o
+    la del lote más largo. Sirve para estimar cuándo termina y se vuelve a
+    licitar (normalizar._licitaciones_por_vencer)."""
+    if proyecto is None:
+        return None
+    nodos = proyecto.findall("cac:PlannedPeriod/cbc:DurationMeasure", NS) or proyecto.findall(
+        "cac:ProcurementProjectLot/cac:ProcurementProject/cac:PlannedPeriod/cbc:DurationMeasure", NS)
+    duraciones = [_meses((n.text or "").strip(), n.attrib.get("unitCode")) for n in nodos]
+    return max((d for d in duraciones if d), default=None)
+
+
 def _id(*partes: str | None) -> str:
     return hashlib.sha1("|".join(p or "" for p in partes).encode("utf-8")).hexdigest()[:16]
 
@@ -194,6 +218,7 @@ def _parsear_entry(entry, es_menor: bool) -> dict | None:
         "cpv": [c.text.strip() for c in (proyecto.findall(
             "cac:RequiredCommodityClassification/cbc:ItemClassificationCode", NS) if proyecto is not None else []) if c.text],
         "categorias": clasif["categorias"],
+        "duracion_meses": None if es_menor else _duracion_placsp(proyecto),
         "enlace": enlace,
         "fuente": "PLACSP",
         "actualizado": (_texto(entry, "atom:updated") or "")[:19],
@@ -392,7 +417,8 @@ def pieza_ted(anio: str) -> list[dict]:
              f"AND publication-date>={anio}0101 AND publication-date<={anio}1231")
     campos = ["publication-number", "notice-title", "buyer-name", "buyer-country-sub",
               "publication-date", "winner-name", "winner-identifier", "winner-country", "result-value-lot",
-              "result-value-cur-lot", "classification-cpv", "received-submissions-type-val"]
+              "result-value-cur-lot", "classification-cpv", "received-submissions-type-val",
+              "duration-period-value-lot", "duration-period-unit-lot"]
     salida = []
     for n in ted._consultar(query, campos, limite_paginas=200, scope="ALL"):
         titulo = _titulo_ted(n)
@@ -425,6 +451,9 @@ def pieza_ted(anio: str) -> list[dict]:
             "presupuesto": None,
             "cpv": n.get("classification-cpv") or [],
             "categorias": clasif["categorias"],
+            # La del lote más largo, como el radar diario (normalizar._duracion_meses).
+            "duracion_meses": max((m for m in (_meses(v, u) for v, u in zip(
+                n.get("duration-period-value-lot") or [], n.get("duration-period-unit-lot") or [])) if m), default=None),
             "enlace": f"https://ted.europa.eu/es/notice/-/detail/{numero}",
             "fuente": "TED",
             "actualizado": fecha,
@@ -547,6 +576,9 @@ def _compactar(registros: list[dict], dic_previo: dict | None = None) -> dict:
             # [provincia, comunidad]; [None, None] = la fuente no publica el
             # lugar, o el expediente es anterior a que se recogiera.
             idx("lugar", lugar, list(lugar)),
+            # Duración en meses sin prórrogas; None = la fuente no la da, es un
+            # contrato menor o se publicó antes de que se recogiera (2026-10).
+            r.get("duracion_meses"),
         ])
         for l in r["lotes"]:
             nombre = _publicable(l["empresa"])
@@ -580,6 +612,7 @@ def _expandir(c: dict) -> list[dict]:
             "menor": bool(e[6]), "presupuesto": e[11],
             "categorias": [cat for i, cat in enumerate(c["categorias"]) if e[7] >> i & 1],
             "enlace": enlace, "fuente": "TED" if e[9] else "PLACSP", "actualizado": e[10], "lotes": [],
+            "duracion_meses": e[13] if len(e) > 13 else None,
         })
     for l in c["lotes"]:
         nif, nombre = d["empresa"][l[1]][:2]

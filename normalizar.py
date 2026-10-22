@@ -616,7 +616,7 @@ def _historiales(registros: list[dict]) -> None:
                     for i_emp, (n, importe) in principales
                 ],
             }
-        if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo"):
+        if r["tipo_registro"] not in ("adjudicacion", "contrato_menor_venciendo", "licitacion_venciendo"):
             continue
         nombre_empresa = r.get("empresa_adjudicataria") or NO_PUBLICADO
         i_emp = buscar_empresa(r.get("empresa_nif") or "", nombre_empresa)
@@ -720,6 +720,112 @@ def _palabras_titulo(titulo: str) -> frozenset[str]:
     titulo = _RE_PREFIJO_TED.sub("", titulo or "")
     return frozenset(w for w in _normalizar_clave(titulo).split()
                      if len(w) >= 4 and not w.isdigit() and w not in _PALABRAS_VACIAS_TITULO)
+
+
+def _parecido(palabras: frozenset[str], otras: frozenset[str]) -> bool:
+    """Mismo criterio de título que _antecedentes: al menos dos palabras con
+    contenido en común y el UMBRAL_PARECIDO de todas."""
+    comunes = len(palabras & otras)
+    return comunes >= 2 and comunes / len(palabras | otras) >= UMBRAL_PARECIDO
+
+
+def _licitaciones_por_vencer(registros: list[dict], hoy: date | None = None) -> list[dict]:
+    """Contratos adjudicados por licitación (no menores) que terminan en los
+    próximos config.DIAS_AVISO_LICITACION días: el organismo tendrá que
+    volver a licitarlos. Del histórico completo, con fecha de fin estimada =
+    adjudicación + duración sin prórrogas (historico_adjudicaciones guarda la
+    duración desde octubre de 2026; sin ella, el contrato no sale).
+
+    Fuera los que ya se han vuelto a licitar: si el mismo organismo tiene
+    abierta una licitación con un título parecido (_parecido), ya está en
+    Licitaciones. Mismas tarjetas que los contratos menores por vencer."""
+    c = _historico_completo()
+    if c is None:
+        return []
+    hoy = hoy or date.today()
+    limite = hoy + timedelta(days=config.DIAS_AVISO_LICITACION)
+    try:
+        d = c["dic"]
+        categorias = c.get("categorias") or []
+        prefijo = c.get("prefijo_enlace") or ""
+        lotes_por_exp: dict[int, list] = {}
+        for l in c["lotes"]:  # [exp, empresa, fecha, importe, ofertas, pyme]
+            lotes_por_exp.setdefault(l[0], []).append(l)
+        exp = c["exp"]  # ... [12] lugar, [13] duración en meses
+    except (KeyError, TypeError):
+        return []
+
+    abiertas: dict[str, list[frozenset[str]]] = {}
+    for r in registros:
+        if r["tipo_registro"] == "licitacion" and r["organismo"] != NO_PUBLICADO:
+            abiertas.setdefault(_clave_organismo(r["organismo"]), []).append(
+                _palabras_titulo(r["titulo"]) - _palabras_titulo(r["organismo"]))
+
+    salida, vistos = [], set()
+    for i, e in enumerate(exp):
+        if e[6] or len(e) < 14 or not e[13] or i not in lotes_por_exp:
+            continue
+        adjudicacion = _parsear_fecha_iso(max(l[2] or "" for l in lotes_por_exp[i]))
+        if adjudicacion is None:
+            continue
+        fin = adjudicacion + timedelta(days=round(e[13] * 30.44))
+        if not hoy <= fin <= limite:
+            continue
+        organismo = d["organismo"][e[2]]
+        clave_org = _clave_organismo(organismo)
+        palabras = _palabras_titulo(e[1]) - _palabras_titulo(organismo)
+        if any(_parecido(palabras, otras) for otras in abiertas.get(clave_org, [])):
+            continue  # ya se ha vuelto a licitar
+        titulo = " ".join(e[1].split())
+        firma = (_normalizar_clave(titulo), clave_org, fin)
+        if firma in vistos:
+            continue  # el histórico tiene algún contrato dos veces
+        vistos.add(firma)
+        lotes = lotes_por_exp[i]
+        empresas = []
+        for l in lotes:
+            datos = d["empresa"][l[1]]
+            if len(datos) > 2:  # ficha fusionada: [None, nombre, índice de la buena]
+                datos = d["empresa"][datos[2]]
+            if datos[1] not in [x[1] for x in empresas]:
+                empresas.append(datos)
+        importes = [l[3] for l in lotes if l[3]]
+        importe = sum(importes) if importes and sum(importes) >= 100 else None
+        provincia, comunidad = d["lugar"][e[12]] if e[12] is not None and e[12] < len(d["lugar"]) else (None, None)
+        enlace = e[8] if e[8].startswith("http") or not e[8] else prefijo + e[8]
+        empresa = empresas[0][1] if empresas else NO_PUBLICADO
+        if len(empresas) > 1:
+            empresa += f" y {len(empresas) - 1} más"
+        salida.append({
+            "id": _id_unico("vence", e[0]),
+            "titulo": titulo,
+            "organismo": organismo,
+            "fuente": "Euskadi" if e[3] else "Estado",
+            "pais_territorio": "España",
+            "provincia": provincia,
+            "comunidad": comunidad,
+            "fecha_publicacion": adjudicacion.isoformat(),
+            "fecha_limite": NO_PUBLICADO,
+            "presupuesto_valor": e[11],
+            "presupuesto_display": f"{e[11]:,.0f} EUR" if e[11] else NO_PUBLICADO,
+            "cpv": [],
+            "categorias": [cat for k, cat in enumerate(categorias) if e[7] >> k & 1],
+            "revisar_manual": False,
+            "enlace": enlace or NO_PUBLICADO,
+            "enlace_directo": True,
+            "codigo_expediente": None,
+            "resumen": titulo,
+            "tipo_contrato": d["tipo"][e[4]],
+            "tipo_registro": "licitacion_venciendo",
+            "empresa_adjudicataria": empresa,
+            "empresa_nif": empresas[0][0] if len(empresas) == 1 else None,
+            "fecha_adjudicacion": adjudicacion.isoformat(),
+            "fecha_fin_estimada": fin.isoformat(),
+            "duracion_meses": e[13],
+            "importe_adjudicado_valor": importe,
+            "importe_adjudicado_display": f"{importe:,.0f} EUR" if importe else NO_PUBLICADO,
+        })
+    return salida
 
 
 def _antecedentes(registros: list[dict]) -> None:
@@ -2301,6 +2407,10 @@ def main() -> None:
     # Si el registro absorbió duplicados de otra fuente, hereda la fecha más
     # antigua del grupo: la misma licitación vista hace 5 días en TED no debe
     # volver a salir como "nueva" el día que llega por PLACSP (o al revés).
+    vencen = _licitaciones_por_vencer(finales)
+    print(f"[normalizar] {len(vencen)} contratos licitados que vencen en {config.DIAS_AVISO_LICITACION} días y no se han vuelto a licitar")
+    finales.extend(vencen)
+
     mapa_nuevo = {}
     for r in finales:
         ids = [r["id"]] + r.pop("_ids_equivalentes", [])
