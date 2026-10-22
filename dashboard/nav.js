@@ -44,13 +44,15 @@
       ],
     },
     {
-      titulo: "Prospección comercial",
-      items: [["menores", "Contratos menores por vencer", "index.html", "#/menores", "reloj"]],
+      titulo: "Prospección",
+      items: [
+        ["menores", "Contratos menores por vencer", "index.html", "#/menores", "reloj"],
+        ["adjudicaciones", "Adjudicaciones recientes", "index.html", "#/adjudicaciones", "premio"],
+      ],
     },
     {
       titulo: "Competencia",
       items: [
-        ["adjudicaciones", "Adjudicaciones recientes", "index.html", "#/adjudicaciones", "premio"],
         ["mercado", "Análisis de mercado", "historico.html", "#/mercado", "grafico"],
         ["empresas", "Empresas", "historico.html", "#/empresas", "edificio"],
         ["organismos", "Organismos", "historico.html", "#/organismos", "institucion"],

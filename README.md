@@ -378,8 +378,8 @@ para que cada una tenga su dirección y funcione el botón "atrás":
 |---|---|---|
 | Oportunidades | Licitaciones (la portada: sin ruta, o con una que no existe, se abre aquí): pestañas "Publicadas recientemente", "Licitaciones abiertas" y "Sistemas dinámicos y plazo largo" | `index.html#/licitaciones/recientes`, `#/licitaciones/abiertas`, `#/licitaciones/plazo-largo` |
 | Oportunidades | Calls for proposals UE | `index.html#/calls` |
-| Prospección comercial | Contratos menores por vencer | `index.html#/menores` |
-| Competencia | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
+| Prospección | Contratos menores por vencer | `index.html#/menores` |
+| Prospección | Adjudicaciones recientes (30 días) | `index.html#/adjudicaciones` |
 | Competencia | Análisis de mercado (histórico desde 2021) | `historico.html#/mercado` |
 | Competencia | Empresas y ficha de empresa (el marcador de cada fila la añade a «Nuestra competencia») | `historico.html#/empresas`, `#/empresa/<id>` |
 | Competencia | Organismos y ficha de organismo | `historico.html#/organismos`, `#/organismo/<id>` |

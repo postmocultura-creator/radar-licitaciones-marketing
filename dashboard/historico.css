@@ -258,7 +258,13 @@
 .visualmente-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* ---------- Nuestra competencia: ranking ---------- */
 
-.ranking__controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px; }
+.anadir { margin-bottom: 16px; }
+.anadir h2 { margin-bottom: 8px; }
+.anadir .panel__nota { margin: 0; }
+.anadir__lista { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.anadir__lista li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+.anadir__lista li:last-child { border-bottom: 0; }
+.anadir__nombre { min-width: 0; }
 #competencia-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 16px; }
 .tabla--ranking td:nth-child(2) { min-width: 200px; }
 .tabla--ranking .ranking__celda { min-width: 110px; }
@@ -272,8 +278,6 @@
 .ranking__cambio--sube { color: var(--color-success); }
 .ranking__cambio--baja { color: var(--color-destructive); }
 .ranking__cambio--nueva { color: var(--color-primary); font-weight: 500; }
-.ranking__seguida { background: var(--color-primary-soft); }
-.tabla tbody tr.ranking__seguida:hover { background: var(--color-primary-soft); }
 @media (max-width: 640px) {
   #competencia-kpis { grid-template-columns: minmax(0, 1fr); }
   .tabla--ranking .col-reparto { display: none; }

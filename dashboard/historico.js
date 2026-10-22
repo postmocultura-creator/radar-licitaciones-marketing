@@ -50,6 +50,7 @@
     competencia: {
       nav: "competencia",
       titulo: "Nuestra competencia",
+      buscar: "Buscar una empresa o NIF para añadirla…",
     },
     empresa: { nav: "empresas" },
     organismo: { nav: "organismos" },
@@ -180,10 +181,10 @@
     metricaEvolucion: "importe", metricaEmpresas: "importe",
     vista: "mercado", id: null,
     ordenDirectorio: "importe", pagina: 0,
-    // Nuestra competencia: "todas" las que ganan con los filtros o "sigo".
-    competencia: "todas", ordenRanking: "numero",
-    // Sin emisoras, periódicos y demás medios a los que se compra espacio:
-    // no compiten con la agencia (ver ES_MEDIO).
+    // Nuestra competencia: columna por la que se ordena la lista.
+    ordenRanking: "numero",
+    // Empresas: sin emisoras, periódicos y demás medios a los que se compra
+    // espacio, que no compiten con la agencia (ver ES_MEDIO).
     sinMedios: true,
   };
 
@@ -239,7 +240,6 @@
   segmented("segmented-menor", [["", "Todo"], ["licitacion", "Licitaciones"], ["menor", "Contratos menores"]], "menor");
   segmented("metrica-evolucion", [["importe", "Importe"], ["numero", "Nº"]], "metricaEvolucion");
   segmented("metrica-empresas", [["importe", "Importe"], ["numero", "Nº"]], "metricaEmpresas");
-  segmented("segmented-competencia", [["todas", "Todas las que compiten"], ["sigo", "Las que sigo"]], "competencia");
 
   var elAnio = document.getElementById("filtro-anio");
   var anios = {};
@@ -1104,7 +1104,6 @@
   function rankingDe(filas) {
     var g = {};
     filas.forEach(function (f) {
-      if (estado.sinMedios && ES_MEDIO[f.empresa]) return;
       var x = g[f.empresa] || (g[f.empresa] = { clave: f.empresa, numero: 0, importe: 0, enEuskadi: 0, rebajas: [] });
       x.numero++;
       x.importe += f.importe;
@@ -1121,72 +1120,86 @@
     return pos;
   }
 
+  // Nuestra competencia: solo las empresas que se siguen, como ranking
+  // entre ellas y con los filtros puestos. Para añadir una, se busca arriba
+  // y se pulsa su marcador (o en Empresas, o en su ficha).
+  var MAX_SUGERENCIAS = 8;
+
   function pintarCompetencia() {
-    document.getElementById("boton-sin-medios").setAttribute("aria-pressed", estado.sinMedios ? "true" : "false");
     var seguidas = leerSeguidas();
-    var soloSeguidas = estado.competencia === "sigo";
-    var filas = FILAS.filter(function (f) { return pasaFiltros(f) && pasaTexto(f); });
-    var lista = rankingDe(filas);
+    var filas = FILAS.filter(pasaFiltros);
+    var mercado = rankingDe(filas);
+    var porClave = {};
+    mercado.forEach(function (x) { porClave[x.clave] = x; });
+
+    // Las seguidas, también las que no ganan nada con estos filtros.
+    var lista = Object.keys(seguidas).map(function (nif) {
+      var id = idEmpresaPorNif(nif);
+      if (id === -1) return null;
+      return porClave[id] || { clave: id, numero: 0, importe: 0, enEuskadi: 0, rebajas: [] };
+    }).filter(Boolean);
+    var esSeguida = {};
+    lista.forEach(function (x) { esSeguida[x.clave] = true; });
     var posicion = posiciones(lista);
 
-    // Posición del año anterior, con los mismos filtros.
+    // Posición entre ellas el año anterior, con los mismos filtros.
     var antes = null;
     if (estado.anio) {
       var anio = estado.anio;
       estado.anio = String(Number(anio) - 1);
-      antes = posiciones(rankingDe(FILAS.filter(function (f) { return pasaFiltros(f) && pasaTexto(f); })));
+      antes = posiciones(rankingDe(FILAS.filter(pasaFiltros)).filter(function (x) { return esSeguida[x.clave]; }));
       estado.anio = anio;
     }
 
     lista.forEach(function (x) {
       var e = D.empresa[x.clave];
       x.nif = nifPublicable(e[0]);
-      x.seguida = !!(x.nif && seguidas[x.nif]);
-      x.euskadi = x.enEuskadi / x.numero;
+      x.euskadi = x.numero ? x.enEuskadi / x.numero : 0;
       var lic = x.nif && LICITADORAS[x.nif];
       x.exitoDatos = lic && lic[0] >= MIN_CONCURSOS_EXITO ? lic : null;
       x.exito = x.exitoDatos ? x.exitoDatos[1] / x.exitoDatos[0] : -1;
       x.rebaja = x.rebajas.length ? mediana(x.rebajas) : -1;
     });
 
-    // Cifras de arriba: del mercado entero con estos filtros.
-    var importeTotal = lista.reduce(function (s, x) { return s + x.importe; }, 0);
-    var top5 = lista.slice().sort(function (a, b) { return b.importe - a.importe; }).slice(0, 5)
-      .reduce(function (s, x) { return s + x.importe; }, 0);
-    var nuevas = estado.anio ? lista.filter(function (x) { return (PRIMERA_FECHA[x.clave] || "").slice(0, 4) === estado.anio; }).length : null;
+    // Añadir: empresas que coinciden con lo buscado y no se siguen, las que
+    // más ganan con estos filtros primero.
+    var elAnadir = document.getElementById("competencia-anadir");
+    if (estado.texto) {
+      var candidatas = mercado.filter(function (x) { return !esSeguida[x.clave] && TEXTO_EMPRESA[x.clave].indexOf(estado.texto) !== -1; })
+        .sort(function (a, b) { return b.numero - a.numero || b.importe - a.importe; });
+      elAnadir.innerHTML = '<h2>Añadir a la competencia</h2>' + (candidatas.length
+        ? '<ul class="anadir__lista">' + candidatas.slice(0, MAX_SUGERENCIAS).map(function (x) {
+            var e = D.empresa[x.clave];
+            return '<li><span class="anadir__nombre"><a class="enlace" href="#/empresa/' + x.clave + '">' + escaparHtml(e[1]) + "</a>" +
+              '<span class="tabla__sub">' + cuantos(x.numero, "adjudicación", "adjudicaciones") + " · " + euros(x.importe) + "</span></span>" +
+              (nifPublicable(e[0]) ? botonSeguir(e, seguidas) : '<span class="tabla__sub">Sin NIF publicable</span>') + "</li>";
+          }).join("") + "</ul>" +
+          (candidatas.length > MAX_SUGERENCIAS ? '<p class="panel__nota">Y ' + miles(candidatas.length - MAX_SUGERENCIAS) + " más: afina la búsqueda.</p>" : "")
+        : '<p class="panel__nota">Ninguna empresa que gane con estos filtros coincide con «' + escaparHtml(elTexto.value) + "».</p>");
+    } else {
+      elAnadir.innerHTML = '<p class="panel__nota">Para añadir una empresa, búscala por nombre o NIF en el buscador de arriba y pulsa su marcador. También se puede seguir desde <a class="enlace" href="#/empresas">Empresas</a> o desde su ficha.</p>';
+    }
+
+    // Cifras de arriba: lo que pesan las seguidas en el mercado filtrado.
+    var importeMercado = mercado.reduce(function (s, x) { return s + x.importe; }, 0);
+    var numeroMercado = mercado.reduce(function (s, x) { return s + x.numero; }, 0);
+    var importeSeguidas = lista.reduce(function (s, x) { return s + x.importe; }, 0);
+    var numeroSeguidas = lista.reduce(function (s, x) { return s + x.numero; }, 0);
+    var cuota = function (fraccion) { return fraccion < 0.01 ? "menos del 1 %" : porcentaje(fraccion); };
     pintarKpis(document.getElementById("competencia-kpis"), [
-      ["Empresas que ganan", miles(lista.length)],
-      ["Las 5 primeras se llevan", importeTotal ? porcentaje(top5 / importeTotal) : "—", "del importe adjudicado"],
-      nuevas == null
-        ? ["Que sigues, entre ellas", miles(lista.filter(function (x) { return x.seguida; }).length)]
-        : ["Nuevas en " + estado.anio, miles(nuevas), "primer contrato desde 2021"],
+      ["Empresas que sigues", miles(lista.length)],
+      ["Ganan", miles(numeroSeguidas), numeroMercado ? cuota(numeroSeguidas / numeroMercado) + " de las adjudicaciones" : ""],
+      ["Se llevan", euros(importeSeguidas), importeMercado ? cuota(importeSeguidas / importeMercado) + " del importe adjudicado" : ""],
     ]);
 
-    if (soloSeguidas) lista = lista.filter(function (x) { return x.seguida; });
     var col = estado.ordenRanking;
     lista.sort(function (a, b) { return b[col] - a[col] || b.numero - a.numero || b.importe - a.importe; });
 
     var vacio = document.getElementById("competencia-vacio");
     vacio.hidden = lista.length > 0;
-    vacio.innerHTML = soloSeguidas
-      ? "Todavía no sigues a ninguna empresa con estos filtros. Pulsa el marcador de una fila en «Todas las que compiten» (o en <a class=\"enlace\" href=\"#/empresas\">Empresas</a>)."
-      : "Ninguna empresa gana con estos filtros.";
+    vacio.textContent = "Todavía no sigues a ninguna empresa.";
     var tabla = document.getElementById("competencia-tabla");
     tabla.parentNode.hidden = !lista.length;
-
-    var total = lista.length;
-    var paginas = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
-    if (estado.pagina >= paginas) estado.pagina = paginas - 1;
-    var desde = estado.pagina * FILAS_POR_PAGINA;
-    var visibles = lista.slice(desde, desde + FILAS_POR_PAGINA);
-    document.getElementById("competencia-conteo").textContent = total
-      ? miles(desde + 1) + "–" + miles(desde + visibles.length) + " de " + miles(total) + " empresas"
-      : "";
-    var elPag = document.getElementById("competencia-paginacion");
-    elPag.hidden = paginas < 2;
-    elPag.innerHTML = "<span>Página " + (estado.pagina + 1) + " de " + miles(paginas) + "</span>" +
-      '<button type="button" class="boton boton--contorno" data-paso="-1"' + (estado.pagina === 0 ? " disabled" : "") + ">Anterior</button>" +
-      '<button type="button" class="boton boton--contorno" data-paso="1"' + (estado.pagina >= paginas - 1 ? " disabled" : "") + ">Siguiente</button>";
     if (!lista.length) return;
 
     var maxNumero = lista.reduce(function (m, x) { return Math.max(m, x.numero); }, 0) || 1;
@@ -1196,12 +1209,12 @@
         (100 * fraccion).toFixed(1) + '%"></span></span>';
     };
     var flecha = function (x) {
-      if (!antes) return "";
+      if (!antes || !x.numero) return "";
       var p = antes[x.clave];
       if (!p) return '<span class="ranking__cambio ranking__cambio--nueva" title="No ganó nada el año anterior">nueva</span>';
       var d = p - posicion[x.clave];
       if (!d) return "";
-      return '<span class="ranking__cambio ranking__cambio--' + (d > 0 ? "sube" : "baja") + '" title="Puesto ' + p + " el año anterior\">" +
+      return '<span class="ranking__cambio ranking__cambio--' + (d > 0 ? "sube" : "baja") + '" title="Puesto ' + p + ' el año anterior">' +
         (d > 0 ? "▲" : "▼") + Math.abs(d) + "</span>";
     };
 
@@ -1209,16 +1222,18 @@
       COLUMNAS_RANKING.map(function (c) {
         return '<th scope="col" class="' + (c[0] === "euskadi" ? "col-reparto" : "num") + (c[0] === "rebaja" ? " col-secundaria" : "") + '"' +
           (c[0] === col ? ' aria-sort="descending"' : "") + '><button type="button" class="tabla__orden" data-orden="' + c[0] + '">' + c[1] + Nav.icono("chevron") + "</button></th>";
-      }).join("") + '<th scope="col" class="col-seguir"><span class="visualmente-oculto">Seguir</span></th></tr></thead><tbody>' +
-      visibles.map(function (x) {
+      }).join("") + '<th scope="col" class="col-seguir"><span class="visualmente-oculto">Dejar de seguir</span></th></tr></thead><tbody>' +
+      lista.map(function (x) {
         var e = D.empresa[x.clave];
-        return '<tr' + (x.seguida ? ' class="ranking__seguida"' : "") + '><td class="col-posicion">' + miles(posicion[x.clave]) + flecha(x) + "</td>" +
+        return '<tr><td class="col-posicion">' + (x.numero ? miles(posicion[x.clave]) : "—") + flecha(x) + "</td>" +
           '<td><a href="#/empresa/' + x.clave + '">' + escaparHtml(e[1]) + "</a>" + (x.nif ? '<span class="tabla__sub">NIF ' + escaparHtml(x.nif) + "</span>" : "") + "</td>" +
           '<td class="num ranking__celda">' + celdaBarra(miles(x.numero), x.numero / maxNumero) + "</td>" +
           '<td class="num ranking__celda">' + celdaBarra(euros(x.importe), x.importe / maxImporte) + "</td>" +
-          '<td class="col-reparto"><span class="ranking__reparto" title="' + porcentaje(x.euskadi) + " en Euskadi, " + porcentaje(1 - x.euskadi) + ' en el Estado">' +
-            '<span class="ranking__euskadi" style="width:' + (100 * x.euskadi).toFixed(1) + '%"></span></span>' +
-            '<span class="tabla__sub">' + (x.euskadi >= 0.5 ? porcentaje(x.euskadi) + " Euskadi" : porcentaje(1 - x.euskadi) + " Estado") + "</span></td>" +
+          '<td class="col-reparto">' + (x.numero
+            ? '<span class="ranking__reparto" title="' + porcentaje(x.euskadi) + " en Euskadi, " + porcentaje(1 - x.euskadi) + ' en el Estado">' +
+              '<span class="ranking__euskadi" style="width:' + (100 * x.euskadi).toFixed(1) + '%"></span></span>' +
+              '<span class="tabla__sub">' + (x.euskadi >= 0.5 ? porcentaje(x.euskadi) + " Euskadi" : porcentaje(1 - x.euskadi) + " Estado") + "</span>"
+            : '<span class="tabla__sub">Sin adjudicaciones con estos filtros</span>') + "</td>" +
           '<td class="num"' + (x.exitoDatos ? ' title="Gana ' + x.exitoDatos[1] + " de " + x.exitoDatos[0] + ' concursos a los que se presenta"' : "") + ">" +
             (x.exitoDatos ? porcentaje(x.exito) : "—") + "</td>" +
           '<td class="num col-secundaria">' + (x.rebaja >= 0 ? porcentaje(x.rebaja) : "—") + "</td>" +
@@ -1233,26 +1248,10 @@
       pintarCompetencia();
       return;
     }
-    var m = ev.target.closest && ev.target.closest("#boton-sin-medios");
-    if (m) {
-      estado.sinMedios = !estado.sinMedios;
-      m.setAttribute("aria-pressed", estado.sinMedios ? "true" : "false");
-      estado.pagina = 0;
-      pintarCompetencia();
-      return;
-    }
     var o = ev.target.closest && ev.target.closest("[data-orden]");
     if (o) {
       estado.ordenRanking = o.getAttribute("data-orden");
-      estado.pagina = 0;
       pintarCompetencia();
-      return;
-    }
-    var p = ev.target.closest && ev.target.closest("#competencia-paginacion button[data-paso]");
-    if (p && !p.disabled) {
-      estado.pagina += Number(p.getAttribute("data-paso"));
-      pintarCompetencia();
-      document.getElementById("herramientas").scrollIntoView({ block: "start" });
     }
   });
 
