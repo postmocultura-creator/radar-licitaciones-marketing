@@ -530,7 +530,92 @@
       function (x) { return TRAMOS_REBAJA[x.clave][2]; });
 
     pintarConclusiones(filas, r);
+    pintarOportunidades();
   }
+
+  // ---------- Dónde es más fácil ganar ----------
+  // Provincia × categoría de servicio con poca competencia en licitaciones
+  // (no contratos menores, que no tienen concurso) de los últimos tres años
+  // o del año elegido. Solo grupos con datos suficientes y sin un
+  // adjudicatario que se lo lleve casi todo (contrato a medida de quien ya
+  // lo tiene). Con una categoría o una provincia elegidas, se agrupa por la
+  // otra. La categoría general queda fuera: taparía a las concretas.
+  var MIN_LICITACIONES_OPORTUNIDAD = 8;
+  var MIN_EMPRESAS_OPORTUNIDAD = 3;
+  var MAX_CUOTA_PRIMERA = 0.5;
+  var MAX_OPORTUNIDADES = 6;
+  // Por debajo, encargos sueltos que no compensan una oferta: el límite de un
+  // contrato menor de servicios.
+  var MIN_IMPORTE_MEDIO_OPORTUNIDAD = 15000;
+  var CATEGORIA_GENERAL = CATEGORIAS.indexOf("Publicidad y comunicación (general)");
+
+  function pintarOportunidades() {
+    var el = document.getElementById("oportunidades");
+    var desde = String(Number(H.actualizado.slice(0, 4)) - 2);
+    var grupos = {};
+    FILAS.forEach(function (f) {
+      if (f.menor || !f.ofertas || !f.provincia || !pasaFiltros(f) || !pasaTexto(f)) return;
+      if (!estado.anio && f.anio < desde) return;
+      CATEGORIAS.forEach(function (c, i) {
+        if (i === CATEGORIA_GENERAL || !(f.mascara & (1 << i))) return;
+        if (estado.categoria >= 0 && i !== estado.categoria) return;
+        var clave = i + "|" + f.provincia;
+        var g = grupos[clave] || (grupos[clave] = { categoria: i, provincia: f.provincia, ofertas: [], empresas: {}, rebajas: [], importe: 0, anios: {} });
+        g.ofertas.push(f.ofertas);
+        g.empresas[f.empresa] = (g.empresas[f.empresa] || 0) + 1;
+        if (f.rebaja > 0) g.rebajas.push(f.rebaja);
+        g.importe += f.importe;
+        g.anios[f.anio] = true;
+      });
+    });
+    var lista = Object.keys(grupos).map(function (k) {
+      var g = grupos[k];
+      var n = g.ofertas.length;
+      var cuotas = Object.keys(g.empresas).map(function (e) { return g.empresas[e]; });
+      g.n = n;
+      g.numEmpresas = cuotas.length;
+      g.cuotaPrimera = n ? Math.max.apply(null, cuotas) / n : 1;
+      g.mediana = mediana(g.ofertas);
+      g.unaSola = g.ofertas.filter(function (o) { return o === 1; }).length / (n || 1);
+      g.rebaja = mediana(g.rebajas);
+      g.importeMedio = n ? g.importe / n : 0;
+      g.porAnio = n / Math.max(1, Object.keys(g.anios).length);
+      return g;
+    }).filter(function (g) {
+      return g.n >= MIN_LICITACIONES_OPORTUNIDAD && g.numEmpresas >= MIN_EMPRESAS_OPORTUNIDAD && g.cuotaPrimera <= MAX_CUOTA_PRIMERA &&
+        g.importeMedio >= MIN_IMPORTE_MEDIO_OPORTUNIDAD;
+    }).sort(function (a, b) {
+      return (a.mediana - 2 * a.unaSola) - (b.mediana - 2 * b.unaSola) || b.n - a.n;
+    }).slice(0, MAX_OPORTUNIDADES);
+
+    el.innerHTML = lista.length ? lista.map(function (g) {
+      return '<li><button type="button" class="enlace-boton oportunidad" data-categoria="' + g.categoria + '" data-provincia="' + escaparHtml(g.provincia) + '">' +
+        "<strong>" + escaparHtml(CATEGORIAS[g.categoria]) + " en " + escaparHtml(g.provincia) + "</strong></button>: " +
+        cuantos(g.n, "licitación", "licitaciones") + (estado.anio ? " en " + estado.anio : " desde " + desde) +
+        (g.porAnio >= 2 && !estado.anio ? " (unas " + Math.round(g.porAnio) + " al año)" : "") +
+        ", " + miles(g.mediana, 1) + (g.mediana === 1 ? " oferta" : " ofertas") + " de mediana y en el " + porcentaje(g.unaSola) + " se presentó una sola empresa. " +
+        "Las ganaron " + miles(g.numEmpresas) + " empresas distintas" +
+        (g.rebaja != null ? "; rebaja mediana del " + porcentaje(g.rebaja) : "") +
+        "; importe medio " + euros(g.importeMedio) + ".</li>";
+    }).join("") : '<li class="barras__vacio">Con estos filtros no hay grupos con datos suficientes (al menos ' +
+      MIN_LICITACIONES_OPORTUNIDAD + " licitaciones con número de ofertas y " + MIN_EMPRESAS_OPORTUNIDAD + " empresas ganadoras distintas).</li>";
+  }
+
+  document.getElementById("oportunidades").addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".oportunidad");
+    if (!b) return;
+    estado.categoria = Number(b.getAttribute("data-categoria"));
+    elCategoria.value = String(estado.categoria);
+    var provincia = b.getAttribute("data-provincia");
+    var opcion = Array.prototype.find.call(elLugar.options, function (o) { return o.value === "p:" + provincia || o.value === "c:" + provincia; });
+    if (opcion) {
+      estado.lugar = opcion.value;
+      elLugar.value = opcion.value;
+    }
+    estado.pagina = 0;
+    pintar();
+    document.getElementById("herramientas").scrollIntoView({ block: "start" });
+  });
 
   var TRAMOS_OFERTAS = [[1, 1, "1 oferta"], [2, 2, "2 ofertas"], [3, 5, "3 a 5"], [6, 10, "6 a 10"], [11, 1e9, "Más de 10"]];
   // Con menos contratos, una mediana o un reparto bailan demasiado.
