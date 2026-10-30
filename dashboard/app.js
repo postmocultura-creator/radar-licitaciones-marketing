@@ -418,7 +418,10 @@
       : "hasta " + euros(s.hasta);
     var v = veredictoSolvencia(s);
     if (!html) return rango + " de facturación anual" + (v ? ". " + v.texto : "");
-    return rango + ' de facturación anual <span class="barras__sec">(1,5 × el valor anual, LCSP art. 87)</span>' +
+    var nota = s.prorrogas
+      ? '<span class="barras__sec" title="El anuncio dice cuántas prórrogas hay, no cuánto dura cada una: se cuenta cada una como el contrato, hasta 5 años en total.">(1,5 × el valor anual con prórrogas, LCSP art. 87)</span>'
+      : '<span class="barras__sec">(1,5 × el valor anual, LCSP art. 87)</span>';
+    return rango + " de facturación anual " + nota +
       (v ? '<br><span class="solvencia solvencia--' + v.clase + '">' + v.texto + "</span> " : "<br>") +
       '<button type="button" class="boton boton--texto" data-facturacion>' + (facturacionGuardada() ? "Cambiar tu facturación" : "Comparar con tu facturación") + "</button>";
   }
@@ -477,6 +480,13 @@
     var m = /^([\d,]+)(?:\.\d+)?\s+([A-Z]{3})$/.exec(display);
     if (!m) return display;
     return m[1].replace(/,/g, ".") + " " + (m[2] === "EUR" ? "€" : m[2]);
+  }
+
+  // TED (y el Estado cuando no da el presupuesto base) publica el valor
+  // estimado, con las prórrogas dentro: no es lo que se paga cada año.
+  function etiquetaPresupuesto(t) {
+    if (t.presupuesto_tipo !== "valor_estimado") return "Presupuesto";
+    return t.prorrogas ? "Valor estimado (con prórrogas)" : "Valor estimado";
   }
 
   // Ámbito de una licitación española para "Publicadas recientemente":
@@ -1133,8 +1143,9 @@
       // o un negociado, no una oferta sin descuento (ver normalizar._competencia).
       if (t.rebaja) importes.push(par("Rebaja sobre el presupuesto", numeroEs(t.rebaja) + " %", true));
     } else {
-      importes.push(par(esCall ? "Presupuesto de la convocatoria" : "Presupuesto", presupuesto || "No publicado", true));
+      importes.push(par(esCall ? "Presupuesto de la convocatoria" : etiquetaPresupuesto(t), presupuesto || "No publicado", true));
       if (t.duracion_meses) importes.push(par("Duración (sin prórrogas)", duracionTexto(t.duracion_meses), true));
+      if (t.prorrogas) importes.push(par("Prórrogas", "hasta " + t.prorrogas, true));
       if (t.solvencia) importes.push(par("Solvencia económica que pueden pedir", textoSolvencia(t.solvencia, true)));
       // Calls for proposals: cuántos proyectos se van a financiar y con cuánto.
       if (t.proyectos_previstos) importes.push(par("Proyectos que se prevé financiar", String(t.proyectos_previstos), true));
@@ -1501,7 +1512,7 @@
             '<span class="tarjeta__pie">' + pie + "</span>" +
           "</span>" +
           '<span class="tarjeta__lateral">' +
-            '<span class="tarjeta__etiqueta-dato">' + (conEmpresa ? "Importe adjudicado" : "Presupuesto") + "</span>" +
+            '<span class="tarjeta__etiqueta-dato">' + (conEmpresa ? "Importe adjudicado" : etiquetaPresupuesto(t)) + "</span>" +
             '<span class="tarjeta__dato' + (importeLateral ? "" : " tarjeta__dato--vacio") + '">' + (importeLateral || "No publicado") + "</span>" +
             '<span class="tarjeta__ver">Detalle' + Nav.icono("chevron", "tarjeta__chevron") + "</span>" +
           "</span>" +
@@ -1587,8 +1598,9 @@
     anadir("Anuncio", t.enlace && t.enlace !== NO_PUBLICADO ? t.enlace : "");
     anadir("Fecha límite", fechaLarga(t.fecha_limite, "no publicada") + (t.hora_limite ? ", " + t.hora_limite : "") +
       " (" + infoUrgencia(t.fecha_limite, t).texto + ")");
-    anadir("Presupuesto", importeTexto(t.presupuesto_display));
+    anadir(etiquetaPresupuesto(t), importeTexto(t.presupuesto_display));
     anadir("Duración sin prórrogas", t.duracion_meses ? duracionTexto(t.duracion_meses) : "");
+    anadir("Prórrogas", t.prorrogas ? "hasta " + t.prorrogas : "");
     anadir("Solvencia económica que pueden pedir", t.solvencia ? textoSolvencia(t.solvencia, false) : "");
     if (t.prevision) {
       anadir("Previsión de ofertas", t.prevision.ofertas ? numeroEs(t.prevision.ofertas.valor) + " (" + basePrevision(t.prevision.ofertas) + ")" : "");

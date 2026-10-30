@@ -1102,3 +1102,24 @@ con cada hallazgo comprobado con datos reales. Lo más importante:
   aparte.
 - Se añadieron pruebas de regresión (`tests/`), se quitó código muerto y
   duplicado y se fijaron las versiones de las dependencias.
+
+## Presupuesto frente a valor estimado (octubre de 2026)
+
+TED 754655-2026 (Gobierno Vasco, redes sociales de Turismo) salía con
+300.000 € y una solvencia de hasta 450.000 €; el presupuesto es de 60.000 €
+al año, con 4 prórrogas de 12 meses. TED solo publica el valor estimado
+(BT-27, `EstimatedOverallContractAmount`), que suma prórrogas y
+modificaciones, y el feed de PLACSP también se leía de ese campo.
+
+- PLACSP: el presupuesto sale ahora del presupuesto base sin IVA
+  (`TaxExclusiveAmount`), como ya hacían los lotes y las adjudicaciones. El
+  valor estimado queda solo de respaldo.
+- TED: se pide el número máximo de prórrogas (BT-58,
+  `renewal-maximum-lot`). eForms no trae ni el presupuesto sin prórrogas ni
+  lo que dura cada una.
+- La ficha llama a la cifra «Valor estimado (con prórrogas)» cuando lo es
+  (`presupuesto_tipo`), y al fusionar TED con Euskadi o el Estado manda el
+  presupuesto base de esa fuente.
+- Solvencia (art. 87): con el valor estimado se reparte entre la duración
+  total, contando cada prórroga como el contrato y con el tope de 5 años
+  (art. 29.4). En el caso de arriba, 90.000 €.

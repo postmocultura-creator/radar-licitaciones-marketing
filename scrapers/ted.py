@@ -77,6 +77,11 @@ CAMPOS = [
     # solvencia económica que se puede pedir (encaje.py).
     "duration-period-value-lot",
     "duration-period-unit-lot",
+    # Número máximo de prórrogas (BT-58). El importe de TED es el valor
+    # estimado (BT-27), que las incluye: el TED 754655-2026 da 300.000 €
+    # por 12 meses y 4 prórrogas, con un presupuesto de 60.000 € al año.
+    # eForms no trae el presupuesto sin prórrogas ni lo que dura cada una.
+    "renewal-maximum-lot",
 ]
 # Se piden los dos campos de fecha límite porque se comprobó con datos
 # reales que "deadline-date-lot" viene vacío en muchísimos anuncios

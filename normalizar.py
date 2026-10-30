@@ -300,6 +300,26 @@ def _texto_ted(valor, idiomas: tuple[str, ...] = ("spa", "eng")) -> str:
     return textos if isinstance(textos, str) and textos else NO_PUBLICADO
 
 
+def _prorrogas_ted(item: dict) -> int:
+    """Número máximo de prórrogas (BT-58), el del lote que más tenga."""
+    try:
+        return max((int(float(n)) for n in item.get("renewal-maximum-lot") or []), default=0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _valor_estimado(presupuesto_valor, prorrogas: int = 0) -> dict:
+    """Marca que la cifra es el valor estimado (art. 101 LCSP: con prórrogas
+    y modificaciones previstas), no el presupuesto base. La ficha la
+    etiqueta así y encaje.solvencia_exigible la reparte entre los años."""
+    if presupuesto_valor is None:
+        return {}
+    salida = {"presupuesto_tipo": "valor_estimado"}
+    if prorrogas:
+        salida["prorrogas"] = prorrogas
+    return salida
+
+
 def _from_ted(registro: dict) -> dict:
     item = registro["original"]
 
@@ -340,6 +360,8 @@ def _from_ted(registro: dict) -> dict:
         "fecha_limite": fecha_limite,
         "presupuesto_valor": presupuesto_valor,
         "presupuesto_display": presupuesto_display,
+        # TED solo da el valor estimado (BT-27), con las prórrogas dentro.
+        **_valor_estimado(presupuesto_valor, _prorrogas_ted(item)),
         "cpv": registro["cpv"],
         "categorias": registro["categorias"],
         "revisar_manual": registro["revisar_manual"],
@@ -388,6 +410,8 @@ def _from_placsp(registro: dict) -> dict:
         "fecha_limite": fecha_limite,
         "presupuesto_valor": presupuesto_valor,
         "presupuesto_display": presupuesto_display,
+        # Sin presupuesto base en el feed, el valor estimado (scrapers/placsp.py).
+        **(_valor_estimado(presupuesto_valor) if item.get("presupuesto_es_valor_estimado") else {}),
         "cpv": registro["cpv"],
         "categorias": registro["categorias"],
         "revisar_manual": registro["revisar_manual"],
@@ -2129,9 +2153,18 @@ def _heredar_hora_y_pliegos(superviviente: dict, duplicado: dict) -> None:
         superviviente["hora_limite"] = duplicado["hora_limite"]
     # TED no suele dar el presupuesto ni el expediente del organismo (en los
     # 3 duplicados catalanes del 2026-10-20 solo los traía la otra fuente).
-    if superviviente.get("presupuesto_valor") is None and duplicado.get("presupuesto_valor") is not None:
+    # Y cuando lo da es el valor estimado, con las prórrogas: manda el
+    # presupuesto base de Euskadi o del Estado si lo hay.
+    ajeno_es_base = duplicado.get("presupuesto_valor") is not None and duplicado.get("presupuesto_tipo") != "valor_estimado"
+    if (superviviente.get("presupuesto_valor") is None and duplicado.get("presupuesto_valor") is not None) or \
+            (superviviente.get("presupuesto_tipo") == "valor_estimado" and ajeno_es_base):
         superviviente["presupuesto_valor"] = duplicado["presupuesto_valor"]
         superviviente["presupuesto_display"] = duplicado["presupuesto_display"]
+        superviviente.pop("presupuesto_tipo", None)
+        if duplicado.get("presupuesto_tipo"):
+            superviviente["presupuesto_tipo"] = duplicado["presupuesto_tipo"]
+    if not superviviente.get("prorrogas") and duplicado.get("prorrogas"):
+        superviviente["prorrogas"] = duplicado["prorrogas"]
     if not superviviente.get("codigo_expediente") and duplicado.get("codigo_expediente"):
         superviviente["codigo_expediente"] = duplicado["codigo_expediente"]
     if not superviviente.get("duracion_meses") and duplicado.get("duracion_meses"):

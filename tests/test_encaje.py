@@ -126,6 +126,21 @@ def test_solvencia_que_puede_pedir_el_pliego():
     assert encaje.solvencia_exigible(licitacion(presupuesto_valor=None)) is None
 
 
+def test_solvencia_sobre_el_valor_estimado_con_prorrogas():
+    # TED 754655-2026: valor estimado 300.000 € por 12 meses y 4 prórrogas
+    # (60.000 € al año) -> se pueden pedir 90.000 €, no 450.000 €.
+    s = encaje.solvencia_exigible(licitacion(presupuesto_valor=300_000.0, duracion_meses=12,
+                                             presupuesto_tipo="valor_estimado", prorrogas=4))
+    assert s == {"hasta": 90_000, "seguro": 90_000, "duracion": True, "lotes": False, "prorrogas": True}
+    # Tope de 5 años con prórrogas (art. 29.4): 2 años + 3 prórrogas = 5.
+    s = encaje.solvencia_exigible(licitacion(presupuesto_valor=500_000.0, duracion_meses=24,
+                                             presupuesto_tipo="valor_estimado", prorrogas=3))
+    assert s["hasta"] == 150_000
+    # Con el presupuesto base (Euskadi, Estado) las prórrogas no cuentan.
+    s = encaje.solvencia_exigible(licitacion(presupuesto_valor=60_000.0, duracion_meses=12, prorrogas=4))
+    assert s["hasta"] == 90_000 and "prorrogas" not in s
+
+
 def test_la_facturacion_de_la_agencia_no_cambia_la_nota():
     # La ficha es pública: la nota no puede depender de la facturación.
     perfil = dict(PERFIL, volumen=100_000)

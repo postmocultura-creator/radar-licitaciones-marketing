@@ -28,6 +28,18 @@ def test_placsp_parsea_la_adjudicacion(entrada_placsp):
     assert item["pliegos"] == []  # solo se guardan los pliegos de lo que está en plazo
 
 
+def test_placsp_presupuesto_base_antes_que_el_valor_estimado():
+    texto = (FIXTURES / "placsp_adjudicacion.atom").read_text(encoding="utf-8")
+    texto = texto.replace('<cbc:TaxExclusiveAmount currencyID="EUR">27685.95<', '<cbc:TaxExclusiveAmount currencyID="EUR">20000<', 1)
+    entrada = ET.fromstring(texto).find("atom:entry", placsp.NS)
+    item = placsp._parsear_entry(entrada)
+    assert (item["presupuesto"], item["presupuesto_es_valor_estimado"]) == ("20000", False)
+    # Sin presupuesto base, el valor estimado, marcado como tal.
+    texto = texto.replace('<cbc:TaxExclusiveAmount currencyID="EUR">20000<', '<cbc:TaxExclusiveAmount currencyID="EUR">0<', 1)
+    item = placsp._parsear_entry(ET.fromstring(texto).find("atom:entry", placsp.NS))
+    assert (item["presupuesto"], item["presupuesto_es_valor_estimado"]) == ("27685.95", True)
+
+
 def test_placsp_enmascara_a_las_personas_fisicas():
     # Misma entrada real, con la adjudicataria cambiada por un autónomo con
     # el DNI entero (así llegan los contratos menores de PLACSP).

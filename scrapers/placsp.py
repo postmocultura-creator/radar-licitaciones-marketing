@@ -244,14 +244,22 @@ def _parsear_entry(entry) -> dict:
     cpvs = []
     importe = None
     moneda = None
+    es_valor_estimado = False
     if proyecto is not None:
         for clasif in proyecto.findall("cac:RequiredCommodityClassification/cbc:ItemClassificationCode", NS):
             if clasif.text:
                 cpvs.append(clasif.text.strip())
-        importe_nodo = proyecto.find("cac:BudgetAmount/cbc:EstimatedOverallContractAmount", NS)
-        if importe_nodo is not None and importe_nodo.text:
-            importe = importe_nodo.text.strip()
-            moneda = importe_nodo.attrib.get("currencyID")
+        # Presupuesto base sin IVA (TaxExclusiveAmount), como en los lotes y
+        # en las adjudicaciones. El valor estimado suma prórrogas y
+        # modificaciones y solo se usa si falta el otro (normalizar lo
+        # etiqueta así en la ficha).
+        for campo in ("TaxExclusiveAmount", "EstimatedOverallContractAmount"):
+            importe_nodo = proyecto.find("cac:BudgetAmount/cbc:" + campo, NS)
+            if importe_nodo is not None and (importe_nodo.text or "").strip() not in ("", "0", "0.0", "0.00"):
+                importe = importe_nodo.text.strip()
+                moneda = importe_nodo.attrib.get("currencyID")
+                es_valor_estimado = campo == "EstimatedOverallContractAmount"
+                break
 
     organismo = None
     party_nodo = cfs.find(
@@ -369,6 +377,7 @@ def _parsear_entry(entry) -> dict:
         "organismo_cp": organismo_cp,
         "cpv": cpvs,
         "presupuesto": importe,
+        "presupuesto_es_valor_estimado": es_valor_estimado,
         "moneda": moneda,
         "fecha_actualizacion": _texto(entry, "atom:updated"),
         "fecha_limite": fecha_limite,

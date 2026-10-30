@@ -330,6 +330,37 @@ def test_al_fusionar_ted_hereda_presupuesto_y_expediente():
     assert (superviviente["presupuesto_valor"], superviviente["codigo_expediente"]) == (90000.0, "A")
 
 
+def test_ted_marca_el_valor_estimado_y_las_prorrogas():
+    registro = {"fuente": "UE", "titulo": "Redes sociales", "cpv": [], "categorias": [], "revisar_manual": False,
+                "original": {"publication-number": "754655-2026", "estimated-value-proc": "300000",
+                             "renewal-maximum-lot": ["4"], "buyer-country": ["ESP"]}}
+    salida = normalizar._from_ted(registro)
+    assert (salida["presupuesto_valor"], salida["presupuesto_tipo"], salida["prorrogas"]) == (300000.0, "valor_estimado", 4)
+    # Sin prórrogas sigue siendo el valor estimado; sin importe, nada.
+    registro["original"]["renewal-maximum-lot"] = []
+    salida = normalizar._from_ted(registro)
+    assert salida["presupuesto_tipo"] == "valor_estimado" and "prorrogas" not in salida
+    registro["original"]["estimated-value-proc"] = None
+    assert "presupuesto_tipo" not in normalizar._from_ted(registro)
+
+
+def test_al_fusionar_manda_el_presupuesto_base_sobre_el_valor_estimado():
+    ted = {"presupuesto_valor": 300000.0, "presupuesto_display": "300,000 EUR",
+           "presupuesto_tipo": "valor_estimado", "prorrogas": 4}
+    normalizar._heredar_hora_y_pliegos(ted, {"presupuesto_valor": 60000.0, "presupuesto_display": "60,000 EUR"})
+    assert (ted["presupuesto_valor"], ted.get("presupuesto_tipo"), ted["prorrogas"]) == (60000.0, None, 4)
+    # Si la otra fuente también da el valor estimado, se queda el de TED.
+    ted = {"presupuesto_valor": 300000.0, "presupuesto_display": "300,000 EUR", "presupuesto_tipo": "valor_estimado"}
+    normalizar._heredar_hora_y_pliegos(ted, {"presupuesto_valor": 250000.0, "presupuesto_display": "250,000 EUR",
+                                             "presupuesto_tipo": "valor_estimado"})
+    assert ted["presupuesto_valor"] == 300000.0
+    # Euskadi se queda con su presupuesto y hereda las prórrogas de TED.
+    euskadi = {"presupuesto_valor": 60000.0, "presupuesto_display": "60,000 EUR"}
+    normalizar._heredar_hora_y_pliegos(euskadi, {"presupuesto_valor": 300000.0, "presupuesto_display": "300,000 EUR",
+                                                 "presupuesto_tipo": "valor_estimado", "prorrogas": 4})
+    assert (euskadi["presupuesto_valor"], euskadi.get("presupuesto_tipo"), euskadi["prorrogas"]) == (60000.0, None, 4)
+
+
 def test_lotes_placsp_con_el_peso_del_precio_de_cada_uno():
     registro = {"fuente": "Estado", "original": {
         "lotes": [{"id": "1", "nombre": "Prensa", "importe": "20825"}, {"id": "2", "nombre": "Digital", "importe": None}],

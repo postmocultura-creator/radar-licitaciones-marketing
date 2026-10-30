@@ -163,10 +163,21 @@ def solvencia_exigible(r: dict) -> dict | None:
     importes = [l.get("importe") for l in r.get("lotes") or []]
     lote_menor = min(importes) if len(importes) > 1 and all(importes) else None
     meses = r.get("duracion_meses")
+    # El valor estimado (TED, o el Estado sin presupuesto base) ya suma las
+    # prórrogas: el valor anual medio sale de repartirlo entre toda la
+    # duración. TED da cuántas prórrogas hay, no lo que dura cada una; se
+    # cuenta cada una como el contrato, con el tope de 5 años (art. 29.4).
+    # TED 754655-2026: 300.000 € en 12 meses + 4 prórrogas -> 60.000 €/año.
+    prorrogas = (r.get("prorrogas") or 0) if r.get("presupuesto_tipo") == "valor_estimado" else 0
+    if meses and prorrogas:
+        meses = min(meses * (1 + prorrogas), ANIOS_MAXIMOS_SERVICIO * 12)
     anios = meses / 12 if meses else 1
     hasta = FACTOR_SOLVENCIA * presupuesto / max(1, anios)
     seguro = FACTOR_SOLVENCIA * (lote_menor or presupuesto) / max(1, anios if meses else ANIOS_MAXIMOS_SERVICIO)
-    return {"hasta": round(hasta), "seguro": round(min(seguro, hasta)), "duracion": bool(meses), "lotes": bool(lote_menor)}
+    salida = {"hasta": round(hasta), "seguro": round(min(seguro, hasta)), "duracion": bool(meses), "lotes": bool(lote_menor)}
+    if meses and prorrogas:
+        salida["prorrogas"] = True
+    return salida
 
 
 def nota(r: dict, perfil: dict, hoy: date | None = None, competencia: dict | None = None) -> dict:
